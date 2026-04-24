@@ -1,0 +1,3458 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+  <link rel="manifest" href="manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="汉字战">
+  <meta name="theme-color" content="#c9a227">
+  <meta name="application-name" content="汉字战">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1">
+<title>西游汉字路</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+<link rel="stylesheet" href="styles.css">
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        var host = location.hostname;
+        var ok = host.indexOf('github.io') !== -1 || host === 'localhost' || host.indexOf('192.168.') === 0;
+        if (!ok) return;
+        var path = location.pathname;
+        var base = path.substring(0, path.lastIndexOf('/') + 1);
+        navigator.serviceWorker.register(base + 'sw.js', { scope: base })
+          .then(function(r){ console.log('SW ok:', r.scope); })
+          .catch(function(e){ console.warn('SW err:', e); });
+      });
+    }
+  </script></head>
+<body>
+
+<!-- == TITLE == -->
+<div id="scr-title" class="screen active">
+  <img src="sprites/logo.webp" alt="西游汉字路" style="width:min(420px,88vw);max-width:88vw;position:relative;z-index:2;filter:drop-shadow(0 0 40px rgba(201,162,39,0.5));animation:float 4s ease-in-out infinite">
+  <div class="t-div"></div>
+  <div style="display:flex;flex-direction:column;gap:11px;align-items:center;position:relative;z-index:2">
+    <button class="btn-s" onclick="goProfile()" style="background:linear-gradient(135deg,#7a1a1a,#b22222,#7a1a1a);border-color:var(--gold);color:var(--goldb);box-shadow:0 4px 20px rgba(139,26,26,.6)">⚔️ 出战！ Start</button>
+    <button class="btn-s" onclick="goStudy()">📖 复习字库 Characters</button>
+    <button class="btn-s" onclick="goStories()">📜 西游章节 Chapters</button>
+    <button class="btn-s" onclick="openSaveModal()">⚙️ 设置 Settings</button>
+  </div>
+  <div style="position:absolute;bottom:14px;font-size:11px;color:rgba(201,162,39,.35);letter-spacing:.1em;z-index:2;text-align:center;padding:0 20px">
+    🔊 Tap characters to hear Mandarin · Learn · Travel West · Face eighty-one trials
+  </div>
+</div>
+
+<!-- == PROFILE == -->
+<div id="scr-profile" class="screen">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;padding:18px;padding-top:56px;background:radial-gradient(ellipse at center,#1a1205,#0d0a08 70%);overflow-y:auto">
+    <div class="prof-title">选择同伴</div>
+    <div style="font-size:12px;color:var(--parch2);opacity:.7;text-align:center">选择你的护法同伴 · Choose your companion</div>
+    <!-- Player cards rendered dynamically by renderProfileScreen() -->
+    <div id="prof-player-grid" class="prof-grid" style="align-items:stretch"></div>
+    <!-- Co-op row — shown only when ≥2 players exist -->
+    <div id="prof-coop-row" style="display:none;width:min(480px,88vw)">
+      <div style="font-size:12px;color:var(--parch2);opacity:.7;text-align:center;margin-bottom:6px">合作西行 Co-op — choose your role:</div>
+      <div id="prof-coop-btns" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center"></div>
+    </div>
+    <button class="btn-s" onclick="showScr('scr-title')">← 返回 Back</button>
+  </div>
+</div>
+
+<!-- == ADD PLAYER MODAL == -->
+<div class="modal-ov" id="add-player-modal">
+  <div class="modal-box" style="width:min(380px,92vw);text-align:center">
+    <div class="modal-title">➕ 添加玩家 Add Player</div>
+    <div style="text-align:left;margin-bottom:14px">
+      <label style="display:block;font-size:13px;color:var(--parch2);margin-bottom:5px">Player Name</label>
+      <input id="new-player-name" type="text" placeholder="Enter name…" maxlength="20"
+        style="width:100%;background:rgba(0,0,0,.6);border:2px solid rgba(201,162,39,.5);border-radius:6px;color:var(--parch);font-size:16px;padding:9px 12px;box-sizing:border-box;font-family:'Noto Serif SC',serif"/>
+    </div>
+    <div style="text-align:left;margin-bottom:18px">
+      <label style="display:block;font-size:13px;color:var(--parch2);margin-bottom:5px">Difficulty Level</label>
+      <select id="new-player-diff"
+        style="width:100%;background:rgba(0,0,0,.7);border:1px solid rgba(201,162,39,.5);border-radius:6px;color:var(--parch);font-size:14px;padding:9px 12px;font-family:'Noto Serif SC',serif">
+        <option value="1">Level 1 — Age 4-5 · Pictographs (~20 chars)</option>
+        <option value="2">Level 2 — Age 5-6 · Basic vocab (~60 chars)</option>
+        <option value="3" selected>Level 3 — Age 6-7 · Odonata Blue (~120 chars)</option>
+        <option value="4">Level 4 — Age 7-8 · Odonata Pink start (~200 chars)</option>
+        <option value="5">Level 5 — Age 8-9 · Odonata Pink (~300 chars)</option>
+        <option value="6">Level 6 — Age 9-10 · Odonata Pink complete (~400 chars)</option>
+        <option value="7">Level 7 — Age 10-12 · HSK 3-4 (~500 chars)</option>
+        <option value="8">Level 8 — Age 12-14 · HSK 4-5 (~600 chars)</option>
+        <option value="9">Level 9 — Age 14+ · HSK 5-6 (~700 chars)</option>
+        <option value="10">Level 10 — Adult · All characters</option>
+      </select>
+    </div>
+    <div id="add-player-msg" style="font-size:12px;min-height:16px;color:var(--redb);margin-bottom:10px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-s" onclick="closeAddPlayerModal()" style="flex:1;padding:10px 0">✕ Cancel</button>
+      <button class="btn-p" onclick="confirmAddPlayer()" style="flex:1;padding:10px 0">✅ Add Player</button>
+    </div>
+  </div>
+</div>
+
+<!-- == WORLD MAP == -->
+<div id="scr-map" class="screen">
+  <div class="map-topbar">
+    <div>
+      <div class="map-title">🗺️ 西行路 Route West</div>
+    </div>
+    <div class="map-info" id="map-info">点击路站继续西行 Tap a stage to continue west</div>
+    <button class="btn-s" onclick="goHome()" style="font-size:clamp(15px,4vw,19px);padding:8px 18px;margin-right:52px">🏠 主页</button>
+  </div>
+  <!-- Province info panel — above map, no overlap -->
+  <div id="fort-panel" style="display:none;background:rgba(10,6,2,0.97);border-bottom:2px solid #c9a227;padding:10px 14px;z-index:50;flex-direction:row;align-items:center;gap:10px;flex-wrap:wrap;flex-shrink:0">
+    <div style="flex:1;min-width:120px">
+      <div id="fp-name" style="font-family:'Ma Shan Zheng',cursive;font-size:clamp(16px,4vw,22px);color:#f0c040;letter-spacing:.1em"></div>
+      <div id="fp-status" style="font-size:clamp(12px,3vw,15px);color:#e8d5a3;margin-top:2px"></div>
+    </div>
+    <button id="fp-story-btn" onclick="replayProvStory()" style="font-size:20px;padding:8px 12px;flex-shrink:0;background:none;border:2px solid rgba(201,162,39,.25);border-radius:8px;cursor:not-allowed;opacity:0.3;transition:all .2s" title="View province story" disabled>📜</button>
+    <button id="tt-battle-btn" class="btn-p" style="font-size:clamp(14px,3.5vw,18px);padding:8px 18px;flex-shrink:0">🚶 继续西行 Continue West</button>
+    <button id="fp-close-btn" class="btn-s" style="font-size:14px;padding:8px 14px;flex-shrink:0">✕</button>
+  </div>
+  <div id="map-canvas-wrap" style="flex:1;position:relative;overflow:hidden">
+    <!-- Co-op: waiting banner shown to non-controller -->
+    <div id="coop-map-waiting" style="display:none;position:absolute;top:0;left:0;right:0;z-index:60;background:rgba(0,0,0,.82);border-bottom:2px solid rgba(201,162,39,.5);padding:10px 14px;text-align:center;font-family:'Ma Shan Zheng',cursive;font-size:clamp(14px,3.5vw,18px);color:var(--goldb)">
+      <span id="coop-waiting-text">⏳ 等待队友选择目标… Waiting for partner to choose</span>
+    </div>
+    <!-- Co-op: join-battle popup -->
+    <div id="coop-join-popup" style="display:none;position:absolute;inset:0;z-index:70;background:rgba(0,0,0,.88);flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:24px">
+      <div style="font-size:32px">⚔️</div>
+      <div id="coop-join-title" style="font-family:'Ma Shan Zheng',cursive;font-size:clamp(18px,5vw,26px);color:var(--goldb);text-align:center"></div>
+      <div id="coop-join-countdown" style="font-size:clamp(28px,7vw,42px);color:#88ffcc;font-family:monospace">10</div>
+      <div style="font-size:13px;color:var(--parch2);text-align:center">Auto-joining in <span id="coop-join-secs">10</span>s…</div>
+      <button onclick="rtcoopJoinBattle()" class="btn-p" style="font-size:clamp(16px,4.5vw,22px);padding:12px 32px">🚶 同行！ Join Journey!</button>
+      <button onclick="rtcoopDeclineBattle()" class="btn-s" style="font-size:14px;padding:8px 20px">暂留原地 Stay behind</button>
+    </div>
+    <svg id="map-svg" viewBox="0 0 500 580" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <!-- Terrain fills -->
+        <linearGradient id="seaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#0a2a4a"/>
+          <stop offset="100%" stop-color="#0d3a5a"/>
+        </linearGradient>
+        <radialGradient id="mapbg" cx="48%" cy="42%" r="65%">
+          <stop offset="0%" stop-color="#3a2a0a"/>
+          <stop offset="60%" stop-color="#2a1c06"/>
+          <stop offset="100%" stop-color="#1a1004"/>
+        </radialGradient>
+        <!-- Parchment noise -->
+        <filter id="parch-tex" x="0%" y="0%" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch" result="noise"/>
+          <feColorMatrix type="saturate" values="0" in="noise" result="grey"/>
+          <feBlend in="SourceGraphic" in2="grey" mode="multiply"/>
+        </filter>
+        <!-- Mountain symbol filter -->
+        <filter id="mtn-shadow">
+          <feDropShadow dx="1" dy="1" stdDeviation="1" flood-color="rgba(0,0,0,0.5)"/>
+        </filter>
+        <!-- Glow for hero token -->
+        <filter id="hero-glow">
+          <feGaussianBlur stdDeviation="3" result="blur"/>
+          <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <!-- Province patterns -->
+        <pattern id="plains-pat" width="8" height="8" patternUnits="userSpaceOnUse">
+          <line x1="0" y1="6" x2="8" y2="6" stroke="rgba(120,160,40,0.08)" stroke-width="1"/>
+        </pattern>
+        <pattern id="desert-pat" width="6" height="6" patternUnits="userSpaceOnUse">
+          <circle cx="3" cy="3" r="0.8" fill="rgba(180,140,60,0.1)"/>
+        </pattern>
+      </defs>
+      <!-- Sea background (East/South China Sea) -->
+      <rect width="500" height="580" fill="url(#seaGrad)"/>
+      <!-- Land mass base — covers everything, sea fill punched on top -->
+      <path d="M0,0 L500,0 L500,580 L0,580 Z" fill="url(#mapbg)"/>
+      <!-- Sea fill: single closed polygon tracing exactly the coastline dashes + canvas right/bottom edges.
+           North section wraps east of 辽东(max x:488) and 玄菟(max x:494) before curving inward.
+           South section curves SW under 建安/南海/苍梧/交趾 and continues west. -->
+      <path d="
+        M496,0
+        L496,60 L496,82 L494,112 L480,135 L462,152 L442,222 L452,282
+        L442,340 L432,388 L444,420 L444,448 L442,462 L448,508
+        L440,512 L415,512 L388,506 L378,516 L362,528
+        L348,538 L332,548 L318,552 L302,554 L288,552
+        L275,558 L258,568 L240,572 L208,572
+        L185,568 L165,564 L145,560 L120,558
+        L120,580 L500,580 L500,0 Z"
+            fill="rgba(10,40,80,0.55)"/>
+      <!-- Northern coastline dashes — wraps east of 辽东 and 玄菟 -->
+      <path d="M496,0 L496,60 L496,82 L494,112 L480,135 L462,152 L442,222 L452,282 L442,340 L432,388 L444,420 L444,448 L442,462 L448,508"
+            fill="none" stroke="rgba(100,160,210,0.5)" stroke-width="1.4" stroke-dasharray="4,3"/>
+      <!-- South coastline: curves SW below 建安, under 南海, under 苍梧/交趾, continues west -->
+      <path d="M448,508 L440,512 L415,512 L388,506 L378,516 L362,528 L348,538 L332,548 L318,552 L302,554 L288,552 L275,558 L258,568 L240,572 L208,572 L185,568 L165,564 L145,560 L120,558"
+            fill="none" stroke="rgba(100,160,210,0.5)" stroke-width="1.4" stroke-dasharray="4,3"/>
+      <text x="498" y="55" font-size="11" fill="rgba(100,180,220,0.7)" font-style="italic" font-family="'Ma Shan Zheng',cursive" text-anchor="end">渤海</text>
+      <text x="448" y="195" font-size="11" fill="rgba(100,180,220,0.65)" font-style="italic" font-family="'Ma Shan Zheng',cursive">黄海</text>
+      <text x="448" y="340" font-size="11" fill="rgba(100,180,220,0.65)" font-style="italic" font-family="'Ma Shan Zheng',cursive">东海</text>
+
+      <!-- -- MAJOR RIVERS -- -->
+      <!-- Yellow River (黄河): uniform width, ends exactly at coastline ~432,282 -->
+      <path d="M55,210 Q80,195 110,200 Q145,205 170,215 Q200,225 225,218 Q255,210 280,220 Q310,232 340,228 Q370,224 395,236 Q415,246 425,262 Q432,272 432,282"
+            fill="none" stroke="rgba(160,210,255,0.75)" stroke-width="2.8" stroke-linecap="round"/>
+      <!-- 黄河 label — east of 青州 (青州 right edge ~376,218), above river -->
+      <text x="400" y="213" font-size="12" fill="rgba(140,200,255,0.85)" font-style="italic" font-family="'Ma Shan Zheng',cursive" transform="rotate(-5,400,213)">黄河</text>
+
+      <!-- Yangtze River (长江): uniform width, ends exactly at coastline ~432,388 -->
+      <path d="M82,330 Q110,318 140,325 Q170,332 195,328 Q225,322 255,338 Q285,352 315,358 Q342,364 368,374 Q392,382 415,390 Q428,396 432,388"
+            fill="none" stroke="rgba(120,180,255,0.80)" stroke-width="3.2" stroke-linecap="round"/>
+      <!-- 长江 label — left of 丹阳 (丹阳 left edge x≈345), clear of all polygons -->
+      <text x="300" y="374" font-size="12" fill="rgba(120,180,255,0.85)" font-style="italic" font-family="'Ma Shan Zheng',cursive" transform="rotate(-3,300,374)">长江</text>
+
+      <!-- Wei River (渭河) -->
+      <path d="M65,268 Q95,262 125,268 Q150,274 175,270 Q198,266 215,275"
+            fill="none" stroke="rgba(130,190,255,0.55)" stroke-width="2" stroke-linecap="round"/>
+      <text x="95" y="255" font-size="11" fill="rgba(120,175,235,0.75)" font-style="italic" font-family="'Ma Shan Zheng',cursive">渭河</text>
+      <!-- Han River (汉水) -->
+      <path d="M118,310 Q140,320 165,330 Q185,338 210,340 Q235,342 255,338"
+            fill="none" stroke="rgba(130,190,255,0.5)" stroke-width="1.8" stroke-linecap="round"/>
+      <text x="148" y="304" font-size="11" fill="rgba(120,175,235,0.70)" font-style="italic" font-family="'Ma Shan Zheng',cursive">汉水</text>
+      <!-- Huai River -->
+      <path d="M235,280 Q268,272 298,278 Q325,284 355,280 Q378,277 402,285"
+            fill="none" stroke="rgba(130,190,255,0.50)" stroke-width="1.8" stroke-linecap="round"/>
+      <!-- Pearl River (珠江) -->
+      <path d="M185,488 Q215,476 245,478 Q278,480 308,474 Q338,468 365,472 Q385,476 395,488"
+            fill="none" stroke="rgba(130,190,255,0.50)" stroke-width="2" stroke-linecap="round"/>
+      <text x="175" y="492" font-size="11" fill="rgba(120,175,235,0.70)" font-style="italic" font-family="'Ma Shan Zheng',cursive">珠江</text>
+
+      <!-- -- MOUNTAIN RANGES -- -->
+      <!-- Taihang Mountains (太行山) — north-central -->
+      <g fill="rgba(100,80,40,0.55)" stroke="rgba(80,60,20,0.4)" stroke-width="0.5" filter="url(#mtn-shadow)">
+        <polygon points="192,165 198,152 204,165"/><polygon points="200,162 206,149 212,162"/>
+        <polygon points="192,182 198,169 204,182"/><polygon points="200,179 206,166 212,179"/>
+        <polygon points="186,198 192,185 198,198"/><polygon points="194,195 200,182 206,195"/>
+      </g>
+      <text x="172" y="145" font-size="11" fill="rgba(140,110,60,0.8)" font-style="italic" font-family="'Ma Shan Zheng',cursive" transform="rotate(85,172,145)">太行山</text>
+      <!-- Qinling Mountains (秦岭) — central divider -->
+      <g fill="rgba(110,85,35,0.58)" stroke="rgba(80,60,20,0.4)" stroke-width="0.5" filter="url(#mtn-shadow)">
+        <polygon points="152,288 159,274 166,288"/><polygon points="162,285 169,271 176,285"/>
+        <polygon points="174,283 181,269 188,283"/><polygon points="186,281 193,267 200,281"/>
+        <polygon points="200,283 207,269 214,283"/><polygon points="212,285 219,271 226,285"/>
+      </g>
+      <text x="158" y="308" font-size="11" fill="rgba(130,100,50,0.8)" font-style="italic" font-family="'Ma Shan Zheng',cursive">秦岭</text>
+      <!-- Qilian Mountains (祁连山) — northwest -->
+      <g fill="rgba(120,95,40,0.5)" stroke="rgba(80,60,20,0.35)" stroke-width="0.5">
+        <polygon points="48,238 55,224 62,238"/><polygon points="58,235 65,221 72,235"/>
+        <polygon points="68,232 75,218 82,232"/>
+      </g>
+      <text x="36" y="262" font-size="11" fill="rgba(130,100,50,0.75)" font-style="italic" font-family="'Ma Shan Zheng',cursive">祁连山</text>
+      <!-- Wuling Mountains (武陵山) — south-central -->
+      <g fill="rgba(80,100,40,0.5)" stroke="rgba(60,80,20,0.35)" stroke-width="0.5">
+        <polygon points="230,412 237,398 244,412"/><polygon points="240,409 247,395 254,409"/>
+        <polygon points="222,430 229,416 236,430"/>
+      </g>
+      <!-- Nanling Mountains (南岭) — far south -->
+      <g fill="rgba(70,100,35,0.5)" stroke="rgba(50,75,15,0.35)" stroke-width="0.5">
+        <polygon points="225,458 232,444 239,458"/><polygon points="237,455 244,441 251,455"/>
+        <polygon points="252,453 259,439 266,453"/><polygon points="267,451 274,437 281,451"/>
+        <polygon points="283,453 290,439 297,453"/>
+      </g>
+      <text x="234" y="478" font-size="11" fill="rgba(100,130,50,0.75)" font-style="italic" font-family="'Ma Shan Zheng',cursive">南岭</text>
+      <!-- Greater Khingan / northern ranges -->
+      <g fill="rgba(100,80,40,0.45)" stroke="rgba(80,60,20,0.35)" stroke-width="0.5">
+        <polygon points="380,25 387,12 394,25"/><polygon points="392,22 399,9 406,22"/>
+        <polygon points="368,42 375,28 382,42"/>
+      </g>
+      <!-- Daba Mountains (大巴山) — Sichuan border -->
+      <g fill="rgba(90,95,38,0.5)" stroke="rgba(60,75,18,0.35)" stroke-width="0.5">
+        <polygon points="135,348 142,334 149,348"/><polygon points="147,345 154,331 161,345"/>
+        <polygon points="160,342 167,328 174,342"/>
+      </g>
+
+
+      <!-- -- DESERT REGIONS -- -->
+      <!-- Steppe label only -->
+      <text x="95" y="22" font-size="11" fill="rgba(180,150,80,0.55)" font-style="italic" font-family="'Ma Shan Zheng',cursive">漠北草原</text>
+
+
+      <!-- Lake labels only (no fill to avoid colour confusion) -->
+      <text x="268" y="415" text-anchor="middle" font-size="11" fill="rgba(100,170,230,0.7)" font-family="'Ma Shan Zheng',cursive">洞庭湖</text>
+      <text x="356" y="395" text-anchor="middle" font-size="11" fill="rgba(100,170,230,0.7)" font-family="'Ma Shan Zheng',cursive">鄱阳湖</text>
+
+      <!-- provinces + adjacency lines rendered dynamically -->
+      <g id="forts-layer"></g>
+
+      <!-- -- HERO TOKEN -- -->
+      <g id="hero-token" class="hero-token">
+        <svg id="hero-token-svg" x="-20" y="-25" width="40" height="50" viewBox="0 0 64 80" preserveAspectRatio="xMidYMid meet"></svg>
+      </g>
+
+      <!-- -- COMPASS ROSE -- bottom-right corner, big and clear -->
+      <g transform="translate(462,540)">
+        <circle r="24" fill="rgba(0,0,0,.72)" stroke="rgba(201,162,39,.6)" stroke-width="1.5"/>
+        <!-- N arrow sits outside the circle, above it -->
+        <polygon points="0,-32 -4,-24 4,-24" fill="rgba(201,162,39,.95)"/>
+        <!-- Cardinal labels inside circle -->
+        <text text-anchor="middle" y="-8" font-size="12" font-family="'Ma Shan Zheng',cursive" fill="rgba(201,162,39,.95)">北</text>
+        <text text-anchor="middle" y="19" font-size="12" font-family="'Ma Shan Zheng',cursive" fill="rgba(201,162,39,.75)">南</text>
+        <text text-anchor="middle" x="-14" dy="5" font-size="11" font-family="'Ma Shan Zheng',cursive" fill="rgba(201,162,39,.75)">西</text>
+        <text text-anchor="middle" x="14" dy="5" font-size="11" font-family="'Ma Shan Zheng',cursive" fill="rgba(201,162,39,.75)">东</text>
+      </g>
+    </svg>
+
+    <!-- Map legend -->
+    <div style="z-index:40;position:absolute;top:8px;left:120px;font-size:12px;font-family:'Noto Serif SC',serif;color:var(--parch2);background:rgba(0,0,0,.75);border:1px solid rgba(201,162,39,.3);border-radius:6px;padding:6px 9px;display:inline-flex;flex-direction:column;gap:4px;line-height:1;white-space:nowrap">
+      <div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:13px;height:13px;background:rgba(10,100,45,.9);border:2px solid rgba(45,210,108,.85);border-radius:2px;flex-shrink:0"></span>已行经 Cleared</div>
+      <div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:13px;height:13px;background:rgba(52,36,8,.9);border:2px solid rgba(155,120,38,.6);border-radius:2px;flex-shrink:0"></span>未至 Unvisited</div>
+      <div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:13px;height:13px;background:rgba(95,72,15,.9);border:2px solid rgba(235,188,42,.95);border-radius:2px;flex-shrink:0"></span>下一站 Open path</div>
+      <div style="height:1px;background:rgba(201,162,39,.3)"></div>
+      <div style="display:flex;align-items:center;gap:6px"><span>⚔️</span>妖魔战 Battle trial</div>
+      <div style="display:flex;align-items:center;gap:6px"><span>⚒️</span>障碍关 Obstacle trial</div>
+      <div style="display:flex;align-items:center;gap:6px"><span>🍽️</span>诱惑关 Temptation trial</div>
+    </div>
+  </div>
+</div>
+
+<!-- == BATTLE == -->
+<div id="scr-battle" class="screen">
+  <div class="btl-topbar">
+    <div class="btl-wave" id="btl-wave">初难 Journey 1/1</div>
+    <div class="btl-badge" id="btl-badge">合作模式</div>
+    <button id="retreat-btn" onclick="returnToMap()" style="background:none;border:none;color:var(--parch2);font-size:clamp(15px,3.8vw,20px);cursor:pointer;padding:4px 8px;margin-right:52px;letter-spacing:.05em">🗺️ 路线图</button>
+  </div>
+  <div class="hero-bars" id="hero-bars"></div>
+  <!-- Co-op: partner activity feed (hidden in single player) -->
+  <div id="coop-partner-bar" style="display:none;padding:4px 10px;background:rgba(0,0,0,.35);border-bottom:1px solid rgba(201,162,39,.2);font-size:12px;color:var(--parch2);text-align:center;flex-shrink:0">
+    <span id="coop-partner-status">🔗 Partner connected</span>
+  </div>
+  <div class="btl-field" id="btl-field">
+    <!-- Option D: General battle cry overlay -->
+    <div id="battle-cry-overlay" style="display:none;position:absolute;inset:0;z-index:30;pointer-events:none;align-items:center;justify-content:center;padding:16px">
+      <div id="battle-cry-text" style="font-family:'Ma Shan Zheng',cursive;font-size:clamp(18px,5vw,26px);color:var(--goldb);text-shadow:0 0 20px rgba(201,162,39,.9),0 2px 8px rgba(0,0,0,.8);text-align:center;line-height:1.5;background:rgba(0,0,0,.65);border-radius:10px;padding:12px 18px;border:1px solid rgba(201,162,39,.4);animation:cryfade 0.6s ease forwards"></div>
+    </div>
+    <div class="enemy-area" id="enemy-area">
+      <div class="enemy-fig" id="enemy-fig">
+        <svg id="enemy-svg" width="128" height="159" viewBox="0 0 64 80" style="display:block;margin:0 auto;cursor:pointer;transition:transform 0.2s,filter 0.2s" onclick="speakChar()"></svg>
+      </div>
+      <div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center">
+        <span class="enemy-name-lbl" id="enemy-name-lbl">妖王</span>
+        <div class="enemy-hp-wrap" id="enemy-hp-wrap">
+          <div class="enemy-hp-lbl"><span id="enemy-name-hp2">Enemy</span><span id="enemy-hp-txt">10/10</span></div>
+          <div class="enemy-hp-bg"><div class="enemy-hp-bar" id="enemy-hp-bar" style="width:100%"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="q-card" id="q-card">
+      <div class="q-header">
+        <div class="q-player" id="q-player">⚔️</div>
+        <div class="q-type" id="q-type">Char → Meaning</div>
+      </div>
+      <div class="char-disp" id="char-disp">
+        <div style="display:flex;flex-direction:column;align-items:center">
+          <span class="big-char" id="big-char" onclick="speakChar()">字</span>
+          <div class="py-disp" id="py-disp">zì</div>
+        </div>
+        <button class="speak-btn" onclick="speakChar()" style="flex-shrink:0;align-self:center">🔊</button>
+      </div>
+      <div class="q-prompt" id="q-prompt">What does this mean?</div>
+      <div class="ans-grid" id="ans-grid"></div>
+      <button id="next-btn" onclick="advanceFromAnswer()" style="display:none;width:100%;margin-top:10px;background:linear-gradient(135deg,#1a3a1a,#2a5a2a);border:2px solid #50cc80;color:#88ffcc;font-family:'Ma Shan Zheng',cursive;font-size:clamp(16px,4vw,20px);padding:11px 0;border-radius:7px;cursor:pointer;letter-spacing:.12em;transition:all .2s">继续 Continue ▶</button>
+    </div>
+  </div>
+  <div class="btl-footer">
+    <div class="streak-disp">🔥 <span id="streak-n">0</span> streak</div>
+    <div class="score-disp">⭐ <span id="score-n">0</span></div>
+  </div>
+</div>
+
+<!-- == VICTORY == -->
+<div id="scr-victory" class="screen">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:13px;padding:22px;padding-top:40px;background:radial-gradient(ellipse at center,#1a1200,#0d0a04 70%);overflow-y:auto">
+    <div class="res-icon">🏆</div>
+    <div class="res-title">功德圆满！</div>
+    <!-- Campaign complete banner (hidden by default) -->
+    <div id="v-unification" style="display:none;background:linear-gradient(135deg,rgba(201,162,39,0.25),rgba(201,162,39,0.08));border:2px solid var(--goldb);border-radius:10px;padding:14px 18px;text-align:center;width:100%;max-width:320px">
+      <div style="font-size:28px;margin-bottom:6px">👑</div>
+      <div style="font-family:'Ma Shan Zheng',cursive;font-size:clamp(20px,5.5vw,28px);color:var(--goldb);text-shadow:0 0 20px rgba(201,162,39,.8);letter-spacing:.1em">恭喜取得真经！</div>
+      <div style="font-size:13px;color:var(--parch2);margin-top:6px;letter-spacing:.05em">Congratulations — the scriptures are won!</div>
+    </div>
+    <!-- Hero level-up banner (hidden by default) -->
+    <div id="v-levelup" style="display:none;background:linear-gradient(135deg,rgba(201,162,39,0.25),rgba(201,162,39,0.08));border:2px solid var(--goldb);border-radius:10px;padding:12px 18px;text-align:center;width:100%;max-width:320px">
+      <div style="font-size:22px;margin-bottom:4px">⬆️ 同伴提升！Companion Level Up!</div>
+      <div id="v-levelup-text" style="font-family:'Ma Shan Zheng',cursive;font-size:20px;color:var(--goldb)"></div>
+      <div id="v-levelup-perk" style="font-size:12px;color:var(--parch2);margin-top:4px"></div>
+    </div>
+    <!-- New hero found banner (hidden by default) -->
+    <div id="v-hero-found" style="display:none;background:linear-gradient(135deg,rgba(201,162,39,0.2),rgba(201,162,39,0.05));border:2px solid var(--goldb);border-radius:10px;padding:14px 18px;text-align:center;width:100%;max-width:320px">
+      <div style="font-size:22px;margin-bottom:6px">🎉 新护法结缘！ New Companion!</div>
+      <svg id="v-hero-svg" width="96" height="120" viewBox="0 0 64 80" style="display:block;margin:0 auto 6px"></svg>
+      <div id="v-hero-name" style="font-family:'Ma Shan Zheng',cursive;font-size:22px;color:var(--goldb)"></div>
+      <div id="v-hero-en" style="font-size:13px;color:var(--parch2);margin-top:2px"></div>
+    </div>
+    <div class="res-stats">
+      <div class="stat-row"><span>完成路站 Stage</span><span class="stat-val" id="v-prov">—</span></div>
+      <div class="stat-row"><span>练习汉字 Characters</span><span class="stat-val" id="v-chars">0</span></div>
+      <div class="stat-row"><span>答对 Correct</span><span class="stat-val" id="v-corr">0/0</span></div>
+      <div class="stat-row"><span>最长连击 Best Streak</span><span class="stat-val" id="v-streak">0</span></div>
+      <div class="stat-row"><span>得分 Score</span><span class="stat-val" id="v-score">0</span></div>
+      <div class="stat-row"><span>修行功德 Merit XP</span><span class="stat-val" id="v-xp">+0</span></div>
+    </div>
+    <!-- Milestone story unlocked banner -->
+    <div id="v-story-unlocked" style="display:none;background:linear-gradient(135deg,rgba(100,60,10,.4),rgba(60,30,5,.3));border:2px solid rgba(201,162,39,.6);border-radius:10px;padding:10px 16px;text-align:center;width:100%;max-width:320px">
+      <div style="font-size:20px;margin-bottom:4px">📜 新故事解锁！ New Story Unlocked!</div>
+      <div id="v-story-unlocked-title" style="font-family:'Ma Shan Zheng',cursive;font-size:17px;color:var(--goldb)"></div>
+    </div>
+    <button class="btn-p" onclick="returnToMap()" style="width:100%;max-width:320px;margin-top:4px;margin-bottom:16px;flex-shrink:0">🗺️ 返回路线图 Return to Route</button>
+  </div>
+</div>
+
+<!-- == DEFEAT == -->
+<div id="scr-defeat" class="screen">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;padding:22px;padding-top:56px;background:radial-gradient(ellipse at center,#1a0000,#0a0000 70%)">
+    <div class="res-icon">💀</div>
+    <div class="res-title">一难未过…</div>
+    <div style="font-size:14px;color:var(--parch2);text-align:center;max-width:280px">歇一歇，再踏西行路。 Rest, study, and try the next trial again.</div>
+    <div class="res-stats">
+      <div class="stat-row"><span>关卡 Waves</span><span class="stat-val" id="d-waves">0</span></div>
+      <div class="stat-row"><span>Score</span><span class="stat-val" id="d-score">0</span></div>
+    </div>
+    <button class="btn-p" id="defeat-rematch-btn" onclick="rematchBattle()">⚔️ 再战 / Rematch</button>
+    <button class="btn-p" onclick="returnToMap()">🗺️ 返回路线图 / Return to Route</button>
+  </div>
+</div>
+
+<!-- == PROVINCE STORY CARD (Option A) == -->
+<div id="scr-story" class="screen">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:0;background:radial-gradient(ellipse at center,#1a1200,#0d0800 70%);position:relative;overflow:hidden">
+    <!-- Parchment card -->
+    <div style="width:min(420px,94vw);background:linear-gradient(160deg,rgba(60,40,8,0.96),rgba(30,18,4,0.98));border:2px solid rgba(201,162,39,.6);border-radius:14px;padding:22px 20px;box-shadow:0 8px 40px rgba(0,0,0,.7);display:flex;flex-direction:column;gap:14px;max-height:88vh;overflow-y:auto">
+      <!-- Header: character name as main title -->
+      <div style="text-align:center;border-bottom:1px solid rgba(201,162,39,.3);padding-bottom:10px">
+        <div style="font-size:11px;color:rgba(201,162,39,.6);letter-spacing:.2em;text-transform:uppercase;margin-bottom:4px">西游一难 Journey Episode</div>
+        <div id="story-general-name" style="font-family:'Ma Shan Zheng',cursive;font-size:clamp(22px,6vw,32px);color:var(--goldb);letter-spacing:.12em"></div>
+        <div id="story-general-en" style="font-size:13px;color:var(--parch2);margin-top:2px"></div>
+      </div>
+      <!-- Character portrait — larger, centred -->
+      <div style="display:flex;justify-content:center">
+        <svg id="story-general-svg" width="128" height="159" viewBox="0 0 64 80" style="filter:drop-shadow(0 4px 16px rgba(201,162,39,.4))"></svg>
+      </div>
+      <!-- Story text Chinese -->
+      <div id="story-text-zh" style="font-family:'Noto Serif SC',serif;font-size:clamp(15px,4vw,18px);color:var(--parch);line-height:1.8;letter-spacing:.04em"></div>
+      <!-- Story text English -->
+      <div id="story-text-en" style="font-size:clamp(12px,3.2vw,14px);color:var(--parch2);line-height:1.7;border-top:1px solid rgba(201,162,39,.2);padding-top:10px"></div>
+      <!-- Controls -->
+      <div style="display:flex;gap:10px;align-items:center;margin-top:4px">
+        <button onclick="storySpeak()" class="btn-s" style="font-size:14px;padding:9px 16px;flex-shrink:0">🔊 朗读</button>
+        <button onclick="storyContinue()" id="story-continue-btn" class="btn-p" style="flex:1;font-size:clamp(14px,4vw,17px);padding:10px 0">
+          继续 Continue
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- == HERO BIO CARD == -->
+<div id="scr-hero-bio" class="screen" style="z-index:110">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:0;background:radial-gradient(ellipse at center,#1a1200,#0d0800 70%);position:relative;overflow:hidden">
+    <div style="width:min(420px,94vw);background:linear-gradient(160deg,rgba(60,40,8,0.96),rgba(30,18,4,0.98));border:2px solid rgba(201,162,39,.6);border-radius:14px;padding:22px 20px;box-shadow:0 8px 40px rgba(0,0,0,.7);display:flex;flex-direction:column;gap:14px;max-height:88vh;overflow-y:auto">
+      <!-- Header -->
+      <div style="text-align:center;border-bottom:1px solid rgba(201,162,39,.3);padding-bottom:10px">
+        <div style="font-size:11px;color:rgba(201,162,39,.6);letter-spacing:.2em;text-transform:uppercase;margin-bottom:4px">取经同伴 Pilgrim Companion</div>
+        <div id="hero-bio-name" style="font-family:'Ma Shan Zheng',cursive;font-size:clamp(22px,6vw,32px);color:var(--goldb);letter-spacing:.12em"></div>
+        <div id="hero-bio-name-en" style="font-size:13px;color:var(--parch2);margin-top:2px"></div>
+      </div>
+      <!-- Hero portrait — larger, centred -->
+      <div style="display:flex;justify-content:center">
+        <svg id="hero-bio-svg" width="128" height="159" viewBox="0 0 64 80" style="filter:drop-shadow(0 4px 16px rgba(201,162,39,.4))"></svg>
+      </div>
+      <div style="text-align:center">
+        <div id="hero-bio-weapon" style="font-size:12px;color:rgba(201,162,39,.7);margin-bottom:4px;letter-spacing:.05em"></div>
+        <div id="hero-bio-lv" style="font-size:11px;color:var(--parch2)"></div>
+      </div>
+      <!-- Bio text Chinese -->
+      <div id="hero-bio-zh" style="font-family:'Noto Serif SC',serif;font-size:clamp(14px,3.8vw,17px);color:var(--parch);line-height:1.9;letter-spacing:.04em"></div>
+      <!-- Bio text English -->
+      <div id="hero-bio-en" style="font-size:clamp(12px,3.2vw,14px);color:var(--parch2);line-height:1.7;border-top:1px solid rgba(201,162,39,.2);padding-top:10px"></div>
+      <!-- Controls -->
+      <div style="display:flex;gap:10px;align-items:center;margin-top:4px">
+        <button onclick="heroBioSpeak()" class="btn-s" style="font-size:14px;padding:9px 16px;flex-shrink:0">🔊 朗读</button>
+        <button onclick="closeHeroBio()" class="btn-p" style="flex:1;font-size:clamp(14px,4vw,17px);padding:10px 0">← 返回 Back</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- == STORIES LIBRARY (Option C) == -->
+<div id="scr-stories" class="screen">
+  <div style="flex:1;display:flex;flex-direction:column;background:radial-gradient(ellipse at center,#1a1200,#0d0800 70%);overflow:hidden">
+    <!-- Top bar -->
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(201,162,39,.3);flex-shrink:0">
+      <button onclick="goHome()" style="background:none;border:2px solid rgba(201,162,39,.5);border-radius:50%;width:40px;height:40px;font-size:20px;color:var(--goldb);cursor:pointer;display:flex;align-items:center;justify-content:center">←</button>
+      <div style="font-family:'Ma Shan Zheng',cursive;font-size:clamp(18px,4.5vw,26px);color:var(--goldb);flex:1">📜 三国故事 Three Kingdoms Stories</div>
+    </div>
+    <!-- Chapters list -->
+    <div id="stories-list" style="flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:12px"></div>
+  </div>
+</div>
+
+<!-- == STORY CHAPTER READER == -->
+<div id="scr-story-chapter" class="screen">
+  <div style="flex:1;display:flex;flex-direction:column;background:radial-gradient(ellipse at center,#1a1200,#0d0800 70%);overflow:hidden">
+    <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(201,162,39,.3);flex-shrink:0">
+      <button onclick="closeChapter()" style="background:none;border:2px solid rgba(201,162,39,.5);border-radius:50%;width:40px;height:40px;font-size:20px;color:var(--goldb);cursor:pointer;display:flex;align-items:center;justify-content:center">←</button>
+      <div id="chapter-title-bar" style="font-family:'Ma Shan Zheng',cursive;font-size:clamp(16px,4vw,22px);color:var(--goldb);flex:1"></div>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:16px 14px">
+      <div id="chapter-illus" style="width:100%;margin-bottom:16px;border-radius:10px;overflow:hidden;border:1px solid rgba(201,162,39,.35);background:#0a0600;line-height:0;display:flex;justify-content:center"></div>
+      <div id="chapter-zh" style="font-family:'Noto Serif SC',serif;font-size:clamp(15px,4vw,18px);color:var(--parch);line-height:1.9;letter-spacing:.04em;margin-bottom:14px"></div>
+      <div id="chapter-en" style="font-size:clamp(12px,3.2vw,14px);color:var(--parch2);line-height:1.7;border-top:1px solid rgba(201,162,39,.2);padding-top:12px"></div>
+      <div style="display:flex;gap:10px;margin-top:16px;padding-bottom:20px">
+        <button onclick="chapterSpeak()" class="btn-s" style="font-size:14px;padding:9px 16px">🔊 朗读</button>
+        <button onclick="closeChapter()" class="btn-p" style="flex:1;font-size:14px;padding:10px 0">← 故事列表 Back</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- == STUDY == -->
+<div id="scr-study" class="screen">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:stretch;gap:10px;padding:8px 10px;padding-top:8px;overflow-y:auto;background:radial-gradient(ellipse at center,#0a1020,#060810 70%);box-sizing:border-box;width:100%">
+    <!-- Top row: back arrow + title -->
+    <div style="display:flex;align-items:center;gap:10px;padding-top:8px;flex-shrink:0">
+      <button onclick="goHome()" style="background:none;border:2px solid rgba(201,162,39,.5);border-radius:50%;width:44px;height:44px;font-size:22px;color:var(--goldb);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;line-height:1" title="返回">←</button>
+      <div class="study-title" style="flex:1;text-align:left;font-size:clamp(18px,4.5vw,26px)">📚 字库学习</div>
+    </div>
+    <!-- Filter buttons — responsive grid -->
+    <div id="study-filter-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;flex-shrink:0">
+      <button class="btn-s" onclick="filterStudy('all')" style="font-size:clamp(14px,3.8vw,18px);padding:10px 6px;width:100%">全部 All</button>
+      <button class="btn-s" onclick="filterStudy('struggling')" style="font-size:clamp(14px,3.8vw,18px);padding:10px 6px;width:100%">需练习 Needs Work</button>
+      <!-- Player-specific filter buttons appended by updateStudyBtnLabels() -->
+    </div>
+    <div class="char-grid" id="char-grid" style="width:100%"></div>
+    <button class="btn-s" onclick="goHome()" style="margin:4px 0 16px;flex-shrink:0">🏠 主页 Home</button>
+  </div>
+</div>
+
+<!-- == CHAR MODAL == -->
+<div class="modal-ov" id="char-modal">
+  <div class="modal-box">
+    <div class="modal-title">字卡 Card</div>
+    <span class="modal-char" id="modal-char" onclick="speakModal()">字</span>
+    <div class="modal-py" id="modal-py">zì</div>
+    <div class="modal-en" id="modal-en">character</div>
+    <div class="modal-seen" id="modal-seen">Not yet practiced</div>
+    <div style="margin-top:14px;display:flex;gap:8px;justify-content:center">
+      <button class="btn-p" onclick="speakModal()" style="font-size:15px;padding:9px 20px">🔊</button>
+      <button class="btn-s" onclick="closeModal()" style="font-size:15px;padding:9px 20px">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- == SAVE / LOAD / RESET MODAL == -->
+<div class="modal-ov" id="save-modal" style="align-items:flex-start;padding:10px 0;overflow-y:auto">
+  <div class="modal-box" style="width:min(420px,94vw);text-align:left;margin:auto;max-height:none">
+    <div class="modal-title" style="text-align:center">⚙️ 设置 Settings</div>
+
+    <!-- DIFFICULTY SETTINGS — rendered dynamically per player -->
+    <div style="margin-bottom:18px;border:1px solid rgba(201,162,39,.25);border-radius:8px;padding:14px">
+      <div style="font-family:'Ma Shan Zheng',cursive;font-size:17px;color:var(--goldb);margin-bottom:10px">🎓 难度设置 Difficulty Level</div>
+      <div style="font-size:13px;color:var(--parch2);margin-bottom:12px;line-height:1.5">Choose the character difficulty for each player. Higher levels include more advanced vocabulary.</div>
+      <div id="settings-difficulty-rows"></div>
+      <div id="diff-saved-msg" style="font-size:12px;color:var(--jadeb);margin-top:8px;min-height:16px"></div>
+    </div>
+
+    <!-- ☁️ CLOUD SYNC — per-player buttons rendered dynamically -->
+    <div style="margin-bottom:18px;border:1px solid rgba(100,160,255,.3);border-radius:8px;padding:14px;background:rgba(0,10,30,.4)">
+      <div style="font-family:'Ma Shan Zheng',cursive;font-size:17px;color:#88aaff;margin-bottom:8px">☁️ 云端同步 Cloud Sync</div>
+      <div style="font-size:12px;color:var(--parch2);margin-bottom:10px;line-height:1.5">Sync saves across devices. Enter your private Family Key (any word you choose — keep it secret).</div>
+      <div style="margin-bottom:10px">
+        <label style="display:block;font-size:12px;color:var(--parch2);margin-bottom:4px">Family Key (private sync password)</label>
+        <input id="fb-key-input" type="text" placeholder="e.g. chan2025"
+          style="width:100%;background:rgba(0,0,0,.6);border:1px solid rgba(100,160,255,.4);border-radius:6px;color:var(--parch);font-size:12px;padding:7px 9px;box-sizing:border-box;font-family:monospace"/>
+      </div>
+      <button onclick="saveFirebaseConfig()" class="btn-s" style="width:100%;font-size:13px;padding:8px 0;margin-bottom:12px;border-color:rgba(100,160,255,.6);color:#aaccff">💾 Save Config</button>
+      <div id="fb-config-msg" style="font-size:12px;min-height:14px;margin-bottom:10px;color:var(--jadeb)"></div>
+      <!-- Per-player cloud buttons rendered dynamically -->
+      <div id="settings-cloud-rows"></div>
+    </div>
+
+    <!-- PER-USER SAVE/LOAD/RESET — combined with dropdown -->
+    <div style="margin-bottom:18px;border:1px solid rgba(201,162,39,.25);border-radius:8px;padding:14px">
+      <div style="font-family:'Ma Shan Zheng',cursive;font-size:17px;color:var(--goldb);margin-bottom:10px">💾 存档管理 Save Management</div>
+      <div style="margin-bottom:12px">
+        <label style="display:block;font-size:12px;color:var(--parch2);margin-bottom:5px">选择玩家 Choose player</label>
+        <select id="save-player-select" onchange="onSavePlayerChange()" style="width:100%;background:rgba(0,0,0,.7);border:1px solid rgba(201,162,39,.5);border-radius:6px;color:var(--parch);font-size:15px;padding:9px 12px;font-family:'Noto Serif SC',serif">
+          <!-- Options populated dynamically by openSaveModal() -->
+        </select>
+      </div>
+
+      <div style="font-size:13px;color:var(--parch2);margin-bottom:6px" id="save-export-label">📤 Share save code:</div>
+      <button onclick="doExportUser(document.getElementById('save-player-select').value,'share')" class="btn-s" style="width:100%;font-size:14px;padding:9px 0;margin-bottom:10px">📤 Share / Copy</button>
+
+      <div style="font-size:13px;color:var(--parch2);margin-bottom:6px" id="save-import-label">📥 Import save code:</div>
+      <textarea id="import-box-active" style="width:100%;height:70px;background:rgba(0,0,0,.6);border:1px solid rgba(201,162,39,.4);border-radius:6px;color:var(--parch);font-size:12px;padding:8px;resize:none;font-family:monospace;line-height:1.4;box-sizing:border-box" placeholder="Paste save code here…"></textarea>
+      <div id="import-msg-active" style="font-size:12px;min-height:16px;margin:4px 0;color:var(--jadeb)"></div>
+      <button onclick="doImportActive()" class="btn-s" style="width:100%;font-size:14px;padding:8px 0;margin-bottom:12px">📥 Import</button>
+
+      <div style="font-size:13px;color:rgba(200,80,80,.8);margin-bottom:6px" id="save-reset-label">🗺️ Reset territories (type <strong style="color:var(--goldb)">reset</strong> to confirm):</div>
+      <input id="reset-input-active" type="text" placeholder="Type 'reset' to confirm" style="width:100%;background:rgba(0,0,0,.6);border:1px solid rgba(200,50,50,.5);border-radius:6px;color:var(--parch);font-size:13px;padding:8px 10px;margin-bottom:6px;box-sizing:border-box"/>
+      <div id="reset-msg-active" style="font-size:12px;min-height:14px;margin-bottom:6px;color:var(--redb)"></div>
+      <button onclick="doResetActive()" style="width:100%;background:linear-gradient(135deg,#5a1a1a,#8a2a2a);border:2px solid var(--redb);color:#ffaaaa;font-family:'Ma Shan Zheng',cursive;font-size:15px;padding:9px 0;border-radius:6px;cursor:pointer;margin-bottom:14px" id="save-reset-btn">🗺️ Reset Territories</button>
+
+      <div style="font-size:13px;color:rgba(220,60,60,.9);margin-bottom:6px" id="save-reset-all-label">💥 Reset all (type password to confirm):</div>
+      <input id="reset-all-input-active" type="password" placeholder="Enter password to reset everything" style="width:100%;background:rgba(0,0,0,.6);border:1px solid rgba(220,40,40,.6);border-radius:6px;color:var(--parch);font-size:13px;padding:8px 10px;margin-bottom:6px;box-sizing:border-box"/>
+      <div id="reset-all-msg-active" style="font-size:12px;min-height:14px;margin-bottom:6px;color:var(--redb)"></div>
+      <button onclick="doResetAllActive()" style="width:100%;background:linear-gradient(135deg,#6a0a0a,#aa1010);border:2px solid #dd2020;color:#ffcccc;font-family:'Ma Shan Zheng',cursive;font-size:15px;padding:9px 0;border-radius:6px;cursor:pointer" id="save-reset-all-btn">💥 Reset All</button>
+    </div>
+
+    <button onclick="closeSaveModal()" class="btn-s" style="width:100%;font-size:15px;padding:10px 0">✕ 关闭 Close</button>
+  </div>
+</div>
+
+<!-- == HERO SELECT MODAL == -->
+<div class="modal-ov" id="hero-select-modal">
+  <div class="modal-box" style="width:min(420px,94vw);text-align:center">
+    <div class="modal-title" id="hsm-title">选择同伴 Choose Companion</div>
+    <div style="font-size:13px;color:var(--parch2);margin-bottom:14px" id="hsm-subtitle">Choose your starting companion</div>
+    <div id="hsm-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px"></div>
+    <button class="btn-s" onclick="document.getElementById('hero-select-modal').classList.remove('active')" style="width:100%;padding:10px 0">← 返回 Back</button>
+  </div>
+</div>
+
+<!-- == REMOVE PLAYER CONFIRM MODAL == -->
+<div class="modal-ov" id="remove-player-modal">
+  <div class="modal-box" style="width:min(340px,88vw);text-align:center">
+    <div style="font-size:40px;margin-bottom:8px">🗑️</div>
+    <div class="modal-title" style="font-size:20px">移除玩家 Remove Player?</div>
+    <div id="remove-player-label" style="font-size:15px;color:var(--parch2);margin-bottom:6px;line-height:1.5"></div>
+    <div style="font-size:12px;color:rgba(201,162,39,.6);margin-bottom:20px">Their progress will remain in Settings and can be restored via cloud sync.</div>
+    <div style="display:flex;gap:10px">
+      <button class="btn-s" onclick="closeRemovePlayerModal()" style="flex:1;padding:11px 0">← Cancel</button>
+      <button class="btn-p" onclick="confirmRemovePlayer()"
+        style="flex:1;padding:11px 0;background:linear-gradient(135deg,#5a1a1a,#8a2a2a);border-color:var(--redb);color:#ffaaaa">
+        🗑️ Remove
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- == COMBO BANNER == -->
+<div class="combo-banner" id="combo-banner"></div>
+
+<script src="game-data.js"></script>
+<script src="characters.js"></script>
+<script src="battle-ui.js"></script>
+<script src="coop.js"></script>
+
+<script>let musicMuted = false;
+let currentMusicMode = null;
+let currentAudio = null;  // active HTMLAudioElement
+
+function stopMusic() {
+  if (currentAudio) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio = null;
+  }
+  currentMusicMode = null;
+}
+
+function playTrack(trackName, loop) {
+  if (musicMuted) return;
+  if (currentMusicMode === trackName) return;
+  stopMusic();
+  currentMusicMode = trackName;
+  const src = MP3_TRACKS[trackName];
+  if (!src) return;
+  const audio = new Audio(src);
+  audio.loop = !!loop;
+  audio.volume = 0.25;
+  audio.play().catch(() => {}); // swallow autoplay policy errors
+  currentAudio = audio;
+}
+
+function playTitleMusic()   { playTrack('mainscreen', true); }
+function playMapMusic()     { playTrack('map', true); }
+function playBattleMusic()  {
+  const ctype = (typeof G !== 'undefined' && G.provConquestType) || 'battle';
+  const track = ctype === 'feast' ? 'feast' : ctype === 'build' ? 'activity' : 'battle';
+  playTrack(track, true);
+}
+function playVictoryMusic() { playTrack('victory', false); }
+
+// Dummy getAudio() kept so existing code referencing it doesn't break
+function getAudio() { return null; }
+
+function toggleMute() {
+  musicMuted = !musicMuted;
+  const btn = document.getElementById('mute-btn');
+  btn.innerHTML = musicMuted
+    ? '<span style="position:relative;display:inline-flex;align-items:center;justify-content:center">♪<svg style="position:absolute;width:22px;height:22px" viewBox="0 0 24 24"><line x1="3" y1="3" x2="21" y2="21" stroke="#ff4444" stroke-width="3" stroke-linecap="round"/><line x1="21" y1="3" x2="3" y2="21" stroke="#ff4444" stroke-width="3" stroke-linecap="round"/></svg></span>'
+    : '♪';
+  btn.classList.toggle('muted', musicMuted);
+  if (musicMuted) {
+    stopMusic();
+  } else {
+    const scr = document.querySelector('.screen.active');
+    if (scr) {
+      if      (scr.id === 'scr-map')     playMapMusic();
+      else if (scr.id === 'scr-battle')  playBattleMusic();
+      else if (scr.id === 'scr-victory') playVictoryMusic();
+      else                                playTitleMusic();
+    }
+  }
+}
+// Pause music when app goes to background, resume when it returns
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    if (currentAudio) currentAudio.pause();
+  } else {
+    if (currentAudio && !musicMuted) currentAudio.play().catch(() => {});
+  }
+});
+const HERO_SPRITES = {
+  liubei: (svg, scale=1) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/liubei.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+
+  guanyu: (svg, scale=1) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/guanyu.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+
+  zhangfei: (svg, scale=1) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/zhangfei.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+
+  zhaoyun: (svg, scale=1) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/zhaoyun.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+
+  huangzhong: (svg, scale=1) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/huangzhong.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+
+  machao: (svg, scale=1) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/machao.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+
+  zhugeliang: (svg, scale=1) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/zhugeliang.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+
+  jiangwei: (svg, scale=1) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/jiangwei.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+
+  weiyan: (svg, scale=1) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/weiyan.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+};
+const ENEMY_SPRITES = {
+  soldier: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    const _srcs = [
+      "sprites/soldier1.webp",
+      "sprites/soldier2.webp",
+      "sprites/soldier3.webp",
+      "sprites/soldier4.webp",
+      "sprites/soldier5.webp",
+    ];
+    const _src = _srcs[Math.floor(Math.random() * _srcs.length)];
+    svg.innerHTML = `<image href="${_src}" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+
+  general: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/general.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  caimao: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/caimao.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  caocao: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/caocao.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  caohong: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/caohong.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  caoren: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/caoren.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  diaochan: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/diaochan.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  dongzhuo: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/dongzhuo.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  ganning: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/ganning.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  gongsundu: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/gongsundu.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  gongsunzan: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/gongsunzan.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  huanggai: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/huanggai.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  huatuo: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/huatuo.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  jiaxu: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/jiaxu.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  kingmulu: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/kingmulu.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  kingofloulan: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/kingofloulan.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  liubiao: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/liubiao.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  liuyan: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/liuyan.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  liuzhang: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/liuzhang.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  lubu: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/lubu.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  lusu: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/lusu.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  luxun: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/luxun.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  madai: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/madai.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  menghuo: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/menghuo.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  ouxing: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/ouxing.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  pangtong: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/pangtong.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  shamoke: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/shamoke.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  simayi: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/simayi.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  sunquan: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/sunquan.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  taishici: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/taishici.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  trungtrac: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/trungtrac.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  wangping: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/wangping.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  wangyun: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/wangyun.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  wenchou: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/wenchou.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  wuhuanchieftain: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/wuhuanchieftain.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  xiahoudun: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/xiahoudun.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  xiahouyuan: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/xiahouyuan.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  xuchu: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/xuchu.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  yanbaihu: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/yanbaihu.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  yanliang: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/yanliang.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  yongkai: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/yongkai.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  yuanshao: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/yuanshao.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  yuantan: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/yuantan.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  zhanghe: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/zhanghe.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  zhangjiao: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/zhangjiao.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  zhangliao: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/zhangliao.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  zhanglu: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/zhanglu.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  zhouyu: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/zhouyu.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  zhugejin: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/zhugejin.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  },
+  zhurong: (svg) => {
+    svg.setAttribute('viewBox','0 0 64 80');
+    svg.innerHTML = `<image href="sprites/zhurong.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
+  }
+};
+
+function drawHeroInSvg(svgEl, heroKey) {
+  if (HERO_SPRITES[heroKey]) HERO_SPRITES[heroKey](svgEl);
+  else if (ENEMY_SPRITES[heroKey]) ENEMY_SPRITES[heroKey](svgEl);
+  else ENEMY_SPRITES.general(svgEl);
+}
+
+
+function charToNumericLevel(c){return c.lvl||5;}
+function getCharPool(level){return CHARACTER_DB.filter(c=>charToNumericLevel(c)<=level);}
+
+/* ===========================================================
+   PLAYER SYSTEM
+=========================================================== */
+// Player difficulty settings (keyed by player ID e.g. 'p0', 'p1', …)
+let playerDifficulty = {};
+
+// Player registry — up to 4 players, stored in localStorage as 'skz_players'
+const PLAYER_EMOJIS = ['🦁','🐯','🐉','🦅'];
+let PLAYERS = []; // [{id:'p0', name:'…'}, …]
+
+function loadPlayers() {
+  try {
+    const p = JSON.parse(localStorage.getItem('skz_players') || 'null');
+    if (Array.isArray(p) && p.length) { PLAYERS = p; return; }
+  } catch(e) {}
+  PLAYERS = [];
+}
+function savePlayers() {
+  try { localStorage.setItem('skz_players', JSON.stringify(PLAYERS)); } catch(e) {}
+}
+function getPlayerById(id) { return PLAYERS.find(p => p.id === id) || null; }
+function getPlayerEmoji(id) {
+  if (id === 'coop') return '🤝';
+  const idx = PLAYERS.findIndex(p => p.id === id);
+  return PLAYER_EMOJIS[idx >= 0 ? idx : 0];
+}
+function getPlayerName(id) {
+  if (id === 'coop') return '🤝 Co-op';
+  const p = getPlayerById(id);
+  return p ? (getPlayerEmoji(id) + ' ' + p.name) : id;
+}
+function nextPlayerId() {
+  const used = new Set(PLAYERS.map(p => p.id));
+  for (let i = 0; i < 4; i++) { if (!used.has('p' + i)) return 'p' + i; }
+  return null;
+}
+
+/* -- Add / Remove Player -- */
+function openAddPlayerModal() {
+  const inp = document.getElementById('new-player-name');
+  const diff = document.getElementById('new-player-diff');
+  const msg = document.getElementById('add-player-msg');
+  if (inp) inp.value = '';
+  if (diff) diff.value = '3';
+  if (msg) msg.textContent = '';
+  document.getElementById('add-player-modal').classList.add('active');
+  setTimeout(() => { if (inp) inp.focus(); }, 200);
+}
+function closeAddPlayerModal() {
+  document.getElementById('add-player-modal').classList.remove('active');
+}
+function confirmAddPlayer() {
+  const name = (document.getElementById('new-player-name').value || '').trim();
+  const diff = parseInt(document.getElementById('new-player-diff').value) || 3;
+  const msg = document.getElementById('add-player-msg');
+  if (!name) { msg.textContent = 'Please enter a name.'; return; }
+  if (PLAYERS.length >= 4) { msg.textContent = 'Maximum 4 players reached.'; return; }
+  const id = nextPlayerId();
+  if (!id) { msg.textContent = 'Maximum 4 players reached.'; return; }
+  PLAYERS.push({id, name});
+  savePlayers();
+  playerDifficulty[id] = diff;
+  saveDifficulty();
+  playerRosters[id] = {roster:[], startHero:null};
+  saveRosters();
+  closeAddPlayerModal();
+  renderProfileScreen();
+}
+
+let _removePlayerId = null;
+function removePlayer(id) {
+  const player = getPlayerById(id);
+  if (!player) return;
+  _removePlayerId = id;
+  const idx = PLAYERS.findIndex(p => p.id === id);
+  const emoji = PLAYER_EMOJIS[idx >= 0 ? idx : 0];
+  const lbl = document.getElementById('remove-player-label');
+  if (lbl) lbl.textContent = `Remove ${emoji} ${player.name} from this device?`;
+  document.getElementById('remove-player-modal').classList.add('active');
+}
+function closeRemovePlayerModal() {
+  _removePlayerId = null;
+  document.getElementById('remove-player-modal').classList.remove('active');
+}
+function confirmRemovePlayer() {
+  if (!_removePlayerId) return;
+  PLAYERS = PLAYERS.filter(p => p.id !== _removePlayerId);
+  savePlayers();
+  closeRemovePlayerModal();
+  renderProfileScreen();
+}
+/* ===========================================================
+   PILGRIMAGE ROUTE + ADJACENCY
+=========================================================== */
+function routePoly(x, y, w = 18, h = 12) {
+  const halfW = Math.round(w / 2);
+  return `${x-w},${y} ${x-halfW},${y-h} ${x+halfW},${y-h} ${x+w},${y} ${x+halfW},${y+h} ${x-halfW},${y+h}`;
+}
+
+const PROVINCES = [
+  {id:0,  hz:'长安',   en:'Chang\'an',               modernHz:'大唐起点',   x:428,y:144, terrain:'plains',   allegiance:'Neutral', poly:routePoly(428,144), adj:[1]},
+  {id:1,  hz:'两界山', en:'Two Worlds Mountain',   modernHz:'凡圣交界',   x:394,y:126, terrain:'mountain', allegiance:'Neutral', poly:routePoly(394,126), adj:[0,2]},
+  {id:2,  hz:'五行山', en:'Five Elements Mountain',modernHz:'佛帖镇猴',   x:360,y:118, terrain:'mountain', allegiance:'Neutral', poly:routePoly(360,118), adj:[1,3]},
+  {id:3,  hz:'鹰愁涧', en:'Eagle Grief Ravine',    modernHz:'白龙归位',   x:326,y:144, terrain:'river',    allegiance:'Neutral', poly:routePoly(326,144), adj:[2,4]},
+  {id:4,  hz:'高老庄', en:'Gao Village',           modernHz:'八戒入伙',   x:304,y:186, terrain:'plains',   allegiance:'Neutral', poly:routePoly(304,186), adj:[3,5]},
+  {id:5,  hz:'黄风岭', en:'Yellow Wind Ridge',     modernHz:'妖风蔽日',   x:268,y:174, terrain:'steppe',   allegiance:'Neutral', poly:routePoly(268,174), adj:[4,6]},
+  {id:6,  hz:'流沙河', en:'Flowing Sands River',   modernHz:'悟净归队',   x:236,y:210, terrain:'river',    allegiance:'Neutral', poly:routePoly(236,210), adj:[5,7]},
+  {id:7,  hz:'万寿山', en:'Wanshou Mountain',      modernHz:'五庄观',     x:206,y:186, terrain:'mountain', allegiance:'Neutral', poly:routePoly(206,186), adj:[6,8]},
+  {id:8,  hz:'白虎岭', en:'White Tiger Ridge',     modernHz:'白骨三变',   x:176,y:158, terrain:'forest',   allegiance:'Neutral', poly:routePoly(176,158), adj:[7,9]},
+  {id:9,  hz:'宝象国', en:'Baoxiang Kingdom',      modernHz:'黄袍迷城',   x:152,y:196, terrain:'plains',   allegiance:'Neutral', poly:routePoly(152,196), adj:[8,10]},
+  {id:10, hz:'平顶山', en:'Flat-Top Mountain',     modernHz:'金银角洞',   x:122,y:172, terrain:'mountain', allegiance:'Neutral', poly:routePoly(122,172), adj:[9,11]},
+  {id:11, hz:'乌鸡国', en:'Crow-Cock Kingdom',     modernHz:'井底冤案',   x:98,y:208,  terrain:'plains',   allegiance:'Neutral', poly:routePoly(98,208),  adj:[10,12]},
+  {id:12, hz:'火云洞', en:'Fire Cloud Cave',       modernHz:'红孩儿关',   x:82,y:252,  terrain:'mountain', allegiance:'Neutral', poly:routePoly(82,252),  adj:[11,13]},
+  {id:13, hz:'车迟国', en:'Cart Slow Kingdom',     modernHz:'斗法试真',   x:66,y:214,  terrain:'plains',   allegiance:'Neutral', poly:routePoly(66,214),  adj:[12,14]},
+  {id:14, hz:'通天河', en:'River of Heaven',       modernHz:'冰河祭口',   x:54,y:170,  terrain:'river',    allegiance:'Neutral', poly:routePoly(54,170),  adj:[13,15]},
+  {id:15, hz:'女儿国', en:'Woman Kingdom',         modernHz:'情关难渡',   x:60,y:258,  terrain:'plains',   allegiance:'Neutral', poly:routePoly(60,258),  adj:[14,16]},
+  {id:16, hz:'解阳山', en:'Jiyang Mountain',       modernHz:'泉关病厄',   x:82,y:314,  terrain:'mountain', allegiance:'Neutral', poly:routePoly(82,314),  adj:[15,17]},
+  {id:17, hz:'盘丝洞', en:'Spider Cave',           modernHz:'丝网迷阵',   x:110,y:360, terrain:'forest',   allegiance:'Neutral', poly:routePoly(110,360), adj:[16,18]},
+  {id:18, hz:'狮驼岭', en:'Lion Camel Ridge',      modernHz:'群妖险地',   x:98,y:414,  terrain:'mountain', allegiance:'Neutral', poly:routePoly(98,414),  adj:[17,19]},
+  {id:19, hz:'比丘国', en:'Bhikshu Kingdom',       modernHz:'续命邪法',   x:138,y:458, terrain:'plains',   allegiance:'Neutral', poly:routePoly(138,458), adj:[18,20]},
+  {id:20, hz:'火焰山', en:'Flaming Mountain',      modernHz:'芭蕉借扇',   x:184,y:430, terrain:'mountain', allegiance:'Neutral', poly:routePoly(184,430), adj:[19,21]},
+  {id:21, hz:'玉华州', en:'Jade Flower Prefecture',modernHz:'少年王城',   x:142,y:510, terrain:'plains',   allegiance:'Neutral', poly:routePoly(142,510), adj:[20,22]},
+  {id:22, hz:'那烂陀', en:'Nalanda',               modernHz:'佛土近在',   x:92,y:540,  terrain:'temple',   allegiance:'Neutral', poly:routePoly(92,540),  adj:[21,23]},
+  {id:23, hz:'雷音寺', en:'Thunderclap Monastery', modernHz:'真经所在',   x:42,y:532,  terrain:'temple',   allegiance:'Neutral', poly:routePoly(42,532),  adj:[22]},
+]
+// Province territory state: 'neutral'|'player'|'enemy'
+let provState = {};
+// Which province the player is currently "standing in"
+let playerProvId = 0; // Chang'an start
+
+function initProvState() {
+  PROVINCES.forEach(p => { provState[p.id] = 'neutral'; });
+  provState[0] = 'owned';
+}
+
+/* ===========================================================
+   CAMPAIGN SAVE / LOAD
+=========================================================== */
+function saveCampaign(mode) {
+  try {
+    const key = 'skz_campaign_' + mode;
+    const existing = loadCampaign(mode) || {};
+    localStorage.setItem(key, JSON.stringify({
+      provState, playerProvId, defeatedGenerals:[...defeatedGenerals],
+      chars: G.seenChars || loadProgress(),
+      totalScore: (existing.totalScore||0) + (G.score||0),
+      globalBestStreak: Math.max(existing.globalBestStreak||0, G.bestStreak||0),
+      ts: Date.now()
+    }));
+  } catch(e){}
+}
+
+function loadCampaign(mode) {
+  try {
+    const key = 'skz_campaign_' + mode;
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch(e){ return null; }
+}
+
+function clearCampaign(mode) {
+  try { localStorage.removeItem('skz_campaign_' + mode); } catch(e){}
+}
+
+/* ===========================================================
+   PROVINCES + ADJACENCY MAP
+=========================================================== */
+const FORT_RADIUS = 9;
+
+const TERRAIN_FILLS = {
+  plains:  'rgba(58,82,18,0.70)',
+  mountain:'rgba(75,58,28,0.75)',
+  forest:  'rgba(28,72,28,0.72)',
+  steppe:  'rgba(100,78,25,0.65)',
+  coast:   'rgba(28,68,72,0.68)',
+  river:   'rgba(32,72,52,0.68)',
+  temple:  'rgba(92,66,18,0.72)',
+};
+const TERRAIN_STROKES = {
+  plains:  'rgba(120,160,50,0.42)',
+  mountain:'rgba(150,115,55,0.48)',
+  forest:  'rgba(60,145,60,0.45)',
+  steppe:  'rgba(175,140,55,0.45)',
+  coast:   'rgba(65,155,165,0.50)',
+  river:   'rgba(70,155,120,0.50)',
+  temple:  'rgba(210,170,80,0.55)',
+};
+
+function renderProvinces() {
+  const layer = document.getElementById('forts-layer');
+  layer.innerHTML = '';
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  const frontier = getFrontier();
+
+  PROVINCES.forEach(prov => {
+    const state   = provState[prov.id] || 'neutral';
+    const isCur   = prov.id === playerProvId;
+    const isOwned = state === 'owned' || isCur;
+    const isAdj   = frontier.has(prov.id) && !isCur;
+    const isEnemy = state === 'enemy';
+
+    // -- Polygon fill --
+    const poly = document.createElementNS(SVG_NS,'polygon');
+    poly.setAttribute('points', prov.poly);
+    poly.setAttribute('stroke-linejoin','round');
+    poly.setAttribute('data-prov', prov.id);
+
+    let fill, stroke, sw;
+    // Compute allegiance-based fill (used for neutral/adj provinces)
+    const alleg = prov.allegiance || 'Neutral';
+    let allegFill, allegHover;
+    if      (alleg==='Wei')  { allegFill='rgba(20,30,80,0.75)';  allegHover='rgba(30,45,110,0.92)'; }
+    else if (alleg==='Wu')   { allegFill='rgba(90,12,12,0.76)';  allegHover='rgba(115,15,15,0.88)'; }
+    else if (alleg==='Yuan') { allegFill='rgba(60,15,75,0.72)';  allegHover='rgba(85,20,105,0.90)'; }
+    else if (alleg==='Dong') { allegFill='rgba(45,45,45,0.72)';  allegHover='rgba(65,65,65,0.88)';  }
+    else                     { allegFill='rgba(52,36,8,0.68)';   allegHover='rgba(78,55,12,0.88)';  }
+
+    // For adj provinces: use allegiance fill but no gold stroke here (gold drawn in second pass)
+    if (isCur)       { fill='rgba(8,128,52,0.92)';  stroke='rgba(30,255,130,1)';    sw=2.8; }
+    else if (isOwned){ fill='rgba(10,100,45,0.86)'; stroke='rgba(45,210,108,0.88)'; sw=2.0; }
+    else if (isAdj)  { fill=allegFill;              stroke='none';                  sw=0;   }
+    else if (isEnemy){ fill='rgba(90,12,12,0.76)';  stroke='rgba(190,40,40,0.76)';  sw=1.6; }
+    else             { fill=allegFill; stroke=
+        alleg==='Wei'?'rgba(80,110,210,0.65)':alleg==='Wu'?'rgba(190,40,40,0.76)':
+        alleg==='Yuan'?'rgba(160,60,200,0.65)':alleg==='Dong'?'rgba(140,140,140,0.60)':
+        'rgba(155,120,38,0.45)'; sw=1.2; }
+
+    const hoverFill = isCur?'rgba(10,148,60,0.96)':isOwned?'rgba(12,118,52,0.94)':
+      isEnemy?'rgba(115,15,15,0.88)':allegHover;
+    poly.setAttribute('fill', fill);
+    poly.setAttribute('stroke', stroke);
+    poly.setAttribute('stroke-width', sw);
+    poly.setAttribute('style','cursor:pointer;transition:fill 0.2s');
+    poly.addEventListener('mouseenter', ()=>poly.setAttribute('fill',hoverFill));
+    poly.addEventListener('mouseleave', ()=>poly.setAttribute('fill',fill));
+    poly.addEventListener('touchstart', (e)=>{ e.stopPropagation(); selectProvince(prov.id); }, {passive:true});
+    poly.addEventListener('click', (e)=>{ e.stopPropagation(); selectProvince(prov.id); });
+    layer.appendChild(poly);
+
+    // -- Label --
+    const lbl = document.createElementNS(SVG_NS,'text');
+    lbl.setAttribute('x', prov.x); lbl.setAttribute('y', prov.y + 5);
+    lbl.setAttribute('text-anchor','middle');
+    lbl.setAttribute('font-family',"'Ma Shan Zheng',cursive");
+    lbl.setAttribute('font-size','14');
+    lbl.setAttribute('fill', isCur?'#88ffcc':isOwned?'#70ee99':isAdj?'#f0d060':'#d4b878');
+    lbl.setAttribute('stroke','rgba(0,0,0,0.9)'); lbl.setAttribute('stroke-width','3.5');
+    lbl.setAttribute('paint-order','stroke');
+    lbl.setAttribute('pointer-events','none');
+    lbl.textContent = prov.hz;
+    layer.appendChild(lbl);
+
+    // -- Conquest type icon --
+    {
+      const ptIcon = document.createElementNS(SVG_NS,'text');
+      const pt = getProvType(prov.id);
+      ptIcon.setAttribute('x',prov.x); ptIcon.setAttribute('y',prov.y+20);
+      ptIcon.setAttribute('text-anchor','middle'); ptIcon.setAttribute('font-size','14');
+      ptIcon.setAttribute('pointer-events','none');
+      ptIcon.textContent = pt==='build'?'⚒️':pt==='feast'?'🍽️':'⚔️';
+      layer.appendChild(ptIcon);
+    }
+    // -- Star for current --
+    if (isCur) {
+      const star = document.createElementNS(SVG_NS,'text');
+      star.setAttribute('x',prov.x); star.setAttribute('y',prov.y+18);
+      star.setAttribute('text-anchor','middle'); star.setAttribute('font-size','9');
+      star.setAttribute('fill','#44ffaa'); star.setAttribute('pointer-events','none');
+      star.textContent='★';
+      layer.appendChild(star);
+    }
+  });
+
+  // -- Second pass: gold border outlines drawn ON TOP for all frontier provinces --
+  frontier.forEach(provId => {
+    const prov = PROVINCES[provId];
+    if (!prov) return;
+    const outline = document.createElementNS(SVG_NS,'polygon');
+    outline.setAttribute('points', prov.poly);
+    outline.setAttribute('fill', 'none');
+    outline.setAttribute('stroke', 'rgba(235,188,42,0.95)');
+    outline.setAttribute('stroke-width', '3.0');
+    outline.setAttribute('stroke-linejoin', 'round');
+    outline.setAttribute('pointer-events', 'none');
+    layer.appendChild(outline);
+  });
+
+  // -- Move hero token to top --
+  const svg = document.getElementById('map-svg');
+  const tok = document.getElementById('hero-token');
+  if(tok) svg.appendChild(tok);
+}
+
+function getAdjacentTo(provId) {
+  const prov = PROVINCES[provId];
+  return new Set(prov ? prov.adj : []);
+}
+
+// Returns Set of province IDs accessible (attackable or practicable) from player's territory
+function getFrontier() {
+  const frontier = new Set();
+  PROVINCES.forEach(p => {
+    const st = provState[p.id] || 'neutral';
+    if (st === 'owned' || p.id === playerProvId) {
+      // All owned provinces are themselves accessible for practice
+      if (p.id !== playerProvId) frontier.add(p.id);
+      // Unowned neighbours are attackable
+      p.adj.forEach(nid => {
+        const nst = provState[nid] || 'neutral';
+        if (nst !== 'owned' && nid !== playerProvId) frontier.add(nid);
+      });
+    }
+  });
+  return frontier;
+}
+
+function moveHeroToken(x, y) {
+  const tok = document.getElementById('hero-token');
+  if (tok) tok.setAttribute('transform', `translate(${x},${y})`);
+}
+
+function updateHeroTokenSprite() {
+  const svg = document.getElementById('hero-token-svg');
+  if (!svg) return;
+  const rosterKey = (campaignMode === 'coop' && RTCOOP.myRole) ? RTCOOP.myRole : campaignMode;
+  const roster = playerRosters[rosterKey];
+  const key = (roster && roster.startHero) || ALL_HEROES[0].key;
+  // Write sprite directly — the svg viewBox="0 0 64 80" handles all scaling
+  const tmp = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  if (HERO_SPRITES[key]) HERO_SPRITES[key](tmp);
+  else if (ENEMY_SPRITES[key]) ENEMY_SPRITES[key](tmp);
+  else ENEMY_SPRITES.general(tmp);
+  svg.innerHTML = tmp.innerHTML;
+}
+
+/* ===========================================================
+   MAP SCREEN LOGIC
+=========================================================== */
+let selectedProvId = null;
+let _mapInited = false;
+
+function initMap() {
+  renderProvinces();
+  const cur = PROVINCES[playerProvId];
+  moveHeroToken(cur.x, cur.y);
+  updateHeroTokenSprite();
+
+  if (_mapInited) return;
+  _mapInited = true;
+
+  document.getElementById('tt-battle-btn').addEventListener('click', e => {
+    e.stopPropagation(); startBattleFromMap();
+  });
+  document.getElementById('fp-close-btn').addEventListener('click', e => {
+    e.stopPropagation(); closeFortPanel();
+  });
+
+  // -- Pinch-to-zoom on map --
+  const wrap = document.getElementById('map-canvas-wrap');
+  const svg  = document.getElementById('map-svg');
+  let _vbX=0, _vbY=0, _vbW=500, _vbH=580;
+  let _pinchDist0 = null, _pinchVb0 = null, _pinchMid0 = null;
+
+  function getSVGPoint(clientX, clientY) {
+    const rect = wrap.getBoundingClientRect();
+    const scaleX = _vbW / rect.width;
+    const scaleY = _vbH / rect.height;
+    return { x: _vbX + (clientX - rect.left) * scaleX,
+             y: _vbY + (clientY - rect.top)  * scaleY };
+  }
+
+  function clampVB(x, y, w, h) {
+    const minW = 120, maxW = 500;
+    w = Math.min(maxW, Math.max(minW, w));
+    h = w * (580/500);
+    x = Math.min(Math.max(x, 0), 500 - w);
+    y = Math.min(Math.max(y, 0), 580 - h);
+    return {x, y, w, h};
+  }
+
+  function applyVB(x, y, w, h) {
+    const c = clampVB(x, y, w, h);
+    _vbX=c.x; _vbY=c.y; _vbW=c.w; _vbH=c.h;
+    svg.setAttribute('viewBox', c.x+' '+c.y+' '+c.w+' '+c.h);
+  }
+
+  wrap.addEventListener('touchstart', e => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      const t0 = e.touches[0], t1 = e.touches[1];
+      _pinchDist0 = Math.hypot(t1.clientX-t0.clientX, t1.clientY-t0.clientY);
+      _pinchVb0 = {x:_vbX, y:_vbY, w:_vbW, h:_vbH};
+      _pinchMid0 = getSVGPoint((t0.clientX+t1.clientX)/2, (t0.clientY+t1.clientY)/2);
+    }
+  }, {passive:false});
+
+  wrap.addEventListener('touchmove', e => {
+    if (e.touches.length === 2 && _pinchDist0 !== null) {
+      e.preventDefault();
+      const t0 = e.touches[0], t1 = e.touches[1];
+      const dist = Math.hypot(t1.clientX-t0.clientX, t1.clientY-t0.clientY);
+      const scale = _pinchDist0 / dist;
+      const newW = _pinchVb0.w * scale;
+      const newH = newW * (580/500);
+      // Keep the pinch midpoint fixed in SVG space
+      const newX = _pinchMid0.x - (_pinchMid0.x - _pinchVb0.x) * (newW / _pinchVb0.w);
+      const newY = _pinchMid0.y - (_pinchMid0.y - _pinchVb0.y) * (newH / _pinchVb0.h);
+      applyVB(newX, newY, newW, newH);
+    }
+  }, {passive:false});
+
+  wrap.addEventListener('touchend', e => {
+    if (e.touches.length < 2) { _pinchDist0 = null; }
+  }, {passive:true});
+}
+
+function selectProvince(provId) {
+  const prov = PROVINCES[provId];
+  if (!prov) return;
+  selectedProvId = provId;
+
+  const state = provState[provId] || 'neutral';
+  const isPlayer = provId === playerProvId;
+  const frontier = getFrontier();
+  const isAdj = frontier.has(provId);
+
+  const _mhz = prov.modernHz || '';
+  const _men = prov.en.replace(/\(.*?\)/g,'').trim();
+  const _modern = prov.en.match(/\(([^)]+)\)/);
+  const _modernLabel = _modern ? ' (' + _modern[1] + '  ' + _mhz + ')' : '';
+  document.getElementById('fp-name').textContent = prov.hz + '  ' + _men + _modernLabel;
+  // Speak only Chinese: ancient name + modern Chinese name
+  speakChinese(_mhz ? prov.hz + '，今' + _mhz : prov.hz);
+
+  let statusText = '';
+  let btnText = '';
+  if (isPlayer) {
+    statusText = '★ 当前停驻之地 Current stage';
+    btnText = '📖 在此练习 Practice here';
+  } else if (!isAdj) {
+    statusText = '🚫 前路未通 Route not open yet';
+    btnText = '🚫 尚未抵达 Locked for now';
+  } else if (state === 'owned') {
+    statusText = '✅ 此站已完成 Stage cleared';
+    btnText = '📖 Review here';
+  } else if (state === 'enemy') {
+    const et = getProvType(provId);
+    const etIcon = et==='build'?'⚒️':et==='feast'?'🍽️':'⚔️';
+    statusText = etIcon + ' 当前劫难 Active trial';
+    btnText = et==='build'?'⚒️ 破关！Clear obstacle!':et==='feast'?'🍽️ 识破！Resist temptation!':'⚔️ 降妖！Defeat demon!';
+  } else {
+    const nt = getProvType(provId);
+    const ntIcon = nt==='build'?'⚒️':nt==='feast'?'🍽️':'⚔️';
+    statusText = ntIcon + ' 下一路站 — ' + (nt==='build'?'Obstacle trial':nt==='feast'?'Temptation trial':'Battle trial');
+    btnText = nt==='build'?'⚒️ 破关！Clear obstacle!':nt==='feast'?'🍽️ 识破！Resist temptation!':'⚔️ 继续西行！Continue west!';
+  }
+
+  document.getElementById('fp-status').textContent = statusText;
+  const btn = document.getElementById('tt-battle-btn');
+  btn.textContent = btnText;
+  btn.disabled = !isAdj && !isPlayer;
+  btn.style.opacity = (!isAdj && !isPlayer) ? '0.4' : '1';
+
+  // Scroll button: enabled only if province is owned AND has a story
+  const storyBtn = document.getElementById('fp-story-btn');
+  const hasStory = !!PROVINCE_STORIES[provId];
+  const isOwned = state === 'owned' || isPlayer;
+  if (hasStory && isOwned) {
+    storyBtn.disabled = false;
+    storyBtn.style.opacity = '1';
+    storyBtn.style.cursor = 'pointer';
+    storyBtn.style.borderColor = 'rgba(201,162,39,.7)';
+    storyBtn.title = '📜 Read journey episode';
+  } else {
+    storyBtn.disabled = true;
+    storyBtn.style.opacity = '0.3';
+    storyBtn.style.cursor = 'not-allowed';
+    storyBtn.style.borderColor = 'rgba(201,162,39,.25)';
+    storyBtn.title = hasStory ? 'Clear this stage to unlock its episode' : 'No episode for this stage';
+  }
+
+  document.getElementById('fort-panel').style.display = 'flex';
+}
+
+function closeFortPanel() {
+  document.getElementById('fort-panel').style.display = 'none';
+  selectedProvId = null;
+}
+  function describeTrack(trackName) {
+    const meta = (typeof MP3_TRACK_LABELS !== 'undefined' && MP3_TRACK_LABELS[trackName]) || null;
+    return meta ? (meta.zh + ' · ' + meta.en) : 'Pilgrimage soundtrack';
+  }
+
+  function updateMusicButtonLabel() {
+    const btn = document.getElementById('mute-btn');
+    if (!btn) return;
+    const label = currentMusicMode ? describeTrack(currentMusicMode) : 'Pilgrimage soundtrack';
+    const title = musicMuted ? ('Music muted · ' + label) : ('Now playing · ' + label);
+    btn.title = title;
+    btn.setAttribute('aria-label', title);
+  }
+
+function replayProvStory() {
+  if (selectedProvId === null) return;
+  const provId = selectedProvId;
+  closeFortPanel();
+  showProvinceStory(provId, null); // null callback — just view, no auto-advance needed
+    updateMusicButtonLabel();
+}
+
+function startBattleFromMap() {
+  if (selectedProvId === null) return;
+  if (RTCOOP.enabled && campaignMode === 'coop') {
+    if (RTCOOP.mapStatus !== 'idle' || RTCOOP.currentController !== RTCOOP.myName) {
+      closeFortPanel();
+      return;
+    }
+  }
+    updateMusicButtonLabel();
+  const _sp = provState[selectedProvId] || 'neutral';
+  if (_sp !== 'owned' && selectedProvId !== playerProvId) {
+    const _ct = getProvType(selectedProvId);
+    speakChinese(_ct==='feast'?'识破诱惑！':_ct==='build'?'破除障碍！':'继续西行！');
+  }
+  const prov = PROVINCES[selectedProvId];
+  if (!prov) return;
+  const isPlayer = selectedProvId === playerProvId;
+  const frontier = getFrontier();
+  if (!frontier.has(selectedProvId) && !isPlayer && _sp !== 'owned') return;
+
+  const fort = {
+    id: 'p'+selectedProvId,
+    name: prov.hz,
+    en: prov.en,
+    diff: Math.max(1, Math.floor(selectedProvId/10)+1),
+    conquered: provState[selectedProvId] === 'owned' || isPlayer
+  };
+  closeFortPanel();
+  startBattle(fort, campaignMode);
+}
+/* ===========================================================
+=========================================================== */
+
+/* ===========================================================
+   OBSTACLE TRIALS
+   Each wave = one travel obstacle on the pilgrimage route.
+=========================================================== */
+const BUILD_ACTIVITIES = [
+  {name:'过山关', nameEn:'Cross the Mountain Pass', emoji:'⛰️', announce:'翻越山关！'},
+  {name:'渡急流', nameEn:'Cross the Torrent', emoji:'🌊', announce:'渡过急流！'},
+  {name:'破迷阵', nameEn:'Break the Illusion Maze', emoji:'🌀', announce:'破开迷阵！'},
+  {name:'解封印', nameEn:'Release the Seal', emoji:'🪬', announce:'解开封印！'},
+  {name:'借法宝', nameEn:'Borrow the Sacred Relic', emoji:'🏮', announce:'借来法宝！'},
+  {name:'平妖风', nameEn:'Calm the Demon Wind', emoji:'🌬️', announce:'压下妖风！'},
+  {name:'越火海', nameEn:'Pass the Sea of Fire', emoji:'🔥', announce:'穿越火海！'},
+  {name:'开山门', nameEn:'Open the Mountain Gate', emoji:'🚪', announce:'推开山门！'},
+  {name:'求渡船', nameEn:'Find the Ferryman', emoji:'🛶', announce:'寻找渡船！'},
+  {name:'护经卷', nameEn:'Protect the Sutra Scrolls', emoji:'📜', announce:'护住经卷！'},
+];
+
+// Build-mode SVG sprite (travel obstacle)
+function drawBuildSprite(svgEl, activity) {
+  const emoji = activity ? activity.emoji : '⚒️';
+  const label = activity ? activity.name : '障碍';
+  svgEl.setAttribute('viewBox','0 0 120 120');
+  svgEl.innerHTML = `<g>
+    <circle cx="60" cy="55" r="52" fill="rgba(40,80,40,0.25)" stroke="rgba(80,200,120,0.3)" stroke-width="2"/>
+    <text x="60" y="80" text-anchor="middle" font-size="80">${emoji}</text>
+    <text x="60" y="112" text-anchor="middle" font-size="15"
+      font-family="'Ma Shan Zheng',cursive" fill="#88ffcc"
+      stroke="rgba(0,0,0,0.95)" stroke-width="3" paint-order="stroke">${label}</text>
+  </g>`;
+}
+
+/* ===========================================================
+   TEMPTATION TRIALS
+   Each wave = one lure, banquet, or deceptive invitation.
+=========================================================== */
+const FEAST_COURSES = [
+  {name:'妖宴',     nameEn:'Demon Banquet',        emoji:'🍽️', announce:'妖宴开席！'},
+  {name:'假经卷',   nameEn:'False Sutra Scroll',    emoji:'📜', announce:'假的经卷现身！'},
+  {name:'幻宝殿',   nameEn:'Hall of Illusory Treasures', emoji:'💎', announce:'宝光迷眼！'},
+  {name:'迷魂茶',   nameEn:'Bewitching Tea',        emoji:'🍵', announce:'小心迷魂茶！'},
+  {name:'温柔乡',   nameEn:'Palace of Comfort',     emoji:'🛏️', announce:'莫恋温柔乡！'},
+  {name:'王宫宴',   nameEn:'Royal Banquet',         emoji:'👑', announce:'王宫设宴！'},
+  {name:'假师父',   nameEn:'False Master',          emoji:'🎭', announce:'真假难辨！'},
+  {name:'金银财',   nameEn:'Piles of Gold and Silver', emoji:'🪙', announce:'财宝动心！'},
+  {name:'仙桃酒',   nameEn:'Immortal Peaches and Wine', emoji:'🍑', announce:'仙桃美酒在前！'},
+  {name:'香火愿',   nameEn:'Easy Promise of Merit', emoji:'🕯️', announce:'香火愿力诱人！'},
+];
+
+// Feast-mode SVG sprite (temptation scene)
+function drawFeastSprite(svgEl, course) {
+  const emoji = course ? course.emoji : '🍽️';
+  const label = course ? course.name : '诱惑';
+  svgEl.setAttribute('viewBox','0 0 120 120');
+  if (label === '火锅') {
+    svgEl.innerHTML = `<g>
+      <circle cx="60" cy="55" r="52" fill="rgba(60,40,10,0.28)" stroke="rgba(220,160,40,0.35)" stroke-width="2"/>
+      <ellipse cx="60" cy="74" rx="28" ry="7" fill="rgba(0,0,0,0.18)"/>
+      <ellipse cx="60" cy="56" rx="30" ry="9" fill="#d8b26a"/>
+      <path d="M34 56 L39 78 Q60 88 81 78 L86 56 Z" fill="#2d2a30" stroke="#0f0d10" stroke-width="2"/>
+      <ellipse cx="60" cy="56" rx="26" ry="7.5" fill="#661b14"/>
+      <path d="M34 56 Q60 66 86 56" fill="none" stroke="#f0d292" stroke-width="2" opacity="0.65"/>
+      <rect x="28" y="53" width="8" height="18" rx="3" fill="#1b171b"/>
+      <rect x="84" y="53" width="8" height="18" rx="3" fill="#1b171b"/>
+      <rect x="40" y="79" width="8" height="8" rx="2" fill="#1b171b"/>
+      <rect x="72" y="79" width="8" height="8" rx="2" fill="#1b171b"/>
+      <rect x="57" y="44" width="6" height="22" rx="2" fill="#d6b35d"/>
+      <ellipse cx="60" cy="41" rx="14" ry="5" fill="#d6b35d" stroke="#8e6d2b" stroke-width="1.5"/>
+      <path d="M49 55 Q53 49 56 56 T63 56 T70 56" fill="none" stroke="#f5ead0" stroke-width="1.6" stroke-linecap="round" opacity="0.9"/>
+      <path d="M41 55 C42 48 49 47 50 54 C52 48 58 48 58 54 C60 49 66 49 67 55 C69 49 75 49 76 55" fill="#5fa24e"/>
+      <path d="M44 61 C46 55 51 55 53 60 C55 54 60 54 62 60 C64 55 69 55 71 61" fill="#f3e2bf"/>
+      <circle cx="48" cy="60" r="2.5" fill="#b33424"/>
+      <circle cx="72" cy="58" r="2.5" fill="#b33424"/>
+      <circle cx="66" cy="62" r="2.2" fill="#b33424"/>
+      <circle cx="53" cy="63" r="2.2" fill="#b33424"/>
+      <path d="M46 27 C42 20 46 13 50 18 C47 11 52 7 56 13" fill="none" stroke="#f2f2f2" stroke-width="2.2" stroke-linecap="round" opacity="0.9"/>
+      <path d="M60 24 C57 17 61 10 65 15 C62 9 67 6 70 11" fill="none" stroke="#f2f2f2" stroke-width="2.2" stroke-linecap="round" opacity="0.9"/>
+      <path d="M74 28 C71 22 75 16 79 20 C76 14 81 10 84 16" fill="none" stroke="#f2f2f2" stroke-width="2.2" stroke-linecap="round" opacity="0.9"/>
+      <text x="60" y="112" text-anchor="middle" font-size="15"
+        font-family="'Ma Shan Zheng',cursive" fill="#ffd966"
+        stroke="rgba(0,0,0,0.95)" stroke-width="3" paint-order="stroke">${label}</text>
+    </g>`;
+    return;
+  }
+  if (label === '麻婆豆腐') {
+    svgEl.innerHTML = `<g>
+      <circle cx="60" cy="55" r="52" fill="rgba(60,40,10,0.28)" stroke="rgba(220,160,40,0.35)" stroke-width="2"/>
+      <ellipse cx="60" cy="66" rx="34" ry="12" fill="#f7f1df"/>
+      <path d="M26 63 Q60 28 94 63 L88 79 Q60 91 32 79 Z" fill="#b73a24" stroke="#6b2013" stroke-width="2"/>
+      <ellipse cx="60" cy="62" rx="28" ry="8" fill="#d44d2c" opacity="0.85"/>
+      <rect x="39" y="49" width="11" height="11" rx="2" fill="#f4e6c8" transform="rotate(-8 44.5 54.5)"/>
+      <rect x="52" y="45" width="12" height="12" rx="2" fill="#f7ead0" transform="rotate(6 58 51)"/>
+      <rect x="66" y="50" width="11" height="11" rx="2" fill="#f5e8cb" transform="rotate(-5 71.5 55.5)"/>
+      <rect x="47" y="58" width="12" height="12" rx="2" fill="#f1e3c1" transform="rotate(7 53 64)"/>
+      <rect x="61" y="60" width="12" height="12" rx="2" fill="#f6e8cc" transform="rotate(-6 67 66)"/>
+      <rect x="74" y="57" width="10" height="10" rx="2" fill="#f4e6c8" transform="rotate(9 79 62)"/>
+      <circle cx="41" cy="61" r="2.4" fill="#6a3217"/>
+      <circle cx="53" cy="56" r="2.2" fill="#6a3217"/>
+      <circle cx="69" cy="59" r="2.3" fill="#6a3217"/>
+      <circle cx="79" cy="64" r="2.1" fill="#6a3217"/>
+      <circle cx="58" cy="68" r="2.2" fill="#6a3217"/>
+      <path d="M24 69 Q60 95 96 69" fill="none" stroke="#f2f0ea" stroke-width="7" stroke-linecap="round"/>
+      <path d="M25 70 Q60 96 95 70" fill="none" stroke="#8f8f95" stroke-width="3" stroke-linecap="round"/>
+      <text x="60" y="112" text-anchor="middle" font-size="15"
+        font-family="'Ma Shan Zheng',cursive" fill="#ffd966"
+        stroke="rgba(0,0,0,0.95)" stroke-width="3" paint-order="stroke">${label}</text>
+    </g>`;
+    return;
+  }
+  svgEl.innerHTML = `<g>
+    <circle cx="60" cy="55" r="52" fill="rgba(60,40,10,0.28)" stroke="rgba(220,160,40,0.35)" stroke-width="2"/>
+    <text x="60" y="80" text-anchor="middle" font-size="80">${emoji}</text>
+    <text x="60" y="112" text-anchor="middle" font-size="15"
+      font-family="'Ma Shan Zheng',cursive" fill="#ffd966"
+      stroke="rgba(0,0,0,0.95)" stroke-width="3" paint-order="stroke">${label}</text>
+  </g>`;
+}
+/* ===========================================================
+   ENEMY SYSTEM
+   - Each province has an assigned general (by province id)
+   - Waves 1..(totalWaves-1) = that general's soldiers
+   - Final wave = the general themselves
+   - Once a general is defeated they stay defeated (saved in campaign)
+=========================================================== */
+
+// One stage guardian per pilgrimage stop, in route order
+const PROVINCE_GENERALS = [
+  {id:0,  name:'玄奘法师', nameEn:'Master Xuanzang',         sprite:'sanzang',    hp:7,  soldierName:'经卷学徒', soldierEn:'Scripture Novice'},
+  {id:1,  name:'刘伯钦',   nameEn:'Hunter Liu',             sprite:'general',    hp:8,  soldierName:'山路险障', soldierEn:'Mountain Hazard'},
+  {id:2,  name:'孙悟空',   nameEn:'Sun Wukong',             sprite:'wukong',     hp:12, soldierName:'山神石兵', soldierEn:'Stone Guardian'},
+  {id:3,  name:'白龙马',   nameEn:'White Dragon Horse',     sprite:'whitehorse', hp:8,  soldierName:'涧水龙影', soldierEn:'Ravine Spirit'},
+  {id:4,  name:'猪八戒',   nameEn:'Zhu Bajie',              sprite:'bajie',      hp:10, soldierName:'庄客幻影', soldierEn:'Village Retainer'},
+  {id:5,  name:'黄风大王', nameEn:'Yellow Wind Demon',      sprite:'general',    hp:11, soldierName:'黄风小妖', soldierEn:'Wind Imp'},
+  {id:6,  name:'沙悟净',   nameEn:'Sha Wujing',             sprite:'wujing',     hp:9,  soldierName:'流沙水鬼', soldierEn:'River Wraith'},
+  {id:7,  name:'镇元子',   nameEn:'Zhenyuanzi',             sprite:'general',    hp:10, soldierName:'五庄童子', soldierEn:'Abbey Acolyte'},
+  {id:8,  name:'白骨精',   nameEn:'White Bone Demon',       sprite:'general',    hp:11, soldierName:'骷髅幻影', soldierEn:'Bone Phantom'},
+  {id:9,  name:'黄袍怪',   nameEn:'Yellow Robe Demon',      sprite:'general',    hp:11, soldierName:'宫苑妖兵', soldierEn:'Palace Fiend'},
+  {id:10, name:'金角大王', nameEn:'Gold Horn King',         sprite:'general',    hp:12, soldierName:'银角小妖', soldierEn:'Horned Imp'},
+  {id:11, name:'乌鸡国王', nameEn:'King of Crow-Cock',      sprite:'general',    hp:9,  soldierName:'井底幽魂', soldierEn:'Well Spirit'},
+  {id:12, name:'红孩儿',   nameEn:'Red Boy',                sprite:'general',    hp:12, soldierName:'火云小妖', soldierEn:'Fire Cloud Imp'},
+  {id:13, name:'虎力大仙', nameEn:'Tiger Power Immortal',   sprite:'general',    hp:10, soldierName:'车迟道士', soldierEn:'Court Taoist'},
+  {id:14, name:'灵感大王', nameEn:'Great King Linggan',     sprite:'general',    hp:11, soldierName:'河府水妖', soldierEn:'River Demon'},
+  {id:15, name:'女儿国王', nameEn:'Queen of Woman Kingdom', sprite:'general',    hp:9,  soldierName:'宫中侍从', soldierEn:'Palace Attendant'},
+  {id:16, name:'如意真仙', nameEn:'Ruyi Zhenxian',          sprite:'general',    hp:10, soldierName:'药泉童子', soldierEn:'Spring Acolyte'},
+  {id:17, name:'蜘蛛精',   nameEn:'Spider Demon',           sprite:'general',    hp:11, soldierName:'盘丝小妖', soldierEn:'Web Spinner'},
+  {id:18, name:'大鹏王',   nameEn:'Great Roc King',         sprite:'general',    hp:13, soldierName:'狮驼妖兵', soldierEn:'Ridge Fiend'},
+  {id:19, name:'鹿力大仙', nameEn:'Deer Power Immortal',    sprite:'general',    hp:10, soldierName:'比丘邪徒', soldierEn:'Corrupt Acolyte'},
+  {id:20, name:'牛魔王',   nameEn:'Bull Demon King',        sprite:'general',    hp:14, soldierName:'火山妖卒', soldierEn:'Flame Fiend'},
+  {id:21, name:'九灵元圣', nameEn:'Nine-Headed Lion',       sprite:'general',    hp:12, soldierName:'玉华兽影', soldierEn:'Lion Shade'},
+  {id:22, name:'天竺佛使', nameEn:'Buddhist Envoy',         sprite:'general',    hp:10, soldierName:'天竺护法', soldierEn:'Pilgrim Guardian'},
+  {id:23, name:'如来佛祖', nameEn:'Tathagata Buddha',       sprite:'general',    hp:15, soldierName:'雷音守卫', soldierEn:'Thunderclap Guardian'},
+]
+
+// Track which generals have been defeated (persisted in campaign save)
+// defeatedGenerals: Set of province ids whose general was beaten
+let defeatedGenerals = new Set();
+
+function getGeneralForProv(provId) {
+  return PROVINCE_GENERALS[provId] || PROVINCE_GENERALS[0];
+}
+
+function spawnEnemy(provId) {
+  const ctype = G.provConquestType || 'battle';
+  let enemy;
+  const general = getGeneralForProv(provId !== undefined ? provId : (G.fort?.provId || 0));
+  const isLastWave = G.wave >= G.totalWaves;
+
+  if (ctype === 'build') {
+    if (isLastWave) {
+      // Final wave: debate with the province general — show their sprite
+      const _hasCryBuild = !!(GENERAL_CRIES && GENERAL_CRIES[general.name]);
+      if (_hasCryBuild) {
+        G._battleCrySpeaking = true;
+        const _earlyGridB = document.getElementById('ans-grid');
+        if (_earlyGridB) { _earlyGridB.style.opacity = '0.35'; _earlyGridB.style.pointerEvents = 'none'; }
+      }
+      setTimeout(() => showBattleCry(general.name), 800);
+      enemy = {
+        name: general.name, nameEn: general.nameEn,
+        sprite: general.sprite,
+        hp: general.hp + 5 + Math.floor(G.totalWaves / 2),
+        isGeneral: false, isCivilBoss: true,
+        announce: general.name + '来辩论吧！'
+      };
+    } else {
+      // Non-final waves: each wave is a build activity
+      const act = BUILD_ACTIVITIES[(G.wave - 1) % BUILD_ACTIVITIES.length];
+      const bites = 7;
+      enemy = {
+        name: act.name, nameEn: act.nameEn,
+        sprite: 'build', buildActivity: act,
+        hp: bites, isGeneral: false,
+        announce: act.announce
+      };
+    }
+  } else if (ctype === 'feast') {
+    if (isLastWave) {
+      // Final wave: drinks with the province general — show their sprite
+      const _hasCryFeast = !!(GENERAL_CRIES && GENERAL_CRIES[general.name]);
+      if (_hasCryFeast) {
+        G._battleCrySpeaking = true;
+        const _earlyGridF = document.getElementById('ans-grid');
+        if (_earlyGridF) { _earlyGridF.style.opacity = '0.35'; _earlyGridF.style.pointerEvents = 'none'; }
+      }
+      setTimeout(() => showBattleCry(general.name), 800);
+      enemy = {
+        name: general.name, nameEn: general.nameEn,
+        sprite: general.sprite,
+        hp: general.hp + 5 + Math.floor(G.totalWaves / 2),
+        isGeneral: false, isCivilBoss: true,
+        announce: general.name + '共饮一杯！'
+      };
+    } else {
+      // Non-final waves: each wave is a feast course
+      const course = FEAST_COURSES[(G.wave - 1 + (provId||0)) % FEAST_COURSES.length];
+      enemy = {
+        name: course.name, nameEn: course.nameEn,
+        sprite: 'feast', feastCourse: course,
+        hp: 7, isGeneral: false,
+        announce: course.announce
+      };
+    }
+  } else {
+    // Battle: soldiers then general
+    if (isLastWave) {
+      enemy = {
+        name: general.name, nameEn: general.nameEn,
+        sprite: general.sprite,
+        hp: general.hp + 5 + Math.floor(G.totalWaves / 2),
+        isGeneral: true, announce: general.name + '出现！'
+      };
+      // Option D: grey out answer grid immediately (before speech starts) then show battle cry
+      const _hasCry = !!(GENERAL_CRIES && GENERAL_CRIES[general.name]);
+      if (_hasCry) {
+        G._battleCrySpeaking = true;
+        const _earlyGrid = document.getElementById('ans-grid');
+        if (_earlyGrid) { _earlyGrid.style.opacity = '0.35'; _earlyGrid.style.pointerEvents = 'none'; }
+      }
+      setTimeout(() => showBattleCry(general.name), 800);
+    } else {
+      enemy = {
+        name: general.soldierName, nameEn: general.soldierEn,
+        sprite: 'soldier',
+        hp: 5 + Math.floor(G.wave * 0.7),
+        isGeneral: false, announce: general.soldierName + '出现！'
+      };
+    }
+  }
+  enemy.currentHp = enemy.hp;
+  enemy.maxHp = enemy.hp;
+  // In networked co-op, scale HP by number of active players
+  if (G.rtcoopPlayerCount && G.rtcoopPlayerCount > 1) {
+    enemy.hp = enemy.hp * G.rtcoopPlayerCount;
+    enemy.currentHp = enemy.hp;
+    enemy.maxHp = enemy.hp;
+  }
+  G.enemy = enemy;
+  renderEnemy();
+}
+
+
+// Map sprites to existing ones (wizard/general) as fallback
+function getHeroSpriteKey(key) {
+  const fallbacks = {zhugeliang:'wizard'};
+  return HERO_SPRITES[key] ? key : (fallbacks[key] || 'general');
+}
+
+
+// Per-player rosters: which heroes each player has unlocked + their starting choice
+// Stored as {p0:{roster:['guanyu'], startHero:'guanyu'}, p1:{...}}
+let playerRosters = {
+  coop: {roster:[], startHero:null},
+};
+
+function loadRosters() {
+  try {
+    const r = JSON.parse(localStorage.getItem('skz_rosters')||'null');
+    if(r) playerRosters = r;
+    // Ensure coop slot always exists
+    if (!playerRosters.coop) playerRosters.coop = {roster:[], startHero:null};
+  } catch(e){}
+}
+function saveRosters() {
+  try { localStorage.setItem('skz_rosters', JSON.stringify(playerRosters)); } catch(e){}
+}
+
+// Get battle party: startHero + 1 random other from roster (no cap on total roster)
+function getActiveHeroes(mode) {
+  if (mode === 'coop') {
+    if (RTCOOP.enabled && RTCOOP.myRole) {
+      const heroKey = playerRosters[RTCOOP.myRole] && playerRosters[RTCOOP.myRole].startHero;
+      const heroDef = heroKey ? ALL_HEROES.find(h => h.key === heroKey) : null;
+      const owner = getPlayerById(RTCOOP.myRole);
+      return heroDef ? [{
+        ...heroDef,
+        level: RTCOOP.myRole,
+        ownerId: RTCOOP.myRole,
+        ownerName: owner ? owner.name : RTCOOP.myName || RTCOOP.myRole,
+        _online: true,
+      }] : [ALL_HEROES[0]];
+    }
+    // Co-op: use each participating player's startHero
+    let pairs = PLAYERS.map(p => ({key: playerRosters[p.id] && playerRosters[p.id].startHero, level: p.id}))
+      .filter(p => p.key);
+    // In networked co-op: put this device's role first
+    if (RTCOOP.enabled && RTCOOP.myRole) {
+      const myRole = RTCOOP.myRole;
+      pairs = [...pairs.filter(p=>p.level===myRole), ...pairs.filter(p=>p.level!==myRole)];
+    }
+    return pairs.map(p => {
+      const h = ALL_HEROES.find(h=>h.key===p.key);
+      const owner = getPlayerById(p.level);
+      return h ? {...h, level: p.level, ownerId: p.level, ownerName: owner ? owner.name : p.level, _online: true} : null;
+    }).filter(Boolean);
+  }
+  const r = playerRosters[mode];
+  if (!r || !r.startHero) return [ALL_HEROES[0]];
+  const start = ALL_HEROES.find(h=>h.key===r.startHero);
+  const others = r.roster.filter(k=>k!==r.startHero)
+                         .map(k=>ALL_HEROES.find(h=>h.key===k)).filter(Boolean);
+  const companion = others.length ? others[Math.floor(Math.random()*others.length)] : null;
+  return companion ? [start, companion] : [start];
+}
+
+// HEROES_DEF for battle
+function getHeroesDef(mode) {
+  const heroes = getActiveHeroes(mode);
+  return heroes.length ? heroes.map(h=>({...h})) : [ALL_HEROES[0]];
+}
+
+// Check if a hero should be found after a victory (random chance every 3-5 provinces)
+function checkHeroFound(mode) {
+  if (mode==='coop') return null; // coop uses both rosters, handled separately
+  const roster = playerRosters[mode].roster;
+  if (roster.length >= ALL_HEROES.length) return null; // all heroes found
+  const owned = Object.values(provState).filter(v=>v==='owned').length;
+  if (owned < 3) return null; // need at least 3 provinces first
+  // Chance increases: 1/5 base, +1/10 per province beyond 3
+  const chance = 0.2 + Math.min(0.5, (owned - 3) * 0.08);
+  if (Math.random() > chance) return null;
+  // Pick a hero not yet in roster
+  const available = ALL_HEROES.filter(h => !roster.includes(h.key));
+  if (!available.length) return null;
+  return available[Math.floor(Math.random() * available.length)];
+}
+
+// Used by HEROES_DEF reference in startBattle
+const HEROES_DEF = ALL_HEROES.slice(0,3); // fallback, overridden in startBattle
+
+/* ===========================================================
+   GAME STATE
+=========================================================== */
+// Province conquest type (deterministic by id)
+// Fixed conquest type per province (from provinces.xlsx)
+const PROV_CONQUEST_TYPE = {
+  0:'build', 1:'battle', 2:'battle', 3:'build', 4:'feast', 5:'battle',
+  6:'build', 7:'feast', 8:'battle', 9:'battle', 10:'battle', 11:'feast',
+  12:'battle', 13:'build', 14:'battle', 15:'feast', 16:'build', 17:'battle',
+  18:'battle', 19:'feast', 20:'battle', 21:'build', 22:'feast', 23:'battle'
+};
+function getProvType(provId){ return PROV_CONQUEST_TYPE[provId] || 'battle'; }
+
+let G = {
+  mode:'coop', fort:null, provConquestType:'battle',
+  heroes:[], enemy:null,
+  wave:1, totalWaves:5,
+  score:0, streak:0, bestStreak:0,
+  totalCorrect:0, totalAnswered:0,
+  playerIdx:0,
+  charPool:[], seenChars:{}, pinyinState:{},
+  currentQ:null,
+  battleProvId: null,
+  launchProvId: null,
+  retryQueue: [],
+  pendingRetry: null,
+  _waitingForAnnounce: false,
+  _pendingCharSpeak: null,
+  _pendingBattleCry: null,
+  _battleCrySpeaking: false,
+  _announceTimer: null,
+};
+
+const Q_TYPES = ['char_to_meaning','hear_to_char','meaning_to_char'];
+
+/* -- Screen management -- */
+function goHome() {
+  // Save campaign state before leaving the map/battle screens
+  if (campaignMode && (Object.values(provState).some(v => v==='owned'))) {
+    saveCampaign(campaignMode);
+  }
+  if (RTCOOP.enabled) rtcoopDisable();
+  stopMusic();
+  showScr('scr-title');
+  if (!musicMuted) playTitleMusic();
+}
+
+function showScr(id) {
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (id !== 'scr-map' && id !== 'scr-story' && id !== 'scr-victory' && id !== 'scr-defeat') {
+    clearInterval(RTCOOP.joinCountdownTimer);
+    const popup = document.getElementById('coop-join-popup');
+    if (popup) popup.style.display = 'none';
+  }
+}
+
+function goProfile() {
+  const ac = getAudio(); if(ac&&ac.state==='suspended')ac.resume();
+  if (RTCOOP.enabled) rtcoopDisable();
+  if (!musicMuted) playTitleMusic();
+  loadRosters();
+  loadPlayers();
+  renderProfileScreen();
+  showScr('scr-profile');
+}
+
+function renderProfileScreen() {
+  const grid = document.getElementById('prof-player-grid');
+  const coopRow = document.getElementById('prof-coop-row');
+  const coopBtns = document.getElementById('prof-coop-btns');
+  if (!grid) return;
+
+  // Player cards
+  if (PLAYERS.length === 0) {
+    // Empty state — show a single wide + button
+    grid.style.gridTemplateColumns = '1fr';
+    grid.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:24px 0">
+        <div style="font-size:14px;color:var(--parch2);opacity:.8;text-align:center;line-height:1.6">No players yet.<br>Add up to 4 players to begin!</div>
+        <button class="btn-p" onclick="openAddPlayerModal()" style="font-size:clamp(18px,5vw,26px);padding:16px 40px;letter-spacing:.1em">➕ Add Player</button>
+      </div>`;
+    if (coopRow) coopRow.style.display = 'none';
+    return;
+  }
+
+  // Responsive columns: 1 player = 1 col, 2-4 = 2 cols
+  grid.style.gridTemplateColumns = PLAYERS.length === 1 ? '1fr' : '1fr 1fr';
+  grid.innerHTML = PLAYERS.map((player, idx) => {
+    const id = player.id;
+    const emoji = PLAYER_EMOJIS[idx];
+    const roster = playerRosters[id] || {roster:[], startHero:null};
+    const heroKey = roster.startHero || ALL_HEROES[0].key;
+    const hero = ALL_HEROES.find(h=>h.key===heroKey) || ALL_HEROES[0];
+    const diff = playerDifficulty[id] || 3;
+    // Stars
+    const prog = loadProgress(id);
+    const pool = CHARACTER_DB.filter(c=>charToNumericLevel(c)<=diff);
+    const done = pool.filter(c=>{const s=prog[c.hz];return s&&s.seen>=3&&s.correct/s.seen>=0.7;}).length;
+    const pct = pool.length ? done/pool.length : 0;
+    const stars = pct>=0.8?'⭐⭐⭐':pct>=0.4?'⭐⭐':pct>=0.1?'⭐':'☆☆☆';
+    // Hero level
+    const hlData = loadHeroLevels();
+    const hlState = (hlData[id] && hlData[id][heroKey]) || {level:1,xp:0};
+    const hlLv = hlState.level || heroLevelFromXP(hlState.xp) || 1;
+    const nextXP = xpForNextLevel(hlLv);
+    const heroLvTxt = hero.name + ' Lv' + hlLv + (nextXP ? ' (' + hlState.xp + '/' + nextXP + ' 功德)' : ' ★圆满');
+    // Campaign rating
+    const cr = loadCampaignRating(id);
+    const crTxt = cr ? '🏆 ' + '⭐'.repeat(cr.stars) + '☆'.repeat(5-cr.stars) : '';
+    return `<div class="prof-card" onclick="openHeroSelect('${id}')" style="position:relative">
+        <button onclick="event.stopPropagation();removePlayer('${id}')"
+          style="position:absolute;top:4px;right:4px;background:rgba(150,0,0,.4);border:1px solid rgba(200,50,50,.5);border-radius:4px;color:#ffaaaa;font-size:14px;padding:2px 5px;cursor:pointer;z-index:3" title="Remove player">🗑️</button>
+        <svg class="prof-av" width="64" height="80" viewBox="0 0 64 80" id="hero-svg-prof-${id}"></svg>
+        <span class="prof-name">${emoji} ${player.name}</span>
+        <span class="prof-lv">${hero.name} · Level ${diff}</span>
+        <div class="prof-stars">${stars}</div>
+        <div style="font-size:11px;color:var(--goldb);margin-top:2px">${heroLvTxt}</div>
+        <div style="font-size:11px;color:var(--parch2);margin-top:1px">${crTxt}</div>
+      </div>`;
+  }).join('');
+
+  // Draw hero sprites
+  PLAYERS.forEach(player => {
+    const svg = document.getElementById('hero-svg-prof-' + player.id);
+    if (!svg) return;
+    const roster = playerRosters[player.id] || {startHero:null};
+    const key = roster.startHero || ALL_HEROES[0].key;
+    drawHeroInSvg(svg, getHeroSpriteKey(key));
+  });
+
+  // Add player button (if < 4)
+  if (PLAYERS.length < 4) {
+    const addDiv = document.createElement('div');
+    addDiv.style.cssText = 'display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px';
+    addDiv.innerHTML = `<button class="btn-s" onclick="openAddPlayerModal()"
+      style="font-size:clamp(22px,6vw,36px);width:100%;min-height:80px;border-style:dashed;opacity:.7">➕</button>
+      <div style="font-size:11px;color:var(--parch2);opacity:.6;text-align:center">Add Player</div>`;
+    grid.appendChild(addDiv);
+  }
+
+  // Co-op row — show whenever there is at least 1 player
+  if (PLAYERS.length >= 1 && coopRow && coopBtns) {
+    coopRow.style.display = 'block';
+    coopBtns.innerHTML = PLAYERS.map((player, idx) => {
+      const emoji = PLAYER_EMOJIS[idx];
+      return `<button class="btn-p" onclick="startCoopAs('${player.id}')"
+        style="font-size:clamp(13px,3.5vw,17px);padding:10px 14px;letter-spacing:.04em;flex:1;min-width:120px">
+        ${emoji} Co-op<br><span style="font-size:.85em;opacity:.85">(${player.name})</span>
+      </button>`;
+    }).join('');
+  } else if (coopRow) {
+    coopRow.style.display = 'none';
+  }
+}
+
+function startSolo(playerId) {
+  // Ensure roster entry exists
+  if (!playerRosters[playerId]) playerRosters[playerId] = {roster:[], startHero:null};
+  if (!playerRosters[playerId].startHero) {
+    // No hero yet — open hero select first, which will call startCampaign
+    openHeroSelect(playerId);
+  } else {
+    startCampaign(playerId);
+  }
+}
+
+function openHeroSelect(mode) {
+  const modal = document.getElementById('hero-select-modal');
+  const grid  = document.getElementById('hsm-grid');
+  // Ensure roster slot exists
+  if (!playerRosters[mode]) playerRosters[mode] = {roster:[], startHero:null};
+  const playerLabel = mode === 'coop' ? '🤝 Co-op' : getPlayerName(mode);
+  document.getElementById('hsm-title').textContent = playerLabel + ' — 选择同伴';
+  const rLen = playerRosters[mode].roster.length;
+  document.getElementById('hsm-subtitle').textContent =
+    playerRosters[mode].startHero
+      ? rLen + '/9 heroes found · Tap any found hero to lead your army'
+      : '选择你的起始同伴 Choose your starting companion';
+  grid.innerHTML = ALL_HEROES.map(h => {
+    const owned = playerRosters[mode].roster.includes(h.key);
+    const isStart = playerRosters[mode].startHero === h.key;
+    const noRoster = playerRosters[mode].roster.length === 0;
+    const locked = !noRoster && !owned; // if no roster yet, all are pickable; otherwise only owned are
+    const canReadBio = owned || noRoster;
+    const scrollBtn = canReadBio
+      ? `<button onclick="event.stopPropagation();showHeroBio('${h.key}')"
+           title="Read hero biography"
+           style="position:absolute;top:0;right:0;background:rgba(201,162,39,0.12);border:none;border-left:1.5px solid rgba(201,162,39,.5);border-bottom:1.5px solid rgba(201,162,39,.5);border-radius:0 6px 0 6px;
+                  font-size:15px;padding:5px 7px;cursor:pointer;color:var(--goldb);line-height:1;z-index:2">📜</button>`
+      : `<span title="Unlock this hero to read their story"
+           style="position:absolute;top:0;right:0;font-size:15px;padding:5px 7px;
+                  color:rgba(150,150,150,.2);line-height:1;z-index:2">📜</span>`;
+    // Top-left: hero level (for owned/unlocked heroes) or lock icon
+    let topLeftBadge = '';
+    if (locked) {
+      topLeftBadge = `<div style="position:absolute;top:4px;left:4px;font-size:13px;line-height:1;z-index:2" title="Not yet found">🔒</div>`;
+    } else if (mode !== 'coop') {
+      const _hlData = loadHeroLevels();
+      const _hlState = (_hlData[mode] && _hlData[mode][h.key]) || {level:1, xp:0};
+      const _hlLv = _hlState.level || heroLevelFromXP(_hlState.xp) || 1;
+      topLeftBadge = `<div style="position:absolute;top:4px;left:4px;font-size:10px;font-weight:bold;line-height:1;z-index:2;background:rgba(0,0,0,0.65);border:1px solid rgba(201,162,39,0.55);border-radius:3px;padding:2px 4px;color:var(--goldb)" title="Hero level">Lv${_hlLv}</div>`;
+    }
+    // Bottom-left: active hero star
+    const starBadge = isStart
+      ? `<div style="position:absolute;bottom:4px;left:4px;font-size:13px;line-height:1;z-index:2" title="Active hero">⭐</div>`
+      : '';
+    return `<div onclick="${locked?'':('pickHero(\''+mode+'\',\''+h.key+'\')')}"
+        title="${locked?'Not yet found':'Tap to lead your army'}"
+        style="position:relative;background:${isStart?'rgba(201,162,39,0.22)':owned?'rgba(0,0,0,0.3)':'rgba(0,0,0,0.15)'};
+          border:2px solid ${isStart?'var(--goldb)':owned?'rgba(201,162,39,0.4)':'rgba(80,80,80,0.4)'};
+          border-radius:8px;padding:8px 4px 22px;cursor:${locked?'default':'pointer'};
+          opacity:${locked?'0.45':'1'};text-align:center">
+      ${topLeftBadge}
+      ${starBadge}
+      ${scrollBtn}
+      <svg width="96" height="119" viewBox="0 0 64 80" style="display:block;margin:0 auto"
+           id="hsp-svg-${h.key}"></svg>
+      <div style="font-family:'Ma Shan Zheng',cursive;font-size:14px;color:var(--goldb);margin-top:5px;line-height:1.2">${h.name}</div>
+      <div style="font-size:10px;color:var(--parch2);margin-top:2px">${h.nameEn}</div>
+    </div>`;
+  }).join('');
+  // Draw sprites
+  ALL_HEROES.forEach(h => {
+    const s = document.getElementById('hsp-svg-'+h.key);
+    if(s) drawHeroInSvg(s, getHeroSpriteKey(h.key));
+  });
+  modal.classList.add('active');
+  _pendingHeroMode = mode;
+}
+
+let _pendingHeroMode = null;
+
+function pickHero(mode, heroKey) {
+  const roster = playerRosters[mode];
+  if (!roster.roster.includes(heroKey)) {
+    roster.roster = [heroKey];
+  }
+  roster.startHero = heroKey;
+  // Speak hero name
+  const _pickedHero = ALL_HEROES.find(h=>h.key===heroKey);
+  if (_pickedHero) speakChinese(_pickedHero.name);
+  saveRosters();
+  document.getElementById('hero-select-modal').classList.remove('active');
+  // Update profile card avatar
+  const profSvg = document.getElementById('hero-svg-prof-' + mode);
+  if(profSvg) drawHeroInSvg(profSvg, getHeroSpriteKey(heroKey));
+  startCampaign(mode);
+}
+
+let _heroBioKey = null;
+
+function showHeroBio(heroKey) {
+  const hero = ALL_HEROES.find(h => h.key === heroKey);
+  if (!hero) return;
+  _heroBioKey = heroKey;
+
+  document.getElementById('hero-bio-name').textContent = hero.name;
+  document.getElementById('hero-bio-name-en').textContent = hero.nameEn;
+  document.getElementById('hero-bio-weapon').textContent = '\u2694\ufe0f ' + hero.desc;
+
+  // Show hero level if they have one
+  const mode = _pendingHeroMode;
+  const lvEl = document.getElementById('hero-bio-lv');
+  if (mode && mode !== 'coop') {
+    const data = loadHeroLevels();
+    const state = (data[mode] && data[mode][heroKey]) || {level:1, xp:0};
+    const lv = state.level || heroLevelFromXP(state.xp);
+    const nextXP = xpForNextLevel(lv);
+    lvEl.textContent = 'Lv' + lv + (nextXP ? ' \u00b7 ' + state.xp + '/' + nextXP + ' 功德' : ' \u00b7 圆满');
+  } else {
+    lvEl.textContent = '';
+  }
+
+  document.getElementById('hero-bio-zh').textContent = hero.zh || '';
+  document.getElementById('hero-bio-en').textContent = hero.en || '';
+
+  const svgEl = document.getElementById('hero-bio-svg');
+  if (svgEl) drawHeroInSvg(svgEl, getHeroSpriteKey(heroKey));
+
+  showScr('scr-hero-bio');
+
+  try { window.speechSynthesis.cancel(); } catch(e) {}
+  setTimeout(() => {
+    try {
+      const utt = new SpeechSynthesisUtterance(hero.name + '\u3002' + (hero.zh || ''));
+      utt.lang = 'zh-CN'; utt.rate = 0.82; utt.pitch = 1;
+      window.speechSynthesis.speak(utt);
+    } catch(e) {}
+  }, 400);
+}
+
+function heroBioSpeak() {
+  const hero = ALL_HEROES.find(h => h.key === _heroBioKey);
+  if (!hero) return;
+  try { window.speechSynthesis.cancel(); } catch(e) {}
+  setTimeout(() => {
+    try {
+      const utt = new SpeechSynthesisUtterance(hero.name + '\u3002' + (hero.zh || ''));
+      utt.lang = 'zh-CN'; utt.rate = 0.82; utt.pitch = 1;
+      window.speechSynthesis.speak(utt);
+    } catch(e) {}
+  }, 100);
+}
+
+function closeHeroBio() {
+  try { window.speechSynthesis.cancel(); } catch(e) {}
+  _heroBioKey = null;
+  const modal = document.getElementById('hero-select-modal');
+  showScr('scr-profile');
+  if (modal) modal.classList.add('active');
+}
+
+function goStudy() {
+  const ac = getAudio(); if(ac&&ac.state==='suspended')ac.resume();
+  if (RTCOOP.enabled) rtcoopDisable();
+  if (!musicMuted) playTitleMusic();
+  updateStudyBtnLabels();
+  filterStudy('all');
+  showScr('scr-study');
+}
+
+function startCoopAs(playerId) {
+  RTCOOP.myRole = playerId;
+  RTCOOP.isHost = false;
+  startCampaign('coop');
+}
+
+function startCampaign(mode) {
+  campaignMode = mode;
+  const ac = getAudio(); if(ac&&ac.state==='suspended')ac.resume();
+
+  const saved = loadCampaign(mode);
+  if (saved) {
+    provState = saved.provState;
+    playerProvId = saved.playerProvId;
+    defeatedGenerals = new Set(saved.defeatedGenerals||[]);
+    G.seenChars = saved.chars || {};
+  } else {
+    initProvState();
+    playerProvId = 0;
+    G.seenChars = {};
+    defeatedGenerals = new Set();
+  }
+
+  if (mode === 'coop') {
+    const myRole = RTCOOP.myRole || PLAYERS[0]?.id || 'p0';
+    // rtcoopInit is async and may abort back to profile on error — don't proceed further here
+    rtcoopInit(myRole).then(() => {
+      if (!RTCOOP.enabled) return; // aborted (no key / no connection)
+      initMap();
+      if (!musicMuted) playMapMusic();
+      showScr('scr-map');
+      updateMapInfo();
+    });
+    return; // early return — map shown asynchronously above
+  } else {
+    rtcoopDisable();
+  }
+
+  initMap();
+  if (!musicMuted) playMapMusic();
+  showScr('scr-map');
+  updateMapInfo();
+}
+
+function updateMapInfo() {
+  const owned = Object.values(provState).filter(v=>v==='owned'||v==='player').length;
+  document.getElementById('map-info').textContent = `已行经 ${owned}/${PROVINCES.length} 站 · ${owned}/${PROVINCES.length} stages cleared`;
+}
+
+function returnToMap() {
+  const activeScreen = document.querySelector('.screen.active');
+  const wasBattleScreen = !!(activeScreen && activeScreen.id === 'scr-battle');
+  if (G.launchProvId !== null) {
+    playerProvId = G.launchProvId;
+  }
+  stopMusic();
+  if (!musicMuted) playMapMusic();
+  renderProvinces();
+  const cur = PROVINCES[playerProvId];
+  moveHeroToken(cur.x, cur.y);
+  updateMapInfo();
+  saveCampaign(campaignMode);
+  showScr('scr-map');
+
+  if (RTCOOP.enabled && campaignMode === 'coop') {
+    // Re-enable province interactions
+    document.querySelectorAll('[data-prov]').forEach(el => {
+      el.style.pointerEvents = '';
+      el.style.opacity = '';
+    });
+    if (RTCOOP.isHost && wasBattleScreen) {
+      // Host retreated — tell guests to return to map too
+      _rtPatch('coop_session', {status: 'retreated'});
+      _rtPatch('coop_map', {
+        status: 'idle',
+        host: '',
+        battle_prov_id: -1,
+        battle_prov_name: '',
+        started_at: 0,
+        auto_join_guests: false,
+        retreated_at: Date.now(),
+        ..._rtcoopBuildCampaignSnapshot(),
+      });
+    }
+    RTCOOP.isHost = false;
+    RTCOOP._wavePending = false;
+    clearInterval(RTCOOP.battlePollTimer);
+    _rtcoopStartMapPoll();
+  }
+  // Always restore retreat button
+  const retreatBtn = document.getElementById('retreat-btn');
+  if (retreatBtn) { retreatBtn.disabled = false; retreatBtn.style.opacity = '1'; retreatBtn.style.pointerEvents = ''; retreatBtn.title = ''; }
+
+  const total = PROVINCES.length;
+  const owned = Object.values(provState).filter(v=>v==='owned'||v==='player').length;
+  if (owned === total) setTimeout(() => showCampaignVictory(), 500);
+}
+
+function rematchBattle() {
+  if (!G.fort) {
+    returnToMap();
+    return;
+  }
+  if (RTCOOP.enabled && G.mode === 'coop' && !_rtcoopCanRematchAfterDefeat()) {
+    return;
+  }
+  if (RTCOOP.enabled && G.mode === 'coop') {
+    RTCOOP.isHost = true;
+    rtcoopHostStartBattle(G.fort, { autoJoinGuests: true }); // async — non-blocking
+  }
+  startBattle(G.fort, G.mode);
+}
+
+/* ===========================================================
+   BATTLE INIT
+=========================================================== */
+let campaignMode = 'coop';
+
+function startBattle(fort, mode) {
+  G.mode = mode;
+  G.fort = fort;
+  G.battleProvId = fort.provId !== undefined ? fort.provId : null;
+  G.launchProvId = playerProvId;
+  G.provConquestType = fort.provId !== undefined ? getProvType(fort.provId) : 'battle';
+  G.wave = 1;
+  G.totalWaves = G.provConquestType === 'battle' ? 3 + (fort.diff||1) : 5;
+  G.score = 0; G.streak = 0; G.bestStreak = 0;
+  G.totalCorrect = 0; G.totalAnswered = 0; G.playerIdx = 0;
+  if (!G.seenChars) G.seenChars = loadProgress();
+
+  const ctype = G.provConquestType || 'battle';
+  const tagFilter = ctype==='build' ? 'build' : ctype==='feast' ? 'feast' : null;
+  function _makePool(maxLvl) {
+    let p = CHARACTER_DB.filter(c=>charToNumericLevel(c)<=maxLvl);
+    if (tagFilter) {
+      const tagged = p.filter(c=>c.tags&&c.tags.includes(tagFilter));
+      const general = p.filter(c=>!c.tags||!c.tags.includes(tagFilter));
+      const generalSample = general.sort(()=>Math.random()-.5).slice(0, Math.max(20, general.length*0.4|0));
+      p = [...tagged, ...generalSample];
+    }
+    return p;
+  }
+  if (mode === 'coop') {
+    // Co-op: use highest difficulty among all players
+    const maxLvl = PLAYERS.length ? Math.max(...PLAYERS.map(p => playerDifficulty[p.id] || 3)) : 3;
+    G.charPool = _makePool(maxLvl);
+  } else {
+    G.charPool = _makePool(playerDifficulty[mode] || 3);
+  }
+
+  G.pinyinState = {};
+  G.charPool.forEach(c=>{
+    const s=G.seenChars[c.hz];
+    G.pinyinState[c.hz] = !s || s.correct < 3;
+  });
+
+  // In networked co-op, enemy HP scales by number of connected players
+  G.rtcoopPlayerCount = (RTCOOP.enabled && mode === 'coop') ? Math.max(2, _rtcoopOnlineCount()) : 1;
+
+  G.heroes = getHeroesDef(mode).map(h=>({...h, hp:h.maxHp}));
+  G.retryQueue = [];
+  // Carry in any pending retry from the previous battle
+  if (G.pendingRetry) { G.retryQueue.push(G.pendingRetry); G.pendingRetry = null; }
+  // Apply hero passives (e.g. L3 = start with 1 streak)
+  applyHeroPassives(mode);
+  // In networked co-op: each device only gets questions for their own role
+  if (RTCOOP.enabled && mode === 'coop') {
+    const myLvl = playerDifficulty[RTCOOP.myRole] || 3;
+    G.charPool = _makePool(myLvl);
+    const myHero = G.heroes.find(h => h.level === RTCOOP.myRole || h.ownerName === RTCOOP.myName);
+    G.heroes = myHero ? [{ ...myHero, _online: true }] : [];
+  }
+
+  renderHeroBars();
+  spawnEnemy(G.battleProvId);
+  showScr('scr-battle');
+  if (!musicMuted) playBattleMusic();
+  if (RTCOOP.enabled && mode === 'coop') {
+    if (RTCOOP.isHost) rtcoopHostInitSession(G.totalWaves, G.enemy);
+    else rtcoopGuestJoinSession();
+  }
+  nextQ();
+}
+
+/* ===========================================================
+   STUDY SCREEN
+=========================================================== */
+function updateStudyBtnLabels(){
+  const grid = document.getElementById('study-filter-grid');
+  if (!grid) return;
+  // Remove old player buttons, keep first two (All / Needs Work)
+  Array.from(grid.querySelectorAll('.study-player-btn')).forEach(b => b.remove());
+  PLAYERS.forEach((player, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'btn-s study-player-btn';
+    btn.style.cssText = 'font-size:clamp(14px,3.8vw,18px);padding:10px 6px;width:100%';
+    btn.textContent = PLAYER_EMOJIS[idx] + ' ' + player.name + ' Lv' + (playerDifficulty[player.id] || 3);
+    btn.onclick = () => filterStudy(player.id);
+    grid.appendChild(btn);
+  });
+}
+
+function filterStudy(f){
+  // f is 'all', 'struggling', or a player ID like 'p0'
+  const isPlayerId = PLAYERS.some(p => p.id === f);
+  const studyMode = isPlayerId ? f : (campaignMode || PLAYERS[0]?.id || 'p0');
+  const prog=loadProgress(studyMode); let pool;
+  if(f==='all') pool=CHARACTER_DB;
+  else if(isPlayerId) pool=CHARACTER_DB.filter(c=>charToNumericLevel(c)<=(playerDifficulty[f]||3));
+  else{
+    pool=CHARACTER_DB.filter(c=>{const s=prog[c.hz];return s&&s.seen>=2&&s.correct/s.seen<0.6;});
+    if(!pool.length)pool=CHARACTER_DB.slice(0,20);
+  }
+  const grid=document.getElementById('char-grid');
+  grid.innerHTML=pool.map(c=>{
+    const s=prog[c.hz];let cls='';
+    if(s&&s.seen>=3&&s.correct/s.seen>=0.8)cls=' mastered';
+    else if(s&&s.seen>=2&&s.correct/s.seen<0.5)cls=' struggling';
+    return`<div class="char-tile${cls}" onclick="showCharModal('${c.hz}','${studyMode}')"><span class="ct-hz">${c.hz}</span><span class="ct-py">${c.py}</span><span class="ct-en">${c.en}</span></div>`;
+  }).join('');
+}
+
+function showCharModal(hz, mode){
+  const c=CHARACTER_DB.find(x=>x.hz===hz);if(!c)return;
+  document.getElementById('modal-char').textContent=c.hz;
+  document.getElementById('modal-py').textContent=c.py;
+  document.getElementById('modal-en').textContent=c.en;
+  const s=loadProgress(mode || campaignMode || PLAYERS[0]?.id || 'p0')[hz];
+  document.getElementById('modal-seen').textContent=s?`Seen ${s.seen}× · Correct ${Math.round(s.correct/s.seen*100)}%`:'Not yet practiced';
+  document.getElementById('char-modal').classList.add('active');
+  speakChinese(c.hz);
+}
+function closeModal(){document.getElementById('char-modal').classList.remove('active');}
+
+/* ===========================================================
+   PERSISTENCE
+=========================================================== */
+function _progKey(mode) {
+  // Generic: skz_prog_<mode> works for any player ID ('p0','p1','coop',…)
+  return 'skz_prog_' + (mode || 'p0');
+}
+function loadProgress(mode){
+  const key = _progKey(mode || campaignMode || PLAYERS[0]?.id || 'p0');
+  try{return JSON.parse(localStorage.getItem(key)||'{}');}catch(e){return{};}
+}
+function saveProgress(){
+  const key = _progKey(campaignMode || PLAYERS[0]?.id || 'p0');
+  try{
+    const stored=loadProgress(campaignMode);
+    Object.entries(G.seenChars||{}).forEach(([hz,d])=>{
+      if(!stored[hz])stored[hz]=d;
+      else{stored[hz].seen=Math.max(stored[hz].seen,d.seen);stored[hz].correct=Math.max(stored[hz].correct,d.correct);}
+    });
+    localStorage.setItem(key,JSON.stringify(stored));
+  }catch(e){}
+}
+
+function updateProfileStars(){
+  // Stars are now computed inline in renderProfileScreen() — nothing to do here
+}
+
+/* ===========================================================
+   HELPERS
+=========================================================== */
+function cnNum(n){return['零','一','二','三','四','五','六','七','八','九','十'][n]||n;}
+
+/* ===========================================================
+   SAVE / LOAD / RESET
+=========================================================== */
+let _resetMode = 'p0';
+
+function setDifficulty(player, val) {
+  playerDifficulty[player] = parseInt(val);
+  saveDifficulty();
+  document.getElementById('diff-saved-msg').textContent = '✅ Saved!';
+  setTimeout(()=>{ const el=document.getElementById('diff-saved-msg'); if(el) el.textContent=''; }, 2000);
+  updateProfileStars();
+}
+
+function openSaveModal() {
+  // Clear active fields
+  const ib = document.getElementById('import-box-active'); if(ib) ib.value='';
+  const im = document.getElementById('import-msg-active'); if(im) im.textContent='';
+  const ri = document.getElementById('reset-input-active'); if(ri) ri.value='';
+  const rm = document.getElementById('reset-msg-active'); if(rm) rm.textContent='';
+  const rai = document.getElementById('reset-all-input-active'); if(rai) rai.value='';
+  const ram = document.getElementById('reset-all-msg-active'); if(ram) ram.textContent='';
+
+  // Build difficulty rows dynamically
+  const diffRows = document.getElementById('settings-difficulty-rows');
+  if (diffRows) {
+    if (PLAYERS.length === 0) {
+      diffRows.innerHTML = '<div style="font-size:13px;color:var(--parch2);opacity:.7">No players added yet.</div>';
+    } else {
+      diffRows.innerHTML = PLAYERS.map((player, idx) => {
+        const diff = playerDifficulty[player.id] || 3;
+        const emoji = PLAYER_EMOJIS[idx];
+        const opts = [1,2,3,4,5,6,7,8,9,10].map(v => {
+          const labels = {1:'Level 1 — Age 4-5 · Pictographs (~20 chars)',2:'Level 2 — Age 5-6 · Basic vocab (~60 chars)',3:'Level 3 — Age 6-7 · Odonata Blue (~120 chars)',4:'Level 4 — Age 7-8 · Odonata Pink start (~200 chars)',5:'Level 5 — Age 8-9 · Odonata Pink (~300 chars)',6:'Level 6 — Age 9-10 · Odonata Pink complete (~400 chars)',7:'Level 7 — Age 10-12 · HSK 3-4 (~500 chars)',8:'Level 8 — Age 12-14 · HSK 4-5 (~600 chars)',9:'Level 9 — Age 14+ · HSK 5-6 (~700 chars)',10:'Level 10 — Adult · All characters'};
+          return `<option value="${v}"${v===diff?' selected':''}>${labels[v]}</option>`;
+        }).join('');
+        return `<div style="margin-bottom:12px">
+          <label style="display:block;font-family:'Ma Shan Zheng',cursive;font-size:16px;color:var(--goldb);margin-bottom:6px">${emoji} ${player.name}</label>
+          <select onchange="setDifficulty('${player.id}',this.value)" style="width:100%;background:rgba(0,0,0,.7);border:1px solid rgba(201,162,39,.5);border-radius:6px;color:var(--parch);font-size:15px;padding:9px 12px;font-family:'Noto Serif SC',serif">${opts}</select>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // Build cloud sync rows dynamically
+  const cloudRows = document.getElementById('settings-cloud-rows');
+  if (cloudRows) {
+    const allModes = [...PLAYERS.map((p,i) => ({id:p.id, label: PLAYER_EMOJIS[i]+' '+p.name})), {id:'coop', label:'🤝 Co-op'}];
+    const cols = Math.min(allModes.length, 3);
+    cloudRows.innerHTML = `<div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:8px;margin-bottom:6px">` +
+      allModes.map(m => `
+        <div style="border:1px solid rgba(201,162,39,.2);border-radius:6px;padding:8px;text-align:center">
+          <div style="font-family:'Ma Shan Zheng',cursive;font-size:12px;color:var(--goldb);margin-bottom:6px">${m.label}</div>
+          <button onclick="cloudSaveConfirm('${m.id}',this)" class="btn-s" style="width:100%;font-size:12px;padding:6px 0;margin-bottom:4px">☁️ Save</button>
+          <button onclick="cloudLoadConfirm('${m.id}',this)" class="btn-s" style="width:100%;font-size:12px;padding:6px 0">⬇️ Restore</button>
+          <div id="cloud-msg-${m.id}" style="font-size:11px;min-height:14px;margin-top:4px;color:var(--jadeb)"></div>
+        </div>`).join('') + '</div>';
+  }
+
+  // Populate Save Management player dropdown
+  const sel = document.getElementById('save-player-select');
+  if (sel) {
+    const allOpts = [...PLAYERS.map((p,i) => ({id:p.id, label: PLAYER_EMOJIS[i]+' '+p.name})), {id:'coop', label:'🤝 Co-op'}];
+    sel.innerHTML = allOpts.map(o => `<option value="${o.id}">${o.label}</option>`).join('');
+  }
+
+  // Firebase config
+  const cfg = _getFirebaseConfig();
+  const fbKey = document.getElementById('fb-key-input');
+  if(fbKey) fbKey.value = cfg.key;
+  const cfgMsg = document.getElementById('fb-config-msg');
+  if(cfgMsg) cfgMsg.textContent = cfg.key ? '✅ Config loaded' : '';
+
+  onSavePlayerChange();
+  const sm = document.getElementById('save-modal');
+  if(sm) sm.classList.add('active');
+}
+
+function onSavePlayerChange() {
+  const sel = document.getElementById('save-player-select');
+  if (!sel) return;
+  const mode = sel.value;
+  const name = getPlayerName(mode);
+  const el = document.getElementById('save-export-label');
+  const il = document.getElementById('save-import-label');
+  const rl = document.getElementById('save-reset-label');
+  const rb = document.getElementById('save-reset-btn');
+  const ral = document.getElementById('save-reset-all-label');
+  const rab = document.getElementById('save-reset-all-btn');
+  const ib = document.getElementById('import-box-active');
+  const im = document.getElementById('import-msg-active');
+  const ri = document.getElementById('reset-input-active');
+  const rm = document.getElementById('reset-msg-active');
+  const rai = document.getElementById('reset-all-input-active');
+  const ram = document.getElementById('reset-all-msg-active');
+  if(el) el.textContent = `📤 Share ${name} save code:`;
+  if(il) il.textContent = `📥 Import ${name} save code:`;
+  if(rl) rl.innerHTML = `🗺️ Reset ${name} territories (type <strong style="color:var(--goldb)">reset</strong> to confirm):`;
+  if(rb) rb.textContent = `🗺️ Reset ${name} Territories`;
+  if(ral) ral.textContent = `💥 Reset all ${name} data (enter password):`;
+  if(rab) rab.textContent = `💥 Reset All ${name} Data`;
+  if(ib) { ib.value = ''; ib.placeholder = `Paste ${name} save code here…`; }
+  if(im) im.textContent = '';
+  if(ri) ri.value = '';
+  if(rm) rm.textContent = '';
+  if(rai) rai.value = '';
+  if(ram) ram.textContent = '';
+}
+
+function doImportActive() {
+  const mode = (document.getElementById('save-player-select') || {}).value || PLAYERS[0]?.id || 'p0';
+  const activeBox = document.getElementById('import-box-active');
+  const activeMsg = document.getElementById('import-msg-active');
+  const raw = activeBox ? activeBox.value.trim() : '';
+  if (!raw) { if(activeMsg){activeMsg.style.color='var(--redb)';activeMsg.textContent='Paste a save code first.';} return; }
+  try {
+    const data = _decompress(raw);
+    _applyImportData(data, mode);
+    if(activeMsg){activeMsg.style.color='var(--jadeb)';activeMsg.textContent='✅ Imported! (from '+(data.exported||data.savedAt||'').slice(0,10)+')';}
+    if(activeBox) activeBox.value='';
+  } catch(e) {
+    if(activeMsg){activeMsg.style.color='var(--redb)';activeMsg.textContent='❌ '+e.message;}
+  }
+}
+
+function doResetActive() {
+  const mode = (document.getElementById('save-player-select') || {}).value || PLAYERS[0]?.id || 'p0';
+  const input = document.getElementById('reset-input-active');
+  const msg = document.getElementById('reset-msg-active');
+  if (!input || input.value.trim().toLowerCase() !== 'reset') {
+    if(msg){msg.style.color='var(--redb)';msg.textContent='Type exactly "reset" to confirm.';}
+    return;
+  }
+  try {
+    localStorage.removeItem('skz_campaign_' + mode);
+    if (playerRosters[mode]) { playerRosters[mode] = {roster:[], startHero:null}; saveRosters(); }
+    if (typeof campaignMode !== 'undefined' && campaignMode === mode) {
+      initProvState(); playerProvId = 0; defeatedGenerals = new Set();
+    }
+    // For co-op: also reset Firebase coop_map and coop_session so host role is freed
+    if (mode === 'coop') {
+      const cfg = _getFirebaseConfig();
+      if (cfg.key) {
+        const freshProvState = {};
+        PROVINCES.forEach(p => { freshProvState[p.id] = 'neutral'; });
+        freshProvState[0] = 'owned';
+        _rtSet('coop_map', {
+          controller: _rtcoopPreferredControllerName(),
+          status: 'idle',
+          host: '',
+          battle_prov_id: -1,
+          battle_prov_name: '',
+          battle_ctype: 'battle',
+          prov_state: JSON.stringify(freshProvState),
+          player_prov_id: 5,
+          reset_at: Date.now(),
+        }).catch(() => {});
+        _rtSet('coop_session', null).catch(() => {});
+      }
+      rtcoopDisable();
+    }
+    if(msg){msg.style.color='var(--jadeb)';msg.textContent='✅ Territories reset! Choose a new hero to begin.';}
+    if(input) input.value='';
+  } catch(e) {
+    if(msg) msg.textContent='❌ Reset failed: '+e.message;
+  }
+}
+
+function doResetAllActive() {
+  const mode = (document.getElementById('save-player-select') || {}).value || PLAYERS[0]?.id || 'p0';
+  const input = document.getElementById('reset-all-input-active');
+  const msg = document.getElementById('reset-all-msg-active');
+  if (!input || input.value !== 'reseteverything') {
+    if(msg){msg.style.color='var(--redb)';msg.textContent='Incorrect password.';}
+    if(input) input.value='';
+    return;
+  }
+  try {
+    // Campaign state
+    localStorage.removeItem('skz_campaign_' + mode);
+    // Hero roster
+    if (playerRosters[mode]) { playerRosters[mode] = {roster:[], startHero:null}; saveRosters(); }
+    // Character mastery (per-user)
+    localStorage.removeItem(_progKey(mode));
+    // Hero levels (only this mode's data)
+    const hl = loadHeroLevels();
+    if (hl[mode]) { delete hl[mode]; saveHeroLevels(hl); }
+    // Campaign rating
+    localStorage.removeItem('skz_campaign_rating_' + mode);
+    // Story chapters (shared — reset fully)
+    saveUnlockedChapters([]);
+    // Live state if currently active
+    if (typeof campaignMode !== 'undefined' && campaignMode === mode) {
+      initProvState(); playerProvId = 0; defeatedGenerals = new Set();
+      G.seenChars = {};
+    }
+    // For co-op: also reset Firebase coop_map and coop_session so host role is freed
+    if (mode === 'coop') {
+      const cfg = _getFirebaseConfig();
+      if (cfg.key) {
+        const freshProvState = {};
+        PROVINCES.forEach(p => { freshProvState[p.id] = 'neutral'; });
+        freshProvState[0] = 'owned';
+        _rtSet('coop_map', {
+          controller: _rtcoopPreferredControllerName(),
+          status: 'idle',
+          host: '',
+          battle_prov_id: -1,
+          battle_prov_name: '',
+          battle_ctype: 'battle',
+          prov_state: JSON.stringify(freshProvState),
+          player_prov_id: 5,
+          reset_at: Date.now(),
+        }).catch(() => {});
+        _rtSet('coop_session', null).catch(() => {});
+      }
+      rtcoopDisable();
+    }
+    updateProfileStars();
+    updateAllProfileExtras();
+    if(msg){msg.style.color='var(--jadeb)';msg.textContent='✅ All data reset for ' + mode + '.';}
+    if(input) input.value='';
+  } catch(e) {
+    if(msg){msg.style.color='var(--redb)';msg.textContent='❌ Reset failed: '+e.message;}
+    if(input) input.value='';
+  }
+}
+
+function closeSaveModal() {
+  document.getElementById('save-modal').classList.remove('active');
+}
+
+function selectResetMode(mode) {
+  _resetMode = mode; // kept for compatibility but rb- buttons no longer exist
+}
+
+
+/* == Compression helpers ==
+   Uses LZ-string for ~75% size reduction vs raw base64.
+   Falls back gracefully to old format on import for backwards compat. */
+function _compress(obj) {
+  try {
+    if (typeof LZString !== 'undefined') {
+      return 'LZ:' + LZString.compressToEncodedURIComponent(JSON.stringify(obj));
+    }
+  } catch(e) {}
+  // Fallback: old btoa encoding
+  return btoa(unescape(encodeURIComponent(JSON.stringify(obj))));
+}
+
+function _decompress(raw) {
+  raw = raw.trim();
+  if (raw.startsWith('LZ:')) {
+    const json = LZString.decompressFromEncodedURIComponent(raw.slice(3));
+    return JSON.parse(json);
+  }
+  // Old format
+  return JSON.parse(decodeURIComponent(escape(atob(raw))));
+}
+
+/* == Per-user export / import / reset == */
+function _buildUserSave(mode) {
+  const rosters = JSON.parse(localStorage.getItem('skz_rosters') || '{}');
+  const userRoster = rosters[mode] || {roster:[], startHero:null};
+  const heroLevels = loadHeroLevels();
+  const campaignRating = loadCampaignRating(mode);
+  return _compress({
+    mode,
+    campaign: localStorage.getItem('skz_campaign_' + mode) || 'null',
+    roster:   JSON.stringify(userRoster),
+    chars:    localStorage.getItem(_progKey(mode)) || '{}',
+    diff:     localStorage.getItem('skz_diff') || 'null',
+    heroLevels: JSON.stringify(heroLevels[mode] || {}),
+    campaignRating: JSON.stringify(campaignRating),
+    chapters: localStorage.getItem('skz_chapters') || '[]',
+    exported: new Date().toISOString(),
+    v: 3,
+  });
+}
+
+function doExportUser(mode, method) {
+  try {
+    const code = _buildUserSave(mode);
+    const name = getPlayerName(mode);
+    if (navigator.share) {
+      navigator.share({ title: '三国汉字战 ' + name + ' Save', text: code }).catch(() => {
+        // Share failed — fall back to clipboard
+        navigator.clipboard.writeText(code).catch(() => {});
+      });
+    } else {
+      navigator.clipboard.writeText(code).then(() => {
+        _flashSaveBtn('✅ Copied!');
+      }).catch(() => {
+        _flashSaveBtn('❌ Copy failed — try manually');
+      });
+    }
+  } catch(e) { alert('Export failed: ' + e.message); }
+}
+
+function _flashSaveBtn(msg) {
+  const btn = document.querySelector('[onclick*="doExportUser"]');
+  if (btn) { const o = btn.textContent; btn.textContent = msg; setTimeout(() => btn.textContent = o, 2500); }
+}
+
+function _applyImportData(data, mode) {
+  if (!data.mode) throw new Error('Invalid save — wrong format');
+  // Accept if slot matches OR if stored playerName matches this player's name (cross-device restore)
+  const thisPlayerKey = _cloudPlayerKey(mode);
+  const dataKey = data.playerName || data.mode; // v4 uses playerName, v3 uses mode
+  if (dataKey !== thisPlayerKey && data.mode !== mode) {
+    throw new Error('Wrong player! This save is for "' + dataKey + '", not "' + thisPlayerKey + '"');
+  }
+  if (data.campaign && data.campaign !== 'null') localStorage.setItem('skz_campaign_' + mode, data.campaign);
+  if (data.roster) {
+    const rosters = JSON.parse(localStorage.getItem('skz_rosters') || '{}');
+    rosters[mode] = JSON.parse(data.roster);
+    localStorage.setItem('skz_rosters', JSON.stringify(rosters));
+    playerRosters[mode] = rosters[mode];
+  }
+  if (data.chars && data.chars !== '{}') {
+    try {
+      const progKey = _progKey(mode);
+      const existing = JSON.parse(localStorage.getItem(progKey) || '{}');
+      const imported = JSON.parse(data.chars);
+      Object.keys(imported).forEach(hz => {
+        if (!existing[hz] || imported[hz].seen > existing[hz].seen) existing[hz] = imported[hz];
+      });
+      localStorage.setItem(progKey, JSON.stringify(existing));
+    } catch(e2) {}
+  }
+  if (data.diff && data.diff !== 'null') {
+    const d = JSON.parse(data.diff);
+    if (d[mode]) { playerDifficulty[mode] = d[mode]; saveDifficulty(); }
+  }
+  if (data.heroLevels) {
+    try {
+      const hl = loadHeroLevels();
+      hl[mode] = JSON.parse(data.heroLevels);
+      saveHeroLevels(hl);
+    } catch(e2) {}
+  }
+  if (data.campaignRating) {
+    try {
+      const cr = JSON.parse(data.campaignRating);
+      if (cr && cr.stars) saveCampaignRating(mode, cr);
+    } catch(e2) {}
+  }
+  // Restore unlocked story chapters (merge — never remove existing unlocks)
+  if (data.chapters) {
+    try {
+      const existing = loadUnlockedChapters();
+      const imported = JSON.parse(data.chapters);
+      const merged = [...new Set([...existing, ...imported])];
+      saveUnlockedChapters(merged);
+    } catch(e2) {}
+  }
+  updateProfileStars();
+  try { renderProfileScreen(); } catch(e) {}
+  saveRosters();
+}
+
+function doImportUser(mode) {
+  const box = document.getElementById('import-box-' + mode);
+  const msg = document.getElementById('import-msg-' + mode);
+  const raw = box ? box.value.trim() : '';
+  if (!raw) { msg.style.color='var(--redb)'; msg.textContent='Paste a save code first.'; return; }
+  try {
+    const data = _decompress(raw);
+    _applyImportData(data, mode);
+    msg.style.color = 'var(--jadeb)';
+    msg.textContent = '✅ Imported! (from ' + (data.exported||'').slice(0,10) + ')';
+    if (box) box.value = '';
+  } catch(e) {
+    msg.style.color = 'var(--redb)';
+    msg.textContent = '❌ ' + e.message;
+  }
+}
+
+/* == Firebase Cloud Sync == */
+const FIREBASE_DB_URL = 'https://hanzizhan-default-rtdb.europe-west1.firebasedatabase.app';
+
+function _getFirebaseConfig() {
+  return {
+    url: (FIREBASE_DB_URL || '').replace(/\/+$/, ''),
+    key: localStorage.getItem('skz_fb_key') || '',
+  };
+}
+
+function saveFirebaseConfig() {
+  const key = (document.getElementById('fb-key-input').value || '').trim();
+  const msg = document.getElementById('fb-config-msg');
+  if (!key) { msg.style.color='var(--redb)'; msg.textContent='Enter a Family Key.'; return; }
+  localStorage.setItem('skz_fb_key', key);
+  msg.style.color = 'var(--jadeb)';
+  msg.textContent = '✅ Config saved!';
+}
+
+// Cloud save path uses player NAME (not slot ID) so it's device-independent
+function _cloudPlayerKey(mode) {
+  if (mode === 'coop') return 'coop';
+  const p = getPlayerById(mode);
+  // Sanitise name for use as a Firebase key: keep alphanumeric + basic punctuation
+  return p ? encodeURIComponent(p.name.trim().toLowerCase().replace(/\s+/g,'-')) : mode;
+}
+
+function _fbPath(mode) {
+  const {url, key} = _getFirebaseConfig();
+  if (!url || !key) return null;
+  // Path: /sanguo/<familyKey>/<playerName>.json  (name-keyed, not slot-keyed)
+  return url + '/sanguo/' + encodeURIComponent(key) + '/' + _cloudPlayerKey(mode) + '.json';
+}
+
+// Pending confirm state per mode
+const _cloudConfirm = {};
+
+function _cloudResetConfirm(mode) {
+  // Cancel any pending confirm for this mode after 8 seconds
+  if (_cloudConfirm[mode]) {
+    clearTimeout(_cloudConfirm[mode].timer);
+    delete _cloudConfirm[mode];
+  }
+}
+
+async function cloudSaveConfirm(mode, btn) {
+  const msg = document.getElementById('cloud-msg-' + mode);
+  const path = _fbPath(mode);
+  if (!path) { msg.style.color='var(--redb)'; msg.textContent='⚠️ Config missing — enter URL & Key above.'; return; }
+
+  // If already in confirm state for this mode, execute the save
+  if (_cloudConfirm[mode] && _cloudConfirm[mode].action === 'save') {
+    _cloudResetConfirm(mode);
+    btn.textContent = '☁️ Save';
+    btn.style.borderColor = '';
+    btn.style.color = '';
+    await cloudSave(mode);
+    return;
+  }
+
+  // First tap: check what's already in the cloud, then ask to confirm
+  _cloudResetConfirm(mode);
+  msg.style.color = 'var(--parch2)'; msg.textContent = '⏳ Checking cloud…';
+  try {
+    const res = await fetch(path);
+    let existingInfo = 'nothing saved yet';
+    if (res.ok && res.status !== 204) {
+      const data = await res.json();
+      if (data && data.savedAt) {
+        const d = new Date(data.savedAt);
+        existingInfo = 'last saved ' + d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+      } else if (data) {
+        existingInfo = 'existing save found';
+      }
+    }
+    msg.style.color = '#ffaa44';
+    msg.textContent = '⚠️ ' + existingInfo + ' — tap Save again to overwrite!';
+    btn.textContent = '⚠️ Confirm Save';
+    btn.style.borderColor = '#ffaa44';
+    btn.style.color = '#ffaa44';
+    _cloudConfirm[mode] = {
+      action: 'save',
+      timer: setTimeout(() => {
+        _cloudResetConfirm(mode);
+        btn.textContent = '☁️ Save';
+        btn.style.borderColor = '';
+        btn.style.color = '';
+        if (msg.textContent.startsWith('⚠️')) msg.textContent = '';
+      }, 8000)
+    };
+  } catch(e) {
+    // Can't reach cloud — still let them save, just confirm once
+    msg.style.color = '#ffaa44';
+    msg.textContent = '⚠️ Can\'t check cloud — tap Save again to proceed';
+    btn.textContent = '⚠️ Confirm Save';
+    btn.style.borderColor = '#ffaa44';
+    btn.style.color = '#ffaa44';
+    _cloudConfirm[mode] = {
+      action: 'save',
+      timer: setTimeout(() => {
+        _cloudResetConfirm(mode);
+        btn.textContent = '☁️ Save';
+        btn.style.borderColor = '';
+        btn.style.color = '';
+        if (msg.textContent.startsWith('⚠️')) msg.textContent = '';
+      }, 8000)
+    };
+  }
+}
+
+async function cloudLoadConfirm(mode, btn) {
+  const msg = document.getElementById('cloud-msg-' + mode);
+  const path = _fbPath(mode);
+  if (!path) { msg.style.color='var(--redb)'; msg.textContent='⚠️ Config missing — enter URL & Key above.'; return; }
+
+  // If already in confirm state, execute the load
+  if (_cloudConfirm[mode] && _cloudConfirm[mode].action === 'load') {
+    _cloudResetConfirm(mode);
+    btn.textContent = '⬇️ Restore';
+    btn.style.borderColor = '';
+    btn.style.color = '';
+    await cloudLoad(mode);
+    return;
+  }
+
+  // First tap: show what's in the cloud, warn about overwriting local save
+  _cloudResetConfirm(mode);
+  msg.style.color = 'var(--parch2)'; msg.textContent = '⏳ Checking cloud…';
+  try {
+    const res = await fetch(path);
+    if (!res.ok || res.status === 204) throw new Error('No cloud save found for ' + mode);
+    const data = await res.json();
+    if (!data || !data.mode) throw new Error('Empty or invalid cloud save');
+    const d = data.savedAt ? new Date(data.savedAt) : null;
+    const dateStr = d ? d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : 'unknown date';
+    msg.style.color = '#ffaa44';
+    msg.textContent = '⚠️ Cloud save from ' + dateStr + ' — this will overwrite local! Tap Restore again.';
+    btn.textContent = '⚠️ Confirm Restore';
+    btn.style.borderColor = '#ffaa44';
+    btn.style.color = '#ffaa44';
+    _cloudConfirm[mode] = {
+      action: 'load',
+      timer: setTimeout(() => {
+        _cloudResetConfirm(mode);
+        btn.textContent = '⬇️ Restore';
+        btn.style.borderColor = '';
+        btn.style.color = '';
+        if (msg.textContent.startsWith('⚠️')) msg.textContent = '';
+      }, 8000)
+    };
+  } catch(e) {
+    msg.style.color = 'var(--redb)';
+    msg.textContent = '❌ ' + e.message;
+  }
+}
+
+async function cloudSave(mode) {
+  const msg = document.getElementById('cloud-msg-' + mode);
+  const path = _fbPath(mode);
+  if (!path) { msg.style.color='var(--redb)'; msg.textContent='⚠️ Config missing — enter URL & Key above.'; return; }
+  msg.style.color = 'var(--parch2)'; msg.textContent = '⏳ Uploading…';
+  try {
+    const rosters = JSON.parse(localStorage.getItem('skz_rosters') || '{}');
+    const heroLevels = loadHeroLevels();
+    const playerName = _cloudPlayerKey(mode); // name-based key
+    const payload = {
+      mode,
+      playerName,                     // store name so restore can match correctly
+      campaign: localStorage.getItem('skz_campaign_' + mode) || 'null',
+      roster:   JSON.stringify(rosters[mode] || {roster:[],startHero:null}),
+      chars:    localStorage.getItem(_progKey(mode)) || '{}',
+      diff:     localStorage.getItem('skz_diff') || 'null',
+      heroLevels: JSON.stringify(heroLevels[mode] || {}),
+      campaignRating: JSON.stringify(loadCampaignRating(mode)),
+      chapters: localStorage.getItem('skz_chapters') || '[]',
+      savedAt:  new Date().toISOString(),
+      v: 4,
+    };
+    const res = await fetch(path, {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    msg.style.color = 'var(--jadeb)';
+    msg.textContent = '✅ Uploaded ' + new Date().toLocaleTimeString();
+  } catch(e) {
+    msg.style.color = 'var(--redb)';
+    msg.textContent = '❌ Upload failed: ' + e.message;
+  }
+}
+
+async function cloudLoad(mode) {
+  const msg = document.getElementById('cloud-msg-' + mode);
+  const path = _fbPath(mode);
+  if (!path) { msg.style.color='var(--redb)'; msg.textContent='⚠️ Config missing — enter URL & Key above.'; return; }
+  msg.style.color = 'var(--parch2)'; msg.textContent = '⏳ Downloading…';
+  try {
+    const res = await fetch(path);
+    if (res.status === 404 || res.status === 204) throw new Error('No cloud save found for ' + mode);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (!data || !data.mode) throw new Error('Empty or invalid cloud save');
+    _applyImportData(data, mode);
+    msg.style.color = 'var(--jadeb)';
+    msg.textContent = '✅ Loaded (saved ' + (data.savedAt||'').slice(0,10) + ')';
+  } catch(e) {
+    msg.style.color = 'var(--redb)';
+    msg.textContent = '❌ ' + e.message;
+  }
+}
+
+/* ===========================================================
+   REALTIME CO-OP (RTCOOP)
+   - Always requires Firebase (no single-device fallback)
+   - Identity = player's entered name (not slot ID)
+   - Up to 4 players; HP scales by connected player count
+   - Firebase paths (all under /sanguo/<familyKey>/):
+       coop_map      -- presence, controller, battle state
+       coop_session  -- live battle session
+=========================================================== */
+
+function doResetUser(mode) {
+  const input = document.getElementById('reset-input-' + mode);
+  const msg = document.getElementById('reset-msg-' + mode);
+  if (!input || input.value.trim().toLowerCase() !== 'reset') {
+    if(msg){msg.style.color='var(--redb)';msg.textContent='Type exactly "reset" to confirm.';}
+    return;
+  }
+  try {
+    localStorage.removeItem('skz_campaign_' + mode);
+    if (playerRosters[mode]) { playerRosters[mode] = {roster:[], startHero:null}; saveRosters(); }
+    if (typeof campaignMode !== 'undefined' && campaignMode === mode) {
+      initProvState(); playerProvId = 0; defeatedGenerals = new Set();
+    }
+    if(msg){msg.style.color='var(--jadeb)';msg.textContent='✅ Reset! Choose a new hero to begin.';}
+    if(input) input.value = '';
+  } catch(e) {
+    if(msg) msg.textContent = '❌ Reset failed: ' + e.message;
+  }
+}
+
+
+
+/* ===========================================================
+   HERO LEVELLING SYSTEM (Option C)
+   XP per battle = floor(score/10), doubled if bestStreak >= 6
+   Level thresholds: 1→2: 50, 2→3: 120, 3→4: 250, 4→5: 450
+   Passives: L3 = start with 1 free streak, L5 = token glow
+=========================================================== */
+const HERO_XP_THRESHOLDS = [0, 50, 120, 250, 450]; // xp needed to reach level 2,3,4,5
+const HERO_LEVEL_PERKS = {
+  1: '初发菩提心 First vow awakened',
+  2: '同伴精进 Sutra-forged discipline',
+  3: '佛缘加持 Start with 1 merit streak',
+  4: '历劫明心 Tempered by ordeals',
+  5: '金光护法 Golden pilgrimage aura',
+};
+
+function loadHeroLevels() {
+  try { return JSON.parse(localStorage.getItem('skz_hero_levels')||'{}'); } catch(e) { return {}; }
+}
+function saveHeroLevels(data) {
+  try { localStorage.setItem('skz_hero_levels', JSON.stringify(data)); } catch(e) {}
+}
+
+function getHeroLevel(mode, heroKey) {
+  const data = loadHeroLevels();
+  return (data[mode] && data[mode][heroKey]) || {level:1, xp:0};
+}
+
+function heroLevelFromXP(xp) {
+  let lv = 1;
+  for (let i = 0; i < HERO_XP_THRESHOLDS.length; i++) {
+    if (xp >= HERO_XP_THRESHOLDS[i]) lv = i + 1;
+  }
+  return Math.min(lv, 5);
+}
+
+function xpForNextLevel(lv) {
+  return lv < 5 ? HERO_XP_THRESHOLDS[lv] : null; // lv is 1-based; threshold[lv] = xp for lv+1
+}
+
+// Returns {xpGained, leveledUp, newLevel, heroKey}
+function awardHeroXP(mode, score, bestStreak) {
+  const roster = playerRosters[mode];
+  const heroKey = roster && roster.startHero;
+  if (!heroKey || mode === 'coop') return null;
+
+  const data = loadHeroLevels();
+  if (!data[mode]) data[mode] = {};
+  if (!data[mode][heroKey]) data[mode][heroKey] = {level:1, xp:0};
+
+  const state = data[mode][heroKey];
+  const xpGain = Math.floor(score / 10) * (bestStreak >= 6 ? 2 : 1);
+  const oldLevel = heroLevelFromXP(state.xp);
+  state.xp += xpGain;
+  const newLevel = heroLevelFromXP(state.xp);
+  state.level = newLevel;
+  saveHeroLevels(data);
+  return {xpGained: xpGain, leveledUp: newLevel > oldLevel, newLevel, heroKey};
+}
+
+// Apply L3 passive: start with 1 streak if hero level >= 3
+function applyHeroPassives(mode) {
+  if (mode === 'coop') return;
+  const roster = playerRosters[mode];
+  const heroKey = roster && roster.startHero;
+  if (!heroKey) return;
+  const {level} = getHeroLevel(mode, heroKey);
+  if (level >= 3) { G.streak = 1; G.bestStreak = Math.max(G.bestStreak, 1); }
+}
+
+function updateProfileHeroLevel(mode) {
+  // Profile screen is fully rendered by renderProfileScreen() — nothing to do here
+}
+
+function updateProfileCampaignRating(mode) {
+  // Profile screen is fully rendered by renderProfileScreen() — nothing to do here
+}
+
+function updateAllProfileExtras() {
+  // Profile screen is fully rendered by renderProfileScreen() — nothing to do here
+}
+
+/* ===========================================================
+   CAMPAIGN RATING SYSTEM (Option D)
+   Rated 1–5 stars at campaign completion based on:
+   - Total campaign score (accumulated across battles)
+   - Mastery: % chars seen correctly ≥3 times at ≥70% accuracy
+   - Best streak achieved across entire campaign
+   Saved as skz_campaign_rating_{mode}
+=========================================================== */
+function loadCampaignRating(mode) {
+  try { return JSON.parse(localStorage.getItem('skz_campaign_rating_'+mode)||'null'); } catch(e) { return null; }
+}
+function saveCampaignRating(mode, rating) {
+  try { localStorage.setItem('skz_campaign_rating_'+mode, JSON.stringify(rating)); } catch(e) {}
+}
+
+function calcCampaignRating(mode, totalScore, globalBestStreak) {
+  const prog = loadProgress(mode);
+  const pool = CHARACTER_DB.filter(c => charToNumericLevel(c) <= playerDifficulty[mode]);
+  const mastered = pool.filter(c => { const s=prog[c.hz]; return s&&s.seen>=3&&s.correct/s.seen>=0.7; }).length;
+  const masteryPct = pool.length > 0 ? mastered / pool.length : 0;
+
+  // Score out of 5: weighted sum
+  let pts = 0;
+  // Mastery (0-2 pts)
+  if (masteryPct >= 0.8) pts += 2;
+  else if (masteryPct >= 0.5) pts += 1.5;
+  else if (masteryPct >= 0.25) pts += 1;
+  else if (masteryPct >= 0.1) pts += 0.5;
+  // Score (0-2 pts) — rough benchmarks
+  if (totalScore >= 5000) pts += 2;
+  else if (totalScore >= 2500) pts += 1.5;
+  else if (totalScore >= 1000) pts += 1;
+  else if (totalScore >= 400) pts += 0.5;
+  // Best streak (0-1 pt)
+  if (globalBestStreak >= 12) pts += 1;
+  else if (globalBestStreak >= 9) pts += 0.75;
+  else if (globalBestStreak >= 6) pts += 0.5;
+  else if (globalBestStreak >= 3) pts += 0.25;
+
+  const stars = Math.min(5, Math.max(1, Math.round(pts)));
+  return { stars, masteryPct: Math.round(masteryPct*100), totalScore, globalBestStreak };
+}
+
+
+
+/* ===========================================================
+   OPTION D — GENERAL BATTLE CRIES
+   Famous lines spoken at the final wave
+=========================================================== */
+const GENERAL_CRIES = {
+  '吕布':   { zh:'吾乃天下第一勇将吕奉先！', en:'I am Lü Bu, the mightiest warrior under heaven!' },
+  '曹操':   { zh:'宁教我负天下人，休教天下人负我！', en:'I would rather betray the world than let the world betray me!' },
+  '张飞':   { zh:'我乃燕人张翼德！谁敢与我决一死战！', en:'I am Zhang Fei of Yan! Who dares fight me to the death!' },
+  '关羽':   { zh:'吾观颜良，插标卖首耳！', en:'Yan Liang fights like a man already selling his own head!' },
+  '赵云':   { zh:'常山赵子龙在此！', en:'Zhao Zilong of Changshan stands before you!' },
+  '袁绍':   { zh:'吾有百万之众，何惧尔等！', en:'With a million soldiers at my back, what have I to fear?' },
+  '董卓':   { zh:'天下者，强者之天下也！', en:'The realm belongs to those with the strength to take it!' },
+  '周瑜':   { zh:'既生瑜，何生亮！', en:'If heaven made Zhou Yu, why did it need to make Zhuge Liang?' },
+  '诸葛亮': { zh:'鞠躬尽瘁，死而后已。', en:'I will give my last breath in devoted service.' },
+  '司马懿': { zh:'谋定而后动，知止而有得。', en:'Plan before you move; know when to stop, and you will prevail.' },
+  '孙权':   { zh:'江东子弟多才俊，卷土重来未可知！', en:'The warriors of Jiangdong are capable of great things — do not count them out!' },
+  '张辽':   { zh:'威震逍遥津！', en:'I made the name Xiaoyao Ford ring with fear across the realm!' },
+  '貂蝉':   { zh:'妾虽女流，誓助王司徒除此奸贼！', en:'Though I am only a woman, I vow to help Minister Wang rid us of this traitor!' },
+  '黄盖':   { zh:'苦肉计，瞒天过海！', en:'The ruse of wounded flesh — we deceive Cao Cao under an open sky!' },
+  '张角':   { zh:'苍天已死，黄天当立！', en:'The Blue Sky is dead — let the Yellow Sky rise in its place!' },
+  '夏侯惇': { zh:'吾乃曹操麾下夏侯元让！', en:'I am Xiahou Yuanrang, sworn blade of Cao Cao!' },
+  '孟获':   { zh:'南蛮之王，岂惧汉人！', en:'The King of the Nanman peoples fears no Han army!' },
+  '祝融':   { zh:'我南蛮勇士，以火攻之！', en:'We Nanman warriors — let fire be our weapon!' },
+  '陆逊':   { zh:'火烧连营，此乃天时地利！', en:'The fire that burned the enemy camps — that was Heaven and Earth on our side.' },
+  '庞统':   { zh:'凤雏之谋，谁人能破？', en:'Who can see through the stratagems of the Young Phoenix?' },
+  '华佗':   { zh:'医者仁心，亦知刮骨疗伤。', en:'A healer\'s heart — yet I have scraped poison from bone without flinching.' },
+  '王允':   { zh:'连环计成，国贼必除！', en:'The Chain Stratagem is complete — the traitor will fall!' },
+};
+
+// Female generals — get higher-pitched voice
+const FEMALE_GENERALS = new Set(['貂蝉', '祝融', '征侧']);
+
+function _speakBattleCry(text, isFemale) {
+  try {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'zh-CN';
+    // Gusto: faster rate, dramatically higher pitch for the cry
+    u.rate  = isFemale ? 1.05 : 0.88;
+    u.pitch = isFemale ? 1.8  : 0.5;  // female = high & spirited; male = as deep as API allows
+
+    // Try to pick a matching-gender voice if the browser has one
+    const voices = window.speechSynthesis.getVoices();
+    const zhVoices = voices.filter(v => v.lang.startsWith('zh'));
+    if (zhVoices.length > 1) {
+      // Heuristic: female voices often contain 'female', 'Ting-Ting', 'Mei-Jia',
+      // 'Sinji', 'Tingting', 'sin-ji', or are listed after the default male voice
+      const femaleKeywords = /female|ting.?ting|mei.?jia|sin.?ji|yu.?shu|xia.?oxue|hui.?hui|ya|女/i;
+      const femaleV = zhVoices.find(v => femaleKeywords.test(v.name));
+      const maleV   = zhVoices.find(v => !femaleKeywords.test(v.name));
+      if (isFemale && femaleV) u.voice = femaleV;
+      else if (!isFemale && maleV) u.voice = maleV;
+    }
+    return u;
+  } catch(e) { return null; }
+}
+
+function showBattleCry(generalName) {
+  const cry = GENERAL_CRIES[generalName];
+  if (!cry) return;
+  const overlay = document.getElementById('battle-cry-overlay');
+  const textEl  = document.getElementById('battle-cry-text');
+  if (!overlay || !textEl) return;
+
+  // Disable answer grid immediately when the general appears,
+  // before the name announcement or cry speech has even started
+  G._battleCrySpeaking = true;
+  const grid = document.getElementById('ans-grid');
+  if (grid) { grid.style.opacity = '0.35'; grid.style.pointerEvents = 'none'; }
+
+  // Show the overlay text with fade-in; it will be hidden when speech ends
+  textEl.innerHTML = `<div style="font-size:clamp(20px,5.5vw,28px);margin-bottom:6px">${cry.zh}</div><div style="font-size:clamp(11px,3vw,13px);color:var(--parch2);font-family:'Noto Serif SC',serif">${cry.en}</div>`;
+  textEl.style.animation = 'none';
+  textEl.offsetHeight;
+  textEl.style.animation = 'cryfade 0.6s ease forwards';
+  overlay.style.display = 'flex';
+
+  // Store the cry so renderEnemy's announcement chain can pick it up
+  // It will be spoken after the name announcement ends, before the question char
+  G._pendingBattleCry = { text: cry.zh, isFemale: FEMALE_GENERALS.has(generalName) };
+}
+
+/* ===========================================================
+   OPTION A — PROVINCE CONQUEST STORY CARDS
+   Shown between final wave victory and victory screen
+=========================================================== */
+/* == Province story functions (Option A) == */
+let _storyCallback = null;
+let _currentStoryZh = '';
+
+let _storySafetyTimer = null;
+
+function _speakStory(text) {
+  try { window.speechSynthesis.cancel(); } catch(e) {}
+  setTimeout(() => {
+    try {
+      const utt = new SpeechSynthesisUtterance(text);
+      utt.lang = 'zh-CN'; utt.rate = 0.82; utt.pitch = 1;
+      window.speechSynthesis.speak(utt);
+    } catch(e) {}
+  }, 300);
+}
+
+function showProvinceStory(provId, onContinue) {
+  const story = PROVINCE_STORIES[provId];
+  const general = getGeneralForProv(provId);
+  const prov = PROVINCES[provId];
+  if (!story || !prov) { if(onContinue) onContinue(); return; }
+
+  _storyCallback = onContinue;
+  _currentStoryZh = story.zh;
+
+  document.getElementById('story-general-name').textContent = general.name;
+  document.getElementById('story-general-en').textContent = general.nameEn;
+  document.getElementById('story-text-zh').textContent = story.zh;
+  document.getElementById('story-text-en').textContent = story.en;
+
+  const svg = document.getElementById('story-general-svg');
+  if (svg) {
+    const tmp = document.createElementNS('http://www.w3.org/2000/svg','svg');
+    const spriteKey = ENEMY_SPRITES[general.sprite] ? general.sprite : 'general';
+    if (ENEMY_SPRITES[spriteKey]) ENEMY_SPRITES[spriteKey](tmp);
+    svg.innerHTML = tmp.innerHTML;
+  }
+
+  showScr('scr-story');
+
+  // Speak the story text
+  setTimeout(() => {
+    _speakStory(general.name + '。' + story.zh);
+  }, 600);
+}
+
+function storyContinue() {
+  clearTimeout(_storySafetyTimer);
+  try { window.speechSynthesis.cancel(); } catch(e) {}
+  const cb = _storyCallback;
+  _storyCallback = null;
+  if (cb) cb();
+  else showScr('scr-map'); // replay mode — return to map
+}
+
+function storySpeak() {
+  _speakStory(_currentStoryZh);
+}
+
+/* == Milestone chapter functions (Option C) == */
+function loadUnlockedChapters() {
+  try { return JSON.parse(localStorage.getItem('skz_chapters') || '[]'); } catch(e) { return []; }
+}
+function saveUnlockedChapters(ids) {
+  try { localStorage.setItem('skz_chapters', JSON.stringify(ids)); } catch(e) {}
+}
+
+function checkMilestoneStory() {
+  const owned = Object.values(provState).filter(v => v === 'owned').length;
+  const unlocked = loadUnlockedChapters();
+  let newChapter = null;
+  for (const ch of STORY_CHAPTERS) {
+    if (owned >= ch.unlockAt && !unlocked.includes(ch.id)) {
+      unlocked.push(ch.id);
+      saveUnlockedChapters(unlocked);
+      newChapter = ch;
+      break; // one at a time
+    }
+  }
+  return newChapter;
+}
+
+function goStories() {
+  const unlocked = loadUnlockedChapters();
+  // Always unlock the first Journey chapter immediately
+  if (!unlocked.includes('c1')) { unlocked.push('c1'); saveUnlockedChapters(unlocked); }
+  const list = document.getElementById('stories-list');
+  if (!list) return;
+  list.innerHTML = '';
+  for (const ch of STORY_CHAPTERS) {
+    const isUnlocked = unlocked.includes(ch.id);
+    const div = document.createElement('div');
+    div.style.cssText = `background:${isUnlocked?'rgba(60,40,8,.8)':'rgba(20,14,4,.6)'};border:1.5px solid ${isUnlocked?'rgba(201,162,39,.5)':'rgba(100,80,30,.3)'};border-radius:10px;padding:14px 16px;cursor:${isUnlocked?'pointer':'default'};opacity:${isUnlocked?'1':'0.4'};display:flex;align-items:center;gap:12px`;
+    div.innerHTML = `<span style="font-size:32px">${ch.illus}</span><div><div style="font-family:'Ma Shan Zheng',cursive;font-size:clamp(16px,4.5vw,20px);color:var(--goldb)">${ch.title}</div><div style="font-size:12px;color:var(--parch2);margin-top:2px">${ch.titleEn}${isUnlocked?'':' — 🔒 Unlock by clearing more stages'}</div></div>`;
+    if (isUnlocked) {
+      div.onclick = () => openChapter(ch);
+    }
+    list.appendChild(div);
+  }
+  if (!musicMuted) playTitleMusic();
+  showScr('scr-stories');
+}
+
+let _currentChapterZh = '';
+let _chapterUtterance = null;
+
+function _cancelChapterSpeech() {
+  try { window.speechSynthesis.cancel(); } catch(e) {}
+  _chapterUtterance = null;
+}
+
+function closeChapter() {
+  _cancelChapterSpeech();
+  showScr('scr-stories');
+}
+
+function openChapter(ch) {
+  _cancelChapterSpeech();
+  _currentChapterZh = ch.zh;
+  document.getElementById('chapter-title-bar').textContent = ch.title + '　' + ch.titleEn;
+  const illusEl = document.getElementById('chapter-illus');
+  if (illusEl) illusEl.innerHTML = CHAPTER_ART[ch.id] || `<div style="font-size:72px;text-align:center;padding:20px">${ch.illus}</div>`;
+  document.getElementById('chapter-zh').textContent = ch.zh;
+  document.getElementById('chapter-en').textContent = ch.en;
+  showScr('scr-story-chapter');
+  setTimeout(() => {
+    try {
+      _chapterUtterance = new SpeechSynthesisUtterance(ch.title + '。' + ch.zh);
+      _chapterUtterance.lang = 'zh-CN'; _chapterUtterance.rate = 0.82; _chapterUtterance.pitch = 1;
+      _chapterUtterance.onend = () => { _chapterUtterance = null; };
+      window.speechSynthesis.speak(_chapterUtterance);
+    } catch(e) {}
+  }, 500);
+}
+
+function chapterSpeak() {
+  _cancelChapterSpeech();
+  setTimeout(() => {
+    try {
+      _chapterUtterance = new SpeechSynthesisUtterance(_currentChapterZh);
+      _chapterUtterance.lang = 'zh-CN'; _chapterUtterance.rate = 0.82; _chapterUtterance.pitch = 1;
+      _chapterUtterance.onend = () => { _chapterUtterance = null; };
+      window.speechSynthesis.speak(_chapterUtterance);
+    } catch(e) {}
+  }, 100);
+}
+
+function loadDifficulty(){
+  try {
+    const d = JSON.parse(localStorage.getItem('skz_diff') || 'null');
+    if (d && typeof d === 'object') playerDifficulty = d;
+  } catch(e) {}
+}
+function saveDifficulty(){
+  try { localStorage.setItem('skz_diff', JSON.stringify(playerDifficulty)); } catch(e) {}
+}
+try { loadPlayers(); } catch(e) { console.warn('loadPlayers failed:', e); }
+try { loadDifficulty(); } catch(e) { console.warn('loadDifficulty failed:', e); }
+try { loadRosters(); } catch(e) { console.warn('loadRosters failed:', e); }
+try { initProvState(); } catch(e) { console.warn('initProvState failed:', e); }
+// Profile stars/extras now rendered on demand by renderProfileScreen()
+// Init on first user interaction — browsers block autoplay until a gesture
+document.addEventListener('click', () => {
+  if (!musicMuted && !currentAudio) playTitleMusic();
+}, {once:true});
+try { window.speechSynthesis.getVoices(); } catch(e) {}
+setTimeout(() => { try { window.speechSynthesis.getVoices(); } catch(e) {} }, 500);
+
+</script>
+<button id="mute-btn" title="Toggle Music" onclick="toggleMute()">♪</button>
+</body>
+</html>
+
