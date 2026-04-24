@@ -34,7 +34,7 @@
   <img src="sprites/logo.webp" alt="西游汉字路" style="width:min(420px,88vw);max-width:88vw;position:relative;z-index:2;filter:drop-shadow(0 0 40px rgba(201,162,39,0.5));animation:float 4s ease-in-out infinite">
   <div class="t-div"></div>
   <div style="display:flex;flex-direction:column;gap:11px;align-items:center;position:relative;z-index:2">
-    <button class="btn-s" onclick="goProfile()" style="background:linear-gradient(135deg,#7a1a1a,#b22222,#7a1a1a);border-color:var(--gold);color:var(--goldb);box-shadow:0 4px 20px rgba(139,26,26,.6)">⚔️ 出战！ Start</button>
+    <button class="btn-s" onclick="goProfile()" style="background:linear-gradient(135deg,#f6a86b,#efc98b,#c48cff);border-color:rgba(255,245,216,.82);color:#fff8ef;box-shadow:0 8px 26px rgba(196,140,255,.26)">⚔️ 出战！ Start</button>
     <button class="btn-s" onclick="goStudy()">📖 复习字库 Characters</button>
     <button class="btn-s" onclick="goStories()">📜 西游章节 Chapters</button>
     <button class="btn-s" onclick="openSaveModal()">⚙️ 设置 Settings</button>
@@ -129,23 +129,24 @@
     <svg id="map-svg" viewBox="0 0 2400 760" preserveAspectRatio="xMidYMid meet">
       <defs>
         <linearGradient id="seaGrad" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stop-color="#08111c"/>
-          <stop offset="100%" stop-color="#132235"/>
+          <stop offset="0%" stop-color="#c6eff7"/>
+          <stop offset="52%" stop-color="#95d7f5"/>
+          <stop offset="100%" stop-color="#b3c6ff"/>
         </linearGradient>
         <linearGradient id="mapbg" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="#f3e3b1"/>
-          <stop offset="55%" stop-color="#dcc283"/>
-          <stop offset="100%" stop-color="#c6a56a"/>
+          <stop offset="0%" stop-color="#fff6d8"/>
+          <stop offset="54%" stop-color="#f5dfbe"/>
+          <stop offset="100%" stop-color="#ead0f3"/>
         </linearGradient>
         <linearGradient id="routeGlow" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stop-color="rgba(138,83,31,.05)"/>
-          <stop offset="45%" stop-color="rgba(138,83,31,.22)"/>
-          <stop offset="100%" stop-color="rgba(138,83,31,.08)"/>
+          <stop offset="0%" stop-color="rgba(255,198,114,.08)"/>
+          <stop offset="45%" stop-color="rgba(248,171,116,.28)"/>
+          <stop offset="100%" stop-color="rgba(195,142,255,.12)"/>
         </linearGradient>
         <linearGradient id="rangeGrad" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0%" stop-color="#9b7c48"/>
-          <stop offset="100%" stop-color="#7a5e34"/>
-          </linearGradient>
+          <stop offset="0%" stop-color="#d4a05f"/>
+          <stop offset="100%" stop-color="#a07fdc"/>
+        </linearGradient>
         <filter id="parch-tex" x="-10%" y="-10%" width="120%" height="120%">
           <feTurbulence baseFrequency="0.8" numOctaves="2" seed="3" type="fractalNoise"/>
           <feColorMatrix type="matrix" values="1 0 0 0 0
@@ -160,15 +161,15 @@
       </defs>
 
       <rect width="2400" height="760" fill="url(#seaGrad)"/>
-      <rect x="34" y="34" width="2332" height="692" rx="30" fill="url(#mapbg)" filter="url(#parch-tex)" stroke="#8b6832" stroke-width="3"/>
+      <rect x="34" y="34" width="2332" height="692" rx="30" fill="url(#mapbg)" filter="url(#parch-tex)" stroke="#c8945f" stroke-width="3"/>
 
       <path d="M2260 156 C2050 100 1830 116 1600 220 C1390 314 1190 472 960 560 C710 654 442 646 160 544"
             fill="none" stroke="url(#routeGlow)" stroke-width="170" stroke-linecap="round" opacity=".9"/>
 
       <path d="M2320 80 C2190 100 2100 150 2040 228 C1980 304 1910 334 1810 334 C1700 334 1610 278 1485 292 C1350 308 1260 412 1130 474 C980 546 832 562 688 550 C506 536 330 458 96 392"
-            fill="rgba(31,74,110,.13)"/>
+            fill="rgba(148,199,232,.26)"/>
       <path d="M2268 118 C2112 122 2016 188 1968 282 C1922 376 1820 440 1660 456 C1492 470 1370 420 1212 454 C1040 490 914 612 724 642 C526 674 318 644 84 552"
-            fill="rgba(31,74,110,.08)"/>
+            fill="rgba(195,171,250,.18)"/>
 
       <g fill="url(#rangeGrad)" opacity=".6">
         <path d="M2040 132 l40 -28 l38 30 l34 -24 l38 34 l34 -20 l42 28"/>
@@ -177,19 +178,19 @@
         <path d="M420 520 l36 -28 l38 30 l30 -24 l40 34 l32 -22 l38 26"/>
       </g>
 
-      <g opacity=".72">
+      <g opacity=".86">
         <path d="M1840 246 C1764 250 1714 288 1676 352 C1644 404 1568 440 1490 444 C1394 448 1334 404 1258 414 C1174 426 1116 484 1080 558"
-              fill="none" stroke="#7fb0c4" stroke-width="12" stroke-linecap="round"/>
+          fill="none" stroke="#7fd9df" stroke-width="12" stroke-linecap="round"/>
         <path d="M954 516 C902 524 866 552 842 596"
-              fill="none" stroke="#7fb0c4" stroke-width="10" stroke-linecap="round"/>
+          fill="none" stroke="#7fd9df" stroke-width="10" stroke-linecap="round"/>
       </g>
 
       <g opacity=".7">
-        <text x="2180" y="110" text-anchor="middle" font-size="30" fill="#6b4d25" style="letter-spacing:3px">东土大唐</text>
-        <text x="2180" y="138" text-anchor="middle" font-size="15" fill="#7a5d34" style="letter-spacing:2px">Chang'an and the oath to seek the scriptures</text>
-        <text x="1210" y="118" text-anchor="middle" font-size="26" fill="#77562d" style="letter-spacing:4px">河西 流沙 西域</text>
-        <text x="340" y="180" text-anchor="middle" font-size="28" fill="#6b4d25" style="letter-spacing:4px">佛国天竺</text>
-        <text x="340" y="206" text-anchor="middle" font-size="15" fill="#7a5d34" style="letter-spacing:2px">Nalanda and Thunderclap Monastery</text>
+        <text x="2180" y="110" text-anchor="middle" font-size="30" fill="#935f35" style="letter-spacing:3px">东土大唐</text>
+        <text x="2180" y="138" text-anchor="middle" font-size="15" fill="#9c7654" style="letter-spacing:2px">Chang'an and the oath to seek the scriptures</text>
+        <text x="1210" y="118" text-anchor="middle" font-size="26" fill="#8e67a8" style="letter-spacing:4px">河西 流沙 西域</text>
+        <text x="340" y="180" text-anchor="middle" font-size="28" fill="#935f35" style="letter-spacing:4px">佛国天竺</text>
+        <text x="340" y="206" text-anchor="middle" font-size="15" fill="#9c7654" style="letter-spacing:2px">Nalanda and Thunderclap Monastery</text>
       </g>
 
       <g opacity=".82">
@@ -268,6 +269,11 @@
           <span class="map-compass-e">东</span>
           <span class="map-compass-s">南</span>
           <span class="map-compass-arrow">▲</span>
+        </div>
+        <div class="map-zoom-wrap">
+          <button class="map-zoom-btn" type="button" onclick="zoomMapByStep(-1)" aria-label="Zoom out">−</button>
+          <input id="map-zoom-slider" class="map-zoom-slider" type="range" min="0" max="100" step="1" value="0" oninput="setMapZoomPercent(this.value)">
+          <button class="map-zoom-btn" type="button" onclick="zoomMapByStep(1)" aria-label="Zoom in">＋</button>
         </div>
         <div class="map-compass-caption">向西取经 Westward road</div>
       </div>
@@ -1037,7 +1043,7 @@ function confirmRemovePlayer() {
 const MAP_WIDTH = 2400;
 const MAP_HEIGHT = 760;
 
-function routePoly(x, y, w = 24, h = 14) {
+function routePoly(x, y, w = 36, h = 22) {
   const halfW = Math.round(w / 2);
   return `${x-w},${y} ${x-halfW},${y-h} ${x+halfW},${y-h} ${x+w},${y} ${x+halfW},${y+h} ${x-halfW},${y+h}`;
 }
@@ -1138,24 +1144,24 @@ function clearCampaign(mode) {
 const FORT_RADIUS = 9;
 
 const TERRAIN_FILLS = {
-  plains:  'rgba(58,82,18,0.70)',
-  mountain:'rgba(75,58,28,0.75)',
-  forest:  'rgba(28,72,28,0.72)',
-  steppe:  'rgba(100,78,25,0.65)',
-  coast:   'rgba(28,68,72,0.68)',
-  river:   'rgba(32,72,52,0.68)',
-  temple:  'rgba(92,66,18,0.72)',
-  cave:    'rgba(66,44,20,0.74)',
+  plains:  'rgba(255,222,165,0.86)',
+  mountain:'rgba(198,170,245,0.82)',
+  forest:  'rgba(150,224,185,0.84)',
+  steppe:  'rgba(242,207,144,0.82)',
+  coast:   'rgba(152,223,240,0.82)',
+  river:   'rgba(137,231,224,0.84)',
+  temple:  'rgba(255,206,178,0.84)',
+  cave:    'rgba(208,188,255,0.8)',
 };
 const TERRAIN_STROKES = {
-  plains:  'rgba(120,160,50,0.42)',
-  mountain:'rgba(150,115,55,0.48)',
-  forest:  'rgba(60,145,60,0.45)',
-  steppe:  'rgba(175,140,55,0.45)',
-  coast:   'rgba(65,155,165,0.50)',
-  river:   'rgba(70,155,120,0.50)',
-  temple:  'rgba(210,170,80,0.55)',
-  cave:    'rgba(182,132,72,0.52)',
+  plains:  'rgba(226,165,104,0.7)',
+  mountain:'rgba(141,109,214,0.72)',
+  forest:  'rgba(82,179,126,0.68)',
+  steppe:  'rgba(211,154,92,0.68)',
+  coast:   'rgba(78,172,212,0.7)',
+  river:   'rgba(72,186,176,0.72)',
+  temple:  'rgba(225,142,119,0.72)',
+  cave:    'rgba(142,108,210,0.68)',
 };
 
 function renderProvinces() {
@@ -1167,8 +1173,8 @@ function renderProvinces() {
   const routeHalo = document.createElementNS(SVG_NS, 'path');
   routeHalo.setAttribute('d', PROVINCES.map((prov, idx) => `${idx === 0 ? 'M' : 'L'} ${prov.x} ${prov.y}`).join(' '));
   routeHalo.setAttribute('fill', 'none');
-  routeHalo.setAttribute('stroke', 'rgba(255,244,196,0.24)');
-  routeHalo.setAttribute('stroke-width', '18');
+  routeHalo.setAttribute('stroke', 'rgba(255,249,223,0.56)');
+  routeHalo.setAttribute('stroke-width', '28');
   routeHalo.setAttribute('stroke-linecap', 'round');
   routeHalo.setAttribute('stroke-linejoin', 'round');
   routeHalo.setAttribute('pointer-events', 'none');
@@ -1177,11 +1183,11 @@ function renderProvinces() {
   const routeLine = document.createElementNS(SVG_NS, 'path');
   routeLine.setAttribute('d', PROVINCES.map((prov, idx) => `${idx === 0 ? 'M' : 'L'} ${prov.x} ${prov.y}`).join(' '));
   routeLine.setAttribute('fill', 'none');
-  routeLine.setAttribute('stroke', 'rgba(122,78,26,0.72)');
-  routeLine.setAttribute('stroke-width', '6');
+  routeLine.setAttribute('stroke', 'rgba(224,158,110,0.9)');
+  routeLine.setAttribute('stroke-width', '9');
   routeLine.setAttribute('stroke-linecap', 'round');
   routeLine.setAttribute('stroke-linejoin', 'round');
-  routeLine.setAttribute('stroke-dasharray', '2 18');
+  routeLine.setAttribute('stroke-dasharray', '6 20');
   routeLine.setAttribute('pointer-events', 'none');
   layer.appendChild(routeLine);
 
@@ -1198,28 +1204,37 @@ function renderProvinces() {
     poly.setAttribute('stroke-linejoin','round');
     poly.setAttribute('data-prov', prov.id);
 
+    const terrainFill = TERRAIN_FILLS[prov.terrain] || 'rgba(255,222,165,0.86)';
+    const terrainStroke = TERRAIN_STROKES[prov.terrain] || 'rgba(226,165,104,0.7)';
     let fill, stroke, sw;
-    // Compute allegiance-based fill (used for neutral/adj provinces)
-    const alleg = prov.allegiance || 'Neutral';
-    let allegFill, allegHover;
-    if      (alleg==='Wei')  { allegFill='rgba(20,30,80,0.75)';  allegHover='rgba(30,45,110,0.92)'; }
-    else if (alleg==='Wu')   { allegFill='rgba(90,12,12,0.76)';  allegHover='rgba(115,15,15,0.88)'; }
-    else if (alleg==='Yuan') { allegFill='rgba(60,15,75,0.72)';  allegHover='rgba(85,20,105,0.90)'; }
-    else if (alleg==='Dong') { allegFill='rgba(45,45,45,0.72)';  allegHover='rgba(65,65,65,0.88)';  }
-    else                     { allegFill='rgba(52,36,8,0.68)';   allegHover='rgba(78,55,12,0.88)';  }
 
-    // For adj provinces: use allegiance fill but no gold stroke here (gold drawn in second pass)
-    if (isCur)       { fill='rgba(8,128,52,0.92)';  stroke='rgba(30,255,130,1)';    sw=2.8; }
-    else if (isOwned){ fill='rgba(10,100,45,0.86)'; stroke='rgba(45,210,108,0.88)'; sw=2.0; }
-    else if (isAdj)  { fill=allegFill;              stroke='none';                  sw=0;   }
-    else if (isEnemy){ fill='rgba(90,12,12,0.76)';  stroke='rgba(190,40,40,0.76)';  sw=1.6; }
-    else             { fill=allegFill; stroke=
-        alleg==='Wei'?'rgba(80,110,210,0.65)':alleg==='Wu'?'rgba(190,40,40,0.76)':
-        alleg==='Yuan'?'rgba(160,60,200,0.65)':alleg==='Dong'?'rgba(140,140,140,0.60)':
-        'rgba(155,120,38,0.45)'; sw=1.2; }
+    if (isCur) {
+      fill = 'rgba(164,246,234,0.96)';
+      stroke = 'rgba(68,199,181,1)';
+      sw = 4.2;
+    } else if (isOwned) {
+      fill = 'rgba(190,241,216,0.93)';
+      stroke = 'rgba(96,199,145,0.92)';
+      sw = 3.2;
+    } else if (isAdj) {
+      fill = terrainFill;
+      stroke = 'rgba(243,173,108,0.95)';
+      sw = 3.6;
+    } else if (isEnemy) {
+      fill = 'rgba(255,186,176,0.92)';
+      stroke = 'rgba(223,114,145,0.9)';
+      sw = 2.8;
+    } else {
+      fill = terrainFill;
+      stroke = terrainStroke;
+      sw = 2.1;
+    }
 
-    const hoverFill = isCur?'rgba(10,148,60,0.96)':isOwned?'rgba(12,118,52,0.94)':
-      isEnemy?'rgba(115,15,15,0.88)':allegHover;
+    const hoverFill = isCur ? 'rgba(186,250,240,0.98)'
+      : isOwned ? 'rgba(206,245,223,0.97)'
+      : isEnemy ? 'rgba(255,199,190,0.98)'
+      : isAdj ? 'rgba(255,233,184,0.96)'
+      : fill.replace(/0\.[0-9]+\)/, '0.98)');
     poly.setAttribute('fill', fill);
     poly.setAttribute('stroke', stroke);
     poly.setAttribute('stroke-width', sw);
@@ -1231,12 +1246,12 @@ function renderProvinces() {
 
     // -- Label --
     const lbl = document.createElementNS(SVG_NS,'text');
-    lbl.setAttribute('x', prov.x); lbl.setAttribute('y', prov.y + 5);
+    lbl.setAttribute('x', prov.x); lbl.setAttribute('y', prov.y + 8);
     lbl.setAttribute('text-anchor','middle');
     lbl.setAttribute('font-family',"'Ma Shan Zheng',cursive");
-    lbl.setAttribute('font-size','14');
-    lbl.setAttribute('fill', isCur?'#88ffcc':isOwned?'#70ee99':isAdj?'#f0d060':'#d4b878');
-    lbl.setAttribute('stroke','rgba(0,0,0,0.9)'); lbl.setAttribute('stroke-width','3.5');
+    lbl.setAttribute('font-size','24');
+    lbl.setAttribute('fill', isCur?'#137f72':isOwned?'#297d58':isAdj?'#9f5f2d':isEnemy?'#9d4f67':'#6f4f3a');
+    lbl.setAttribute('stroke','rgba(255,250,243,0.96)'); lbl.setAttribute('stroke-width','5.2');
     lbl.setAttribute('paint-order','stroke');
     lbl.setAttribute('pointer-events','none');
     lbl.textContent = prov.hz;
@@ -1246,8 +1261,8 @@ function renderProvinces() {
     {
       const ptIcon = document.createElementNS(SVG_NS,'text');
       const pt = getProvType(prov.id);
-      ptIcon.setAttribute('x',prov.x); ptIcon.setAttribute('y',prov.y+20);
-      ptIcon.setAttribute('text-anchor','middle'); ptIcon.setAttribute('font-size','14');
+      ptIcon.setAttribute('x',prov.x); ptIcon.setAttribute('y',prov.y+34);
+      ptIcon.setAttribute('text-anchor','middle'); ptIcon.setAttribute('font-size','18');
       ptIcon.setAttribute('pointer-events','none');
       ptIcon.textContent = pt==='build'?'⚒️':pt==='feast'?'🍽️':'⚔️';
       layer.appendChild(ptIcon);
@@ -1255,9 +1270,9 @@ function renderProvinces() {
     // -- Star for current --
     if (isCur) {
       const star = document.createElementNS(SVG_NS,'text');
-      star.setAttribute('x',prov.x); star.setAttribute('y',prov.y+18);
-      star.setAttribute('text-anchor','middle'); star.setAttribute('font-size','9');
-      star.setAttribute('fill','#44ffaa'); star.setAttribute('pointer-events','none');
+      star.setAttribute('x',prov.x); star.setAttribute('y',prov.y+30);
+      star.setAttribute('text-anchor','middle'); star.setAttribute('font-size','14');
+      star.setAttribute('fill','#2dbb9a'); star.setAttribute('pointer-events','none');
       star.textContent='★';
       layer.appendChild(star);
     }
@@ -1270,8 +1285,8 @@ function renderProvinces() {
     const outline = document.createElementNS(SVG_NS,'polygon');
     outline.setAttribute('points', prov.poly);
     outline.setAttribute('fill', 'none');
-    outline.setAttribute('stroke', 'rgba(235,188,42,0.95)');
-    outline.setAttribute('stroke-width', '3.0');
+    outline.setAttribute('stroke', 'rgba(247,175,109,0.98)');
+    outline.setAttribute('stroke-width', '4.6');
     outline.setAttribute('stroke-linejoin', 'round');
     outline.setAttribute('pointer-events', 'none');
     layer.appendChild(outline);
@@ -1348,7 +1363,19 @@ function getMapViewportRatio() {
 }
 
 function getMapMinWidth() {
-  return Math.min(MAP_WIDTH, Math.max(520, (MAP_HEIGHT / getMapViewportRatio()) + 24));
+  return Math.min(MAP_WIDTH, Math.max(340, (MAP_HEIGHT / getMapViewportRatio()) * 0.6));
+}
+
+function getMapZoomPercent() {
+  const minW = getMapMinWidth();
+  if (MAP_WIDTH <= minW) return 100;
+  const ratio = (MAP_WIDTH - _vbW) / (MAP_WIDTH - minW);
+  return Math.round(Math.max(0, Math.min(1, ratio)) * 100);
+}
+
+function syncMapZoomUi() {
+  const slider = document.getElementById('map-zoom-slider');
+  if (slider) slider.value = String(getMapZoomPercent());
 }
 
 function getSVGPoint(clientX, clientY) {
@@ -1380,12 +1407,29 @@ function applyMapViewBox(x, y, w) {
   _vbW = next.w;
   _vbH = next.h;
   if (_mapSvg) _mapSvg.setAttribute('viewBox', `${next.x} ${next.y} ${next.w} ${next.h}`);
+  syncMapZoomUi();
+}
+
+function setMapZoomPercent(percent) {
+  const nextPercent = Math.max(0, Math.min(100, Number(percent) || 0));
+  const minW = getMapMinWidth();
+  const nextW = MAP_WIDTH - ((MAP_WIDTH - minW) * (nextPercent / 100));
+  const centerX = _vbX + (_vbW / 2);
+  const centerY = _vbY + (_vbH / 2);
+  const ratio = getMapViewportRatio();
+  const nextH = Math.min(MAP_HEIGHT, nextW * ratio);
+  applyMapViewBox(centerX - (nextW / 2), centerY - (nextH / 2), nextW);
+}
+
+function zoomMapByStep(direction) {
+  const step = 14;
+  setMapZoomPercent(getMapZoomPercent() + ((direction > 0) ? step : -step));
 }
 
 function focusMapOnProvince(provId, preferredWidth = null) {
   const prov = PROVINCES[provId];
   if (!prov || !_mapWrap) return;
-  const targetW = preferredWidth || Math.max(getMapMinWidth(), Math.min(920, MAP_WIDTH * 0.38));
+  const targetW = preferredWidth || Math.max(getMapMinWidth(), Math.min(760, MAP_WIDTH * 0.31));
   const ratio = getMapViewportRatio();
   const targetH = Math.min(MAP_HEIGHT, targetW * ratio);
   applyMapViewBox(prov.x - (targetW / 2), prov.y - (targetH / 2), targetW);
@@ -2970,6 +3014,7 @@ function doImportUser(mode) {
 
 /* == Firebase Cloud Sync == */
 const FIREBASE_DB_URL = 'https://hanzizhan-default-rtdb.europe-west1.firebasedatabase.app';
+const FIREBASE_ROOT = 'xiyou';
 
 function _getFirebaseConfig() {
   return {
@@ -2998,8 +3043,8 @@ function _cloudPlayerKey(mode) {
 function _fbPath(mode) {
   const {url, key} = _getFirebaseConfig();
   if (!url || !key) return null;
-  // Path: /sanguo/<familyKey>/<playerName>.json  (name-keyed, not slot-keyed)
-  return url + '/sanguo/' + encodeURIComponent(key) + '/' + _cloudPlayerKey(mode) + '.json';
+  // Path: /xiyou/<familyKey>/<playerName>.json  (name-keyed, not slot-keyed)
+  return url + '/' + FIREBASE_ROOT + '/' + encodeURIComponent(key) + '/' + _cloudPlayerKey(mode) + '.json';
 }
 
 // Pending confirm state per mode
@@ -3185,7 +3230,7 @@ async function cloudLoad(mode) {
    - Always requires Firebase (no single-device fallback)
    - Identity = player's entered name (not slot ID)
    - Up to 4 players; HP scales by connected player count
-   - Firebase paths (all under /sanguo/<familyKey>/):
+     - Firebase paths (all under /xiyou/<familyKey>/):
        coop_map      -- presence, controller, battle state
        coop_session  -- live battle session
 =========================================================== */

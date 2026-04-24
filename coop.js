@@ -296,7 +296,7 @@ async function rtcoopInit(playerId) {
     return;
   }
   try {
-    const testPath = cfg.url + '/sanguo/' + encodeURIComponent(cfg.key) + '/coop_ping.json';
+    const testPath = cfg.url + '/' + (typeof FIREBASE_ROOT !== 'undefined' ? FIREBASE_ROOT : 'xiyou') + '/' + encodeURIComponent(cfg.key) + '/coop_ping.json';
     const r = await fetch(testPath, {method:'PUT', headers:{'Content-Type':'application/json'}, body:'"ok"'});
     if (!r.ok) throw new Error('HTTP ' + r.status);
   } catch(e) {
@@ -953,7 +953,7 @@ function rtcoopHeroBarLabel(hero, index) {
 function _rtPath(sub) {
   const {url, key} = _getFirebaseConfig();
   if (!url || !key) return null;
-  return url + '/sanguo/' + encodeURIComponent(key) + '/' + sub + '.json';
+  return url + '/' + (typeof FIREBASE_ROOT !== 'undefined' ? FIREBASE_ROOT : 'xiyou') + '/' + encodeURIComponent(key) + '/' + sub + '.json';
 }
 
 async function _rtGet(sub) {
