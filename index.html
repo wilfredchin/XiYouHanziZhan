@@ -13,20 +13,20 @@
 <title>西游汉字路</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
 <link rel="stylesheet" href="styles.css">
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        var host = location.hostname;
-        var ok = host.indexOf('github.io') !== -1 || host === 'localhost' || host.indexOf('192.168.') === 0;
-        if (!ok) return;
-        var path = location.pathname;
-        var base = path.substring(0, path.lastIndexOf('/') + 1);
-        navigator.serviceWorker.register(base + 'sw.js', { scope: base })
-          .then(function(r){ console.log('SW ok:', r.scope); })
-          .catch(function(e){ console.warn('SW err:', e); });
-      });
-    }
-  </script></head>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+      var host = location.host || '';
+      var base = location.pathname.replace(/[^/]+$/, '');
+      var ok = host.indexOf('github.io') !== -1 || host === 'localhost' || host.indexOf('192.168.') === 0;
+      if (!ok) return;
+      navigator.serviceWorker.register(base + 'sw.js', { scope: base })
+        .then(function(r){ console.log('SW ok:', r.scope); })
+        .catch(function(e){ console.warn('SW err:', e); });
+    });
+  }
+</script>
+</head>
 <body>
 
 <!-- == TITLE == -->
@@ -126,150 +126,116 @@
       <button onclick="rtcoopJoinBattle()" class="btn-p" style="font-size:clamp(16px,4.5vw,22px);padding:12px 32px">🚶 同行！ Join Journey!</button>
       <button onclick="rtcoopDeclineBattle()" class="btn-s" style="font-size:14px;padding:8px 20px">暂留原地 Stay behind</button>
     </div>
-    <svg id="map-svg" viewBox="0 0 500 580" preserveAspectRatio="xMidYMid meet">
+    <svg id="map-svg" viewBox="0 0 2400 760" preserveAspectRatio="xMidYMid meet">
       <defs>
-        <!-- Terrain fills -->
-        <linearGradient id="seaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stop-color="#0a2a4a"/>
-          <stop offset="100%" stop-color="#0d3a5a"/>
+        <linearGradient id="seaGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#08111c"/>
+          <stop offset="100%" stop-color="#132235"/>
         </linearGradient>
-        <radialGradient id="mapbg" cx="48%" cy="42%" r="65%">
-          <stop offset="0%" stop-color="#3a2a0a"/>
-          <stop offset="60%" stop-color="#2a1c06"/>
-          <stop offset="100%" stop-color="#1a1004"/>
-        </radialGradient>
-        <!-- Parchment noise -->
-        <filter id="parch-tex" x="0%" y="0%" width="100%" height="100%">
-          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch" result="noise"/>
-          <feColorMatrix type="saturate" values="0" in="noise" result="grey"/>
-          <feBlend in="SourceGraphic" in2="grey" mode="multiply"/>
+        <linearGradient id="mapbg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#f3e3b1"/>
+          <stop offset="55%" stop-color="#dcc283"/>
+          <stop offset="100%" stop-color="#c6a56a"/>
+        </linearGradient>
+        <linearGradient id="routeGlow" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="rgba(138,83,31,.05)"/>
+          <stop offset="45%" stop-color="rgba(138,83,31,.22)"/>
+          <stop offset="100%" stop-color="rgba(138,83,31,.08)"/>
+        </linearGradient>
+        <linearGradient id="rangeGrad" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0%" stop-color="#9b7c48"/>
+          <stop offset="100%" stop-color="#7a5e34"/>
+          </linearGradient>
+        <filter id="parch-tex" x="-10%" y="-10%" width="120%" height="120%">
+          <feTurbulence baseFrequency="0.8" numOctaves="2" seed="3" type="fractalNoise"/>
+          <feColorMatrix type="matrix" values="1 0 0 0 0
+                                              0 1 0 0 0
+                                              0 0 1 0 0
+                                              0 0 0 .05 0"/>
         </filter>
-        <!-- Mountain symbol filter -->
-        <filter id="mtn-shadow">
-          <feDropShadow dx="1" dy="1" stdDeviation="1" flood-color="rgba(0,0,0,0.5)"/>
-        </filter>
-        <!-- Glow for hero token -->
-        <filter id="hero-glow">
+        <filter id="hero-glow" x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="3" result="blur"/>
           <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
-        <!-- Province patterns -->
-        <pattern id="plains-pat" width="8" height="8" patternUnits="userSpaceOnUse">
-          <line x1="0" y1="6" x2="8" y2="6" stroke="rgba(120,160,40,0.08)" stroke-width="1"/>
-        </pattern>
-        <pattern id="desert-pat" width="6" height="6" patternUnits="userSpaceOnUse">
-          <circle cx="3" cy="3" r="0.8" fill="rgba(180,140,60,0.1)"/>
-        </pattern>
       </defs>
-      <!-- Sea background (East/South China Sea) -->
-      <rect width="500" height="580" fill="url(#seaGrad)"/>
-      <!-- Land mass base — covers everything, sea fill punched on top -->
-      <path d="M0,0 L500,0 L500,580 L0,580 Z" fill="url(#mapbg)"/>
-      <!-- Sea fill: single closed polygon tracing exactly the coastline dashes + canvas right/bottom edges.
-           North section wraps east of 辽东(max x:488) and 玄菟(max x:494) before curving inward.
-           South section curves SW under 建安/南海/苍梧/交趾 and continues west. -->
-      <path d="
-        M496,0
-        L496,60 L496,82 L494,112 L480,135 L462,152 L442,222 L452,282
-        L442,340 L432,388 L444,420 L444,448 L442,462 L448,508
-        L440,512 L415,512 L388,506 L378,516 L362,528
-        L348,538 L332,548 L318,552 L302,554 L288,552
-        L275,558 L258,568 L240,572 L208,572
-        L185,568 L165,564 L145,560 L120,558
-        L120,580 L500,580 L500,0 Z"
-            fill="rgba(10,40,80,0.55)"/>
-      <!-- Northern coastline dashes — wraps east of 辽东 and 玄菟 -->
-      <path d="M496,0 L496,60 L496,82 L494,112 L480,135 L462,152 L442,222 L452,282 L442,340 L432,388 L444,420 L444,448 L442,462 L448,508"
-            fill="none" stroke="rgba(100,160,210,0.5)" stroke-width="1.4" stroke-dasharray="4,3"/>
-      <!-- South coastline: curves SW below 建安, under 南海, under 苍梧/交趾, continues west -->
-      <path d="M448,508 L440,512 L415,512 L388,506 L378,516 L362,528 L348,538 L332,548 L318,552 L302,554 L288,552 L275,558 L258,568 L240,572 L208,572 L185,568 L165,564 L145,560 L120,558"
-            fill="none" stroke="rgba(100,160,210,0.5)" stroke-width="1.4" stroke-dasharray="4,3"/>
-      <text x="498" y="55" font-size="11" fill="rgba(100,180,220,0.7)" font-style="italic" font-family="'Ma Shan Zheng',cursive" text-anchor="end">渤海</text>
-      <text x="448" y="195" font-size="11" fill="rgba(100,180,220,0.65)" font-style="italic" font-family="'Ma Shan Zheng',cursive">黄海</text>
-      <text x="448" y="340" font-size="11" fill="rgba(100,180,220,0.65)" font-style="italic" font-family="'Ma Shan Zheng',cursive">东海</text>
 
-      <!-- -- MAJOR RIVERS -- -->
-      <!-- Yellow River (黄河): uniform width, ends exactly at coastline ~432,282 -->
-      <path d="M55,210 Q80,195 110,200 Q145,205 170,215 Q200,225 225,218 Q255,210 280,220 Q310,232 340,228 Q370,224 395,236 Q415,246 425,262 Q432,272 432,282"
-            fill="none" stroke="rgba(160,210,255,0.75)" stroke-width="2.8" stroke-linecap="round"/>
-      <!-- 黄河 label — east of 青州 (青州 right edge ~376,218), above river -->
-      <text x="400" y="213" font-size="12" fill="rgba(140,200,255,0.85)" font-style="italic" font-family="'Ma Shan Zheng',cursive" transform="rotate(-5,400,213)">黄河</text>
+      <rect width="2400" height="760" fill="url(#seaGrad)"/>
+      <rect x="34" y="34" width="2332" height="692" rx="30" fill="url(#mapbg)" filter="url(#parch-tex)" stroke="#8b6832" stroke-width="3"/>
 
-      <!-- Yangtze River (长江): uniform width, ends exactly at coastline ~432,388 -->
-      <path d="M82,330 Q110,318 140,325 Q170,332 195,328 Q225,322 255,338 Q285,352 315,358 Q342,364 368,374 Q392,382 415,390 Q428,396 432,388"
-            fill="none" stroke="rgba(120,180,255,0.80)" stroke-width="3.2" stroke-linecap="round"/>
-      <!-- 长江 label — left of 丹阳 (丹阳 left edge x≈345), clear of all polygons -->
-      <text x="300" y="374" font-size="12" fill="rgba(120,180,255,0.85)" font-style="italic" font-family="'Ma Shan Zheng',cursive" transform="rotate(-3,300,374)">长江</text>
+      <path d="M2260 156 C2050 100 1830 116 1600 220 C1390 314 1190 472 960 560 C710 654 442 646 160 544"
+            fill="none" stroke="url(#routeGlow)" stroke-width="170" stroke-linecap="round" opacity=".9"/>
 
-      <!-- Wei River (渭河) -->
-      <path d="M65,268 Q95,262 125,268 Q150,274 175,270 Q198,266 215,275"
-            fill="none" stroke="rgba(130,190,255,0.55)" stroke-width="2" stroke-linecap="round"/>
-      <text x="95" y="255" font-size="11" fill="rgba(120,175,235,0.75)" font-style="italic" font-family="'Ma Shan Zheng',cursive">渭河</text>
-      <!-- Han River (汉水) -->
-      <path d="M118,310 Q140,320 165,330 Q185,338 210,340 Q235,342 255,338"
-            fill="none" stroke="rgba(130,190,255,0.5)" stroke-width="1.8" stroke-linecap="round"/>
-      <text x="148" y="304" font-size="11" fill="rgba(120,175,235,0.70)" font-style="italic" font-family="'Ma Shan Zheng',cursive">汉水</text>
-      <!-- Huai River -->
-      <path d="M235,280 Q268,272 298,278 Q325,284 355,280 Q378,277 402,285"
-            fill="none" stroke="rgba(130,190,255,0.50)" stroke-width="1.8" stroke-linecap="round"/>
-      <!-- Pearl River (珠江) -->
-      <path d="M185,488 Q215,476 245,478 Q278,480 308,474 Q338,468 365,472 Q385,476 395,488"
-            fill="none" stroke="rgba(130,190,255,0.50)" stroke-width="2" stroke-linecap="round"/>
-      <text x="175" y="492" font-size="11" fill="rgba(120,175,235,0.70)" font-style="italic" font-family="'Ma Shan Zheng',cursive">珠江</text>
+      <path d="M2320 80 C2190 100 2100 150 2040 228 C1980 304 1910 334 1810 334 C1700 334 1610 278 1485 292 C1350 308 1260 412 1130 474 C980 546 832 562 688 550 C506 536 330 458 96 392"
+            fill="rgba(31,74,110,.13)"/>
+      <path d="M2268 118 C2112 122 2016 188 1968 282 C1922 376 1820 440 1660 456 C1492 470 1370 420 1212 454 C1040 490 914 612 724 642 C526 674 318 644 84 552"
+            fill="rgba(31,74,110,.08)"/>
 
-      <!-- -- MOUNTAIN RANGES -- -->
-      <!-- Taihang Mountains (太行山) — north-central -->
-      <g fill="rgba(100,80,40,0.55)" stroke="rgba(80,60,20,0.4)" stroke-width="0.5" filter="url(#mtn-shadow)">
-        <polygon points="192,165 198,152 204,165"/><polygon points="200,162 206,149 212,162"/>
-        <polygon points="192,182 198,169 204,182"/><polygon points="200,179 206,166 212,179"/>
-        <polygon points="186,198 192,185 198,198"/><polygon points="194,195 200,182 206,195"/>
-      </g>
-      <text x="172" y="145" font-size="11" fill="rgba(140,110,60,0.8)" font-style="italic" font-family="'Ma Shan Zheng',cursive" transform="rotate(85,172,145)">太行山</text>
-      <!-- Qinling Mountains (秦岭) — central divider -->
-      <g fill="rgba(110,85,35,0.58)" stroke="rgba(80,60,20,0.4)" stroke-width="0.5" filter="url(#mtn-shadow)">
-        <polygon points="152,288 159,274 166,288"/><polygon points="162,285 169,271 176,285"/>
-        <polygon points="174,283 181,269 188,283"/><polygon points="186,281 193,267 200,281"/>
-        <polygon points="200,283 207,269 214,283"/><polygon points="212,285 219,271 226,285"/>
-      </g>
-      <text x="158" y="308" font-size="11" fill="rgba(130,100,50,0.8)" font-style="italic" font-family="'Ma Shan Zheng',cursive">秦岭</text>
-      <!-- Qilian Mountains (祁连山) — northwest -->
-      <g fill="rgba(120,95,40,0.5)" stroke="rgba(80,60,20,0.35)" stroke-width="0.5">
-        <polygon points="48,238 55,224 62,238"/><polygon points="58,235 65,221 72,235"/>
-        <polygon points="68,232 75,218 82,232"/>
-      </g>
-      <text x="36" y="262" font-size="11" fill="rgba(130,100,50,0.75)" font-style="italic" font-family="'Ma Shan Zheng',cursive">祁连山</text>
-      <!-- Wuling Mountains (武陵山) — south-central -->
-      <g fill="rgba(80,100,40,0.5)" stroke="rgba(60,80,20,0.35)" stroke-width="0.5">
-        <polygon points="230,412 237,398 244,412"/><polygon points="240,409 247,395 254,409"/>
-        <polygon points="222,430 229,416 236,430"/>
-      </g>
-      <!-- Nanling Mountains (南岭) — far south -->
-      <g fill="rgba(70,100,35,0.5)" stroke="rgba(50,75,15,0.35)" stroke-width="0.5">
-        <polygon points="225,458 232,444 239,458"/><polygon points="237,455 244,441 251,455"/>
-        <polygon points="252,453 259,439 266,453"/><polygon points="267,451 274,437 281,451"/>
-        <polygon points="283,453 290,439 297,453"/>
-      </g>
-      <text x="234" y="478" font-size="11" fill="rgba(100,130,50,0.75)" font-style="italic" font-family="'Ma Shan Zheng',cursive">南岭</text>
-      <!-- Greater Khingan / northern ranges -->
-      <g fill="rgba(100,80,40,0.45)" stroke="rgba(80,60,20,0.35)" stroke-width="0.5">
-        <polygon points="380,25 387,12 394,25"/><polygon points="392,22 399,9 406,22"/>
-        <polygon points="368,42 375,28 382,42"/>
-      </g>
-      <!-- Daba Mountains (大巴山) — Sichuan border -->
-      <g fill="rgba(90,95,38,0.5)" stroke="rgba(60,75,18,0.35)" stroke-width="0.5">
-        <polygon points="135,348 142,334 149,348"/><polygon points="147,345 154,331 161,345"/>
-        <polygon points="160,342 167,328 174,342"/>
+      <g fill="url(#rangeGrad)" opacity=".6">
+        <path d="M2040 132 l40 -28 l38 30 l34 -24 l38 34 l34 -20 l42 28"/>
+        <path d="M1710 356 l34 -32 l38 30 l30 -26 l38 36 l34 -24 l42 28"/>
+        <path d="M1220 608 l42 -30 l38 34 l34 -24 l42 36 l36 -24 l42 28"/>
+        <path d="M420 520 l36 -28 l38 30 l30 -24 l40 34 l32 -22 l38 26"/>
       </g>
 
+      <g opacity=".72">
+        <path d="M1840 246 C1764 250 1714 288 1676 352 C1644 404 1568 440 1490 444 C1394 448 1334 404 1258 414 C1174 426 1116 484 1080 558"
+              fill="none" stroke="#7fb0c4" stroke-width="12" stroke-linecap="round"/>
+        <path d="M954 516 C902 524 866 552 842 596"
+              fill="none" stroke="#7fb0c4" stroke-width="10" stroke-linecap="round"/>
+      </g>
 
-      <!-- -- DESERT REGIONS -- -->
-      <!-- Steppe label only -->
-      <text x="95" y="22" font-size="11" fill="rgba(180,150,80,0.55)" font-style="italic" font-family="'Ma Shan Zheng',cursive">漠北草原</text>
+      <g opacity=".7">
+        <text x="2180" y="110" text-anchor="middle" font-size="30" fill="#6b4d25" style="letter-spacing:3px">东土大唐</text>
+        <text x="2180" y="138" text-anchor="middle" font-size="15" fill="#7a5d34" style="letter-spacing:2px">Chang'an and the oath to seek the scriptures</text>
+        <text x="1210" y="118" text-anchor="middle" font-size="26" fill="#77562d" style="letter-spacing:4px">河西 流沙 西域</text>
+        <text x="340" y="180" text-anchor="middle" font-size="28" fill="#6b4d25" style="letter-spacing:4px">佛国天竺</text>
+        <text x="340" y="206" text-anchor="middle" font-size="15" fill="#7a5d34" style="letter-spacing:2px">Nalanda and Thunderclap Monastery</text>
+      </g>
 
+      <g opacity=".82">
+        <g>
+          <circle cx="2120" cy="112" r="6" fill="#8a5f2b"/>
+          <path d="M2120 112 L2065 88" fill="none" stroke="#8a5f2b" stroke-width="2.5" stroke-linecap="round"/>
+          <text x="2050" y="82" text-anchor="end" font-size="17" fill="#5f4321" style="letter-spacing:2px">长安畿辅</text>
+          <text x="2050" y="102" text-anchor="end" font-size="11" fill="#7d6137">Imperial roads and monastery gates</text>
+        </g>
+        <g>
+          <circle cx="1860" cy="248" r="6" fill="#8a5f2b"/>
+          <path d="M1860 248 L1914 204" fill="none" stroke="#8a5f2b" stroke-width="2.5" stroke-linecap="round"/>
+          <text x="1928" y="196" font-size="17" fill="#5f4321" style="letter-spacing:2px">两界群山</text>
+          <text x="1928" y="216" font-size="11" fill="#7d6137">Where the human road first meets the immortal wilds</text>
+        </g>
+        <g>
+          <circle cx="1510" cy="244" r="6" fill="#8a5f2b"/>
+          <path d="M1510 244 L1450 188" fill="none" stroke="#8a5f2b" stroke-width="2.5" stroke-linecap="round"/>
+          <text x="1438" y="180" text-anchor="end" font-size="17" fill="#5f4321" style="letter-spacing:2px">白骨与宝象</text>
+          <text x="1438" y="200" text-anchor="end" font-size="11" fill="#7d6137">Illusion, disguise, and the first royal ordeals</text>
+        </g>
+        <g>
+          <circle cx="1030" cy="470" r="6" fill="#8a5f2b"/>
+          <path d="M1030 470 L1120 560" fill="none" stroke="#8a5f2b" stroke-width="2.5" stroke-linecap="round"/>
+          <text x="1134" y="574" font-size="17" fill="#5f4321" style="letter-spacing:2px">女儿国诸境</text>
+          <text x="1134" y="594" font-size="11" fill="#7d6137">Rivers, temptations, and the testing of vows</text>
+        </g>
+        <g>
+          <circle cx="720" cy="574" r="6" fill="#8a5f2b"/>
+          <path d="M720 574 L776 664" fill="none" stroke="#8a5f2b" stroke-width="2.5" stroke-linecap="round"/>
+          <text x="792" y="680" font-size="17" fill="#5f4321" style="letter-spacing:2px">火焰山口</text>
+          <text x="792" y="700" font-size="11" fill="#7d6137">Fan winds, bull demons, and the furnace pass</text>
+        </g>
+        <g>
+          <circle cx="112" cy="330" r="6" fill="#8a5f2b"/>
+          <path d="M112 330 L186 242" fill="none" stroke="#8a5f2b" stroke-width="2.5" stroke-linecap="round"/>
+          <text x="198" y="234" font-size="17" fill="#5f4321" style="letter-spacing:2px">天竺佛国</text>
+          <text x="198" y="254" font-size="11" fill="#7d6137">The final ascent from Nalanda to Thunderclap</text>
+        </g>
+      </g>
 
-      <!-- Lake labels only (no fill to avoid colour confusion) -->
-      <text x="268" y="415" text-anchor="middle" font-size="11" fill="rgba(100,170,230,0.7)" font-family="'Ma Shan Zheng',cursive">洞庭湖</text>
-      <text x="356" y="395" text-anchor="middle" font-size="11" fill="rgba(100,170,230,0.7)" font-family="'Ma Shan Zheng',cursive">鄱阳湖</text>
+      <g opacity=".45">
+        <path d="M2288 650 L110 650" fill="none" stroke="#8b6832" stroke-width="3" stroke-dasharray="14 16"/>
+        <text x="2254" y="638" text-anchor="end" font-size="15" fill="#8b6832" style="letter-spacing:2px">向西而行</text>
+        <text x="150" y="638" font-size="15" fill="#8b6832" style="letter-spacing:2px">求取真经</text>
+      </g>
 
       <!-- provinces + adjacency lines rendered dynamically -->
       <g id="forts-layer"></g>
@@ -278,29 +244,33 @@
       <g id="hero-token" class="hero-token">
         <svg id="hero-token-svg" x="-20" y="-25" width="40" height="50" viewBox="0 0 64 80" preserveAspectRatio="xMidYMid meet"></svg>
       </g>
-
-      <!-- -- COMPASS ROSE -- bottom-right corner, big and clear -->
-      <g transform="translate(462,540)">
-        <circle r="24" fill="rgba(0,0,0,.72)" stroke="rgba(201,162,39,.6)" stroke-width="1.5"/>
-        <!-- N arrow sits outside the circle, above it -->
-        <polygon points="0,-32 -4,-24 4,-24" fill="rgba(201,162,39,.95)"/>
-        <!-- Cardinal labels inside circle -->
-        <text text-anchor="middle" y="-8" font-size="12" font-family="'Ma Shan Zheng',cursive" fill="rgba(201,162,39,.95)">北</text>
-        <text text-anchor="middle" y="19" font-size="12" font-family="'Ma Shan Zheng',cursive" fill="rgba(201,162,39,.75)">南</text>
-        <text text-anchor="middle" x="-14" dy="5" font-size="11" font-family="'Ma Shan Zheng',cursive" fill="rgba(201,162,39,.75)">西</text>
-        <text text-anchor="middle" x="14" dy="5" font-size="11" font-family="'Ma Shan Zheng',cursive" fill="rgba(201,162,39,.75)">东</text>
-      </g>
     </svg>
 
-    <!-- Map legend -->
-    <div style="z-index:40;position:absolute;top:8px;left:120px;font-size:12px;font-family:'Noto Serif SC',serif;color:var(--parch2);background:rgba(0,0,0,.75);border:1px solid rgba(201,162,39,.3);border-radius:6px;padding:6px 9px;display:inline-flex;flex-direction:column;gap:4px;line-height:1;white-space:nowrap">
-      <div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:13px;height:13px;background:rgba(10,100,45,.9);border:2px solid rgba(45,210,108,.85);border-radius:2px;flex-shrink:0"></span>已行经 Cleared</div>
-      <div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:13px;height:13px;background:rgba(52,36,8,.9);border:2px solid rgba(155,120,38,.6);border-radius:2px;flex-shrink:0"></span>未至 Unvisited</div>
-      <div style="display:flex;align-items:center;gap:6px"><span style="display:inline-block;width:13px;height:13px;background:rgba(95,72,15,.9);border:2px solid rgba(235,188,42,.95);border-radius:2px;flex-shrink:0"></span>下一站 Open path</div>
-      <div style="height:1px;background:rgba(201,162,39,.3)"></div>
-      <div style="display:flex;align-items:center;gap:6px"><span>⚔️</span>妖魔战 Battle trial</div>
-      <div style="display:flex;align-items:center;gap:6px"><span>⚒️</span>障碍关 Obstacle trial</div>
-      <div style="display:flex;align-items:center;gap:6px"><span>🍽️</span>诱惑关 Temptation trial</div>
+    <div class="map-overlay map-overlay-left">
+      <div class="map-panel map-legend-panel">
+        <div class="map-panel-title">路引 Route Key</div>
+        <div class="map-legend-row"><span class="map-legend-swatch is-cleared"></span>已行经 Cleared</div>
+        <div class="map-legend-row"><span class="map-legend-swatch is-unvisited"></span>未至 Unvisited</div>
+        <div class="map-legend-row"><span class="map-legend-swatch is-open"></span>下一站 Open path</div>
+        <div class="map-panel-divider"></div>
+        <div class="map-legend-row"><span class="map-legend-icon">⚔️</span>妖魔战 Battle trial</div>
+        <div class="map-legend-row"><span class="map-legend-icon">⚒️</span>障碍关 Obstacle trial</div>
+        <div class="map-legend-row"><span class="map-legend-icon">🍽️</span>诱惑关 Temptation trial</div>
+      </div>
+    </div>
+
+    <div class="map-overlay map-overlay-right">
+      <div class="map-panel map-compass-panel">
+        <div class="map-panel-title">方位 Bearing</div>
+        <div class="map-compass-rose">
+          <span class="map-compass-n">北</span>
+          <span class="map-compass-w">西</span>
+          <span class="map-compass-e">东</span>
+          <span class="map-compass-s">南</span>
+          <span class="map-compass-arrow">▲</span>
+        </div>
+        <div class="map-compass-caption">向西取经 Westward road</div>
+      </div>
     </div>
   </div>
 </div>
@@ -1064,36 +1034,63 @@ function confirmRemovePlayer() {
 /* ===========================================================
    PILGRIMAGE ROUTE + ADJACENCY
 =========================================================== */
-function routePoly(x, y, w = 18, h = 12) {
+const MAP_WIDTH = 2400;
+const MAP_HEIGHT = 760;
+
+function routePoly(x, y, w = 24, h = 14) {
   const halfW = Math.round(w / 2);
   return `${x-w},${y} ${x-halfW},${y-h} ${x+halfW},${y-h} ${x+w},${y} ${x+halfW},${y+h} ${x-halfW},${y+h}`;
 }
 
 const PROVINCES = [
-  {id:0,  hz:'长安',   en:'Chang\'an',               modernHz:'大唐起点',   x:428,y:144, terrain:'plains',   allegiance:'Neutral', poly:routePoly(428,144), adj:[1]},
-  {id:1,  hz:'两界山', en:'Two Worlds Mountain',   modernHz:'凡圣交界',   x:394,y:126, terrain:'mountain', allegiance:'Neutral', poly:routePoly(394,126), adj:[0,2]},
-  {id:2,  hz:'五行山', en:'Five Elements Mountain',modernHz:'佛帖镇猴',   x:360,y:118, terrain:'mountain', allegiance:'Neutral', poly:routePoly(360,118), adj:[1,3]},
-  {id:3,  hz:'鹰愁涧', en:'Eagle Grief Ravine',    modernHz:'白龙归位',   x:326,y:144, terrain:'river',    allegiance:'Neutral', poly:routePoly(326,144), adj:[2,4]},
-  {id:4,  hz:'高老庄', en:'Gao Village',           modernHz:'八戒入伙',   x:304,y:186, terrain:'plains',   allegiance:'Neutral', poly:routePoly(304,186), adj:[3,5]},
-  {id:5,  hz:'黄风岭', en:'Yellow Wind Ridge',     modernHz:'妖风蔽日',   x:268,y:174, terrain:'steppe',   allegiance:'Neutral', poly:routePoly(268,174), adj:[4,6]},
-  {id:6,  hz:'流沙河', en:'Flowing Sands River',   modernHz:'悟净归队',   x:236,y:210, terrain:'river',    allegiance:'Neutral', poly:routePoly(236,210), adj:[5,7]},
-  {id:7,  hz:'万寿山', en:'Wanshou Mountain',      modernHz:'五庄观',     x:206,y:186, terrain:'mountain', allegiance:'Neutral', poly:routePoly(206,186), adj:[6,8]},
-  {id:8,  hz:'白虎岭', en:'White Tiger Ridge',     modernHz:'白骨三变',   x:176,y:158, terrain:'forest',   allegiance:'Neutral', poly:routePoly(176,158), adj:[7,9]},
-  {id:9,  hz:'宝象国', en:'Baoxiang Kingdom',      modernHz:'黄袍迷城',   x:152,y:196, terrain:'plains',   allegiance:'Neutral', poly:routePoly(152,196), adj:[8,10]},
-  {id:10, hz:'平顶山', en:'Flat-Top Mountain',     modernHz:'金银角洞',   x:122,y:172, terrain:'mountain', allegiance:'Neutral', poly:routePoly(122,172), adj:[9,11]},
-  {id:11, hz:'乌鸡国', en:'Crow-Cock Kingdom',     modernHz:'井底冤案',   x:98,y:208,  terrain:'plains',   allegiance:'Neutral', poly:routePoly(98,208),  adj:[10,12]},
-  {id:12, hz:'火云洞', en:'Fire Cloud Cave',       modernHz:'红孩儿关',   x:82,y:252,  terrain:'mountain', allegiance:'Neutral', poly:routePoly(82,252),  adj:[11,13]},
-  {id:13, hz:'车迟国', en:'Cart Slow Kingdom',     modernHz:'斗法试真',   x:66,y:214,  terrain:'plains',   allegiance:'Neutral', poly:routePoly(66,214),  adj:[12,14]},
-  {id:14, hz:'通天河', en:'River of Heaven',       modernHz:'冰河祭口',   x:54,y:170,  terrain:'river',    allegiance:'Neutral', poly:routePoly(54,170),  adj:[13,15]},
-  {id:15, hz:'女儿国', en:'Woman Kingdom',         modernHz:'情关难渡',   x:60,y:258,  terrain:'plains',   allegiance:'Neutral', poly:routePoly(60,258),  adj:[14,16]},
-  {id:16, hz:'解阳山', en:'Jiyang Mountain',       modernHz:'泉关病厄',   x:82,y:314,  terrain:'mountain', allegiance:'Neutral', poly:routePoly(82,314),  adj:[15,17]},
-  {id:17, hz:'盘丝洞', en:'Spider Cave',           modernHz:'丝网迷阵',   x:110,y:360, terrain:'forest',   allegiance:'Neutral', poly:routePoly(110,360), adj:[16,18]},
-  {id:18, hz:'狮驼岭', en:'Lion Camel Ridge',      modernHz:'群妖险地',   x:98,y:414,  terrain:'mountain', allegiance:'Neutral', poly:routePoly(98,414),  adj:[17,19]},
-  {id:19, hz:'比丘国', en:'Bhikshu Kingdom',       modernHz:'续命邪法',   x:138,y:458, terrain:'plains',   allegiance:'Neutral', poly:routePoly(138,458), adj:[18,20]},
-  {id:20, hz:'火焰山', en:'Flaming Mountain',      modernHz:'芭蕉借扇',   x:184,y:430, terrain:'mountain', allegiance:'Neutral', poly:routePoly(184,430), adj:[19,21]},
-  {id:21, hz:'玉华州', en:'Jade Flower Prefecture',modernHz:'少年王城',   x:142,y:510, terrain:'plains',   allegiance:'Neutral', poly:routePoly(142,510), adj:[20,22]},
-  {id:22, hz:'那烂陀', en:'Nalanda',               modernHz:'佛土近在',   x:92,y:540,  terrain:'temple',   allegiance:'Neutral', poly:routePoly(92,540),  adj:[21,23]},
-  {id:23, hz:'雷音寺', en:'Thunderclap Monastery', modernHz:'真经所在',   x:42,y:532,  terrain:'temple',   allegiance:'Neutral', poly:routePoly(42,532),  adj:[22]},
+  {id:0,  hz:'长安',   en:'Chang\'an',               modernHz:'大唐发愿',   x:2280,y:170, terrain:'plains',   allegiance:'Neutral', poly:routePoly(2280,170), adj:[1]},
+  {id:1,  hz:'洪福寺', en:'Hongfu Temple',          modernHz:'奉诏起行',   x:2230,y:155, terrain:'temple',   allegiance:'Neutral', poly:routePoly(2230,155), adj:[0,2]},
+  {id:2,  hz:'两界山', en:'Two Worlds Mountain',    modernHz:'凡圣交界',   x:2180,y:160, terrain:'mountain', allegiance:'Neutral', poly:routePoly(2180,160), adj:[1,3]},
+  {id:3,  hz:'猎户庄', en:'Hunter\'s Lodge',        modernHz:'伯钦引路',   x:2130,y:185, terrain:'plains',   allegiance:'Neutral', poly:routePoly(2130,185), adj:[2,4]},
+  {id:4,  hz:'五行山', en:'Five Elements Mountain', modernHz:'佛帖镇猴',   x:2080,y:190, terrain:'mountain', allegiance:'Neutral', poly:routePoly(2080,190), adj:[3,5]},
+  {id:5,  hz:'蛇盘山', en:'Serpent-Coil Mountain',  modernHz:'山路收心',   x:2030,y:215, terrain:'mountain', allegiance:'Neutral', poly:routePoly(2030,215), adj:[4,6]},
+  {id:6,  hz:'鹰愁涧', en:'Eagle Grief Ravine',     modernHz:'白龙归位',   x:1980,y:250, terrain:'river',    allegiance:'Neutral', poly:routePoly(1980,250), adj:[5,7]},
+  {id:7,  hz:'观音禅院',en:'Guanyin Monastery',      modernHz:'袈裟劫起',   x:1930,y:270, terrain:'temple',   allegiance:'Neutral', poly:routePoly(1930,270), adj:[6,8]},
+  {id:8,  hz:'黑风山', en:'Black Wind Mountain',    modernHz:'黑熊盗宝',   x:1880,y:245, terrain:'forest',   allegiance:'Neutral', poly:routePoly(1880,245), adj:[7,9]},
+  {id:9,  hz:'高老庄', en:'Gao Village',            modernHz:'八戒前缘',   x:1830,y:270, terrain:'plains',   allegiance:'Neutral', poly:routePoly(1830,270), adj:[8,10]},
+  {id:10, hz:'福陵山', en:'Fuling Mountain',        modernHz:'天蓬归队',   x:1780,y:300, terrain:'mountain', allegiance:'Neutral', poly:routePoly(1780,300), adj:[9,11]},
+  {id:11, hz:'黄风岭', en:'Yellow Wind Ridge',      modernHz:'妖风蔽日',   x:1730,y:285, terrain:'steppe',   allegiance:'Neutral', poly:routePoly(1730,285), adj:[10,12]},
+  {id:12, hz:'流沙河', en:'Flowing Sands River',    modernHz:'悟净守河',   x:1680,y:325, terrain:'river',    allegiance:'Neutral', poly:routePoly(1680,325), adj:[11,13]},
+  {id:13, hz:'骷髅山', en:'Skeleton Mountain',      modernHz:'荒冢惊魂',   x:1630,y:300, terrain:'forest',   allegiance:'Neutral', poly:routePoly(1630,300), adj:[12,14]},
+  {id:14, hz:'万寿山', en:'Wanshou Mountain',       modernHz:'人参果祸',   x:1580,y:270, terrain:'mountain', allegiance:'Neutral', poly:routePoly(1580,270), adj:[13,15]},
+  {id:15, hz:'五庄观', en:'Five Manor Abbey',       modernHz:'镇元问罪',   x:1530,y:245, terrain:'temple',   allegiance:'Neutral', poly:routePoly(1530,245), adj:[14,16]},
+  {id:16, hz:'白虎岭', en:'White Tiger Ridge',      modernHz:'白骨三变',   x:1480,y:225, terrain:'forest',   allegiance:'Neutral', poly:routePoly(1480,225), adj:[15,17]},
+  {id:17, hz:'宝象国', en:'Baoxiang Kingdom',       modernHz:'公主失国',   x:1430,y:250, terrain:'plains',   allegiance:'Neutral', poly:routePoly(1430,250), adj:[16,18]},
+  {id:18, hz:'波月洞', en:'Moon-Wave Cave',         modernHz:'黄袍迷城',   x:1380,y:285, terrain:'cave',     allegiance:'Neutral', poly:routePoly(1380,285), adj:[17,19]},
+  {id:19, hz:'平顶山', en:'Flat-Top Mountain',      modernHz:'金角设局',   x:1330,y:270, terrain:'mountain', allegiance:'Neutral', poly:routePoly(1330,270), adj:[18,20]},
+  {id:20, hz:'莲花洞', en:'Lotus Flower Cave',      modernHz:'银角逞宝',   x:1280,y:255, terrain:'cave',     allegiance:'Neutral', poly:routePoly(1280,255), adj:[19,21]},
+  {id:21, hz:'乌鸡国', en:'Crow-Cock Kingdom',      modernHz:'井底冤魂',   x:1230,y:280, terrain:'plains',   allegiance:'Neutral', poly:routePoly(1230,280), adj:[20,22]},
+  {id:22, hz:'枯松涧', en:'Dry Pine Ravine',        modernHz:'火云前兆',   x:1180,y:320, terrain:'forest',   allegiance:'Neutral', poly:routePoly(1180,320), adj:[21,23]},
+  {id:23, hz:'火云洞', en:'Fire Cloud Cave',        modernHz:'三昧真火',   x:1130,y:370, terrain:'mountain', allegiance:'Neutral', poly:routePoly(1130,370), adj:[22,24]},
+  {id:24, hz:'车迟国', en:'Cart Slow Kingdom',      modernHz:'斗法试真',   x:1080,y:420, terrain:'plains',   allegiance:'Neutral', poly:routePoly(1080,420), adj:[23,25]},
+  {id:25, hz:'通天河', en:'River of Heaven',        modernHz:'冰河祭口',   x:1030,y:470, terrain:'river',    allegiance:'Neutral', poly:routePoly(1030,470), adj:[24,26]},
+  {id:26, hz:'金兜山', en:'Golden Pocket Mountain', modernHz:'金圈摄宝',   x:980,y:515, terrain:'mountain', allegiance:'Neutral', poly:routePoly(980,515), adj:[25,27]},
+  {id:27, hz:'女儿国', en:'Woman Kingdom',          modernHz:'柔情试心',   x:930,y:555, terrain:'plains',   allegiance:'Neutral', poly:routePoly(930,555), adj:[26,28]},
+  {id:28, hz:'子母河', en:'Mother-and-Child River', modernHz:'怪泉生厄',   x:880,y:590, terrain:'river',    allegiance:'Neutral', poly:routePoly(880,590), adj:[27,29]},
+  {id:29, hz:'解阳山', en:'Jiyang Mountain',        modernHz:'落胎求泉',   x:830,y:620, terrain:'mountain', allegiance:'Neutral', poly:routePoly(830,620), adj:[28,30]},
+  {id:30, hz:'毒敌山', en:'Poison-Enemy Mountain',  modernHz:'琵琶毒尾',   x:780,y:600, terrain:'mountain', allegiance:'Neutral', poly:routePoly(780,600), adj:[29,31]},
+  {id:31, hz:'火焰山', en:'Flaming Mountain',       modernHz:'烈焰断路',   x:730,y:570, terrain:'mountain', allegiance:'Neutral', poly:routePoly(730,570), adj:[30,32]},
+  {id:32, hz:'翠云山', en:'Green Cloud Mountain',   modernHz:'芭蕉借扇',   x:680,y:540, terrain:'mountain', allegiance:'Neutral', poly:routePoly(680,540), adj:[31,33]},
+  {id:33, hz:'积雷山', en:'Jilei Mountain',         modernHz:'牛王争锋',   x:630,y:560, terrain:'mountain', allegiance:'Neutral', poly:routePoly(630,560), adj:[32,34]},
+  {id:34, hz:'祭赛国', en:'Sacrifice Kingdom',      modernHz:'舍利失窃',   x:580,y:590, terrain:'plains',   allegiance:'Neutral', poly:routePoly(580,590), adj:[33,35]},
+  {id:35, hz:'金光寺', en:'Golden Light Temple',    modernHz:'佛塔重光',   x:530,y:610, terrain:'temple',   allegiance:'Neutral', poly:routePoly(530,610), adj:[34,36]},
+  {id:36, hz:'小雷音', en:'Small Thunderclap',      modernHz:'假佛惑众',   x:480,y:585, terrain:'temple',   allegiance:'Neutral', poly:routePoly(480,585), adj:[35,37]},
+  {id:37, hz:'七绝山', en:'Seven-Extinction Mountain', modernHz:'泥途稀柿', x:430,y:555, terrain:'steppe', allegiance:'Neutral', poly:routePoly(430,555), adj:[36,38]},
+  {id:38, hz:'朱紫国', en:'Scarlet Purple Kingdom', modernHz:'悬丝诊脉',   x:380,y:575, terrain:'plains',   allegiance:'Neutral', poly:routePoly(380,575), adj:[37,39]},
+  {id:39, hz:'麒麟山', en:'Qilin Mountain',         modernHz:'赛岁宫变',   x:330,y:595, terrain:'mountain', allegiance:'Neutral', poly:routePoly(330,595), adj:[38,40]},
+  {id:40, hz:'盘丝洞', en:'Spider Cave',            modernHz:'丝网迷阵',   x:280,y:565, terrain:'forest',   allegiance:'Neutral', poly:routePoly(280,565), adj:[39,41]},
+  {id:41, hz:'黄花观', en:'Yellow Flower Monastery',modernHz:'毒茶昏神',   x:230,y:525, terrain:'temple',   allegiance:'Neutral', poly:routePoly(230,525), adj:[40,42]},
+  {id:42, hz:'狮驼岭', en:'Lion Camel Ridge',       modernHz:'群妖险地',   x:180,y:485, terrain:'mountain', allegiance:'Neutral', poly:routePoly(180,485), adj:[41,43]},
+  {id:43, hz:'比丘国', en:'Bhikshu Kingdom',        modernHz:'续命邪法',   x:140,y:440, terrain:'plains',   allegiance:'Neutral', poly:routePoly(140,440), adj:[42,44]},
+  {id:44, hz:'无底洞', en:'Bottomless Cave',        modernHz:'地窟摄魂',   x:110,y:395, terrain:'cave',     allegiance:'Neutral', poly:routePoly(110,395), adj:[43,45]},
+  {id:45, hz:'玉华州', en:'Jade Flower Prefecture', modernHz:'少年王城',   x:90, y:345, terrain:'plains',   allegiance:'Neutral', poly:routePoly(90,345),  adj:[44,46]},
+  {id:46, hz:'那烂陀', en:'Nalanda',                modernHz:'佛土将近',   x:75, y:300, terrain:'temple',   allegiance:'Neutral', poly:routePoly(75,300),  adj:[45,47]},
+  {id:47, hz:'雷音寺', en:'Thunderclap Monastery',  modernHz:'真经所在',   x:60, y:260, terrain:'temple',   allegiance:'Neutral', poly:routePoly(60,260),  adj:[46]},
 ]
 // Province territory state: 'neutral'|'player'|'enemy'
 let provState = {};
@@ -1148,6 +1145,7 @@ const TERRAIN_FILLS = {
   coast:   'rgba(28,68,72,0.68)',
   river:   'rgba(32,72,52,0.68)',
   temple:  'rgba(92,66,18,0.72)',
+  cave:    'rgba(66,44,20,0.74)',
 };
 const TERRAIN_STROKES = {
   plains:  'rgba(120,160,50,0.42)',
@@ -1157,6 +1155,7 @@ const TERRAIN_STROKES = {
   coast:   'rgba(65,155,165,0.50)',
   river:   'rgba(70,155,120,0.50)',
   temple:  'rgba(210,170,80,0.55)',
+  cave:    'rgba(182,132,72,0.52)',
 };
 
 function renderProvinces() {
@@ -1164,6 +1163,27 @@ function renderProvinces() {
   layer.innerHTML = '';
   const SVG_NS = 'http://www.w3.org/2000/svg';
   const frontier = getFrontier();
+
+  const routeHalo = document.createElementNS(SVG_NS, 'path');
+  routeHalo.setAttribute('d', PROVINCES.map((prov, idx) => `${idx === 0 ? 'M' : 'L'} ${prov.x} ${prov.y}`).join(' '));
+  routeHalo.setAttribute('fill', 'none');
+  routeHalo.setAttribute('stroke', 'rgba(255,244,196,0.24)');
+  routeHalo.setAttribute('stroke-width', '18');
+  routeHalo.setAttribute('stroke-linecap', 'round');
+  routeHalo.setAttribute('stroke-linejoin', 'round');
+  routeHalo.setAttribute('pointer-events', 'none');
+  layer.appendChild(routeHalo);
+
+  const routeLine = document.createElementNS(SVG_NS, 'path');
+  routeLine.setAttribute('d', PROVINCES.map((prov, idx) => `${idx === 0 ? 'M' : 'L'} ${prov.x} ${prov.y}`).join(' '));
+  routeLine.setAttribute('fill', 'none');
+  routeLine.setAttribute('stroke', 'rgba(122,78,26,0.72)');
+  routeLine.setAttribute('stroke-width', '6');
+  routeLine.setAttribute('stroke-linecap', 'round');
+  routeLine.setAttribute('stroke-linejoin', 'round');
+  routeLine.setAttribute('stroke-dasharray', '2 18');
+  routeLine.setAttribute('pointer-events', 'none');
+  layer.appendChild(routeLine);
 
   PROVINCES.forEach(prov => {
     const state   = provState[prov.id] || 'neutral';
@@ -1206,7 +1226,6 @@ function renderProvinces() {
     poly.setAttribute('style','cursor:pointer;transition:fill 0.2s');
     poly.addEventListener('mouseenter', ()=>poly.setAttribute('fill',hoverFill));
     poly.addEventListener('mouseleave', ()=>poly.setAttribute('fill',fill));
-    poly.addEventListener('touchstart', (e)=>{ e.stopPropagation(); selectProvince(prov.id); }, {passive:true});
     poly.addEventListener('click', (e)=>{ e.stopPropagation(); selectProvince(prov.id); });
     layer.appendChild(poly);
 
@@ -1311,12 +1330,97 @@ function updateHeroTokenSprite() {
 =========================================================== */
 let selectedProvId = null;
 let _mapInited = false;
+let _mapWrap = null;
+let _mapSvg = null;
+let _vbX = 0;
+let _vbY = 0;
+let _vbW = MAP_WIDTH;
+let _vbH = MAP_HEIGHT;
+let _pinchDist0 = null;
+let _pinchVb0 = null;
+let _pinchMid0 = null;
+let _mapDrag = null;
+let _mapSuppressClickUntil = 0;
+
+function getMapViewportRatio() {
+  const rect = (_mapWrap && _mapWrap.getBoundingClientRect()) || { width: 1, height: 1 };
+  return Math.max(0.28, rect.height / Math.max(rect.width, 1));
+}
+
+function getMapMinWidth() {
+  return Math.min(MAP_WIDTH, Math.max(520, (MAP_HEIGHT / getMapViewportRatio()) + 24));
+}
+
+function getSVGPoint(clientX, clientY) {
+  const rect = _mapWrap.getBoundingClientRect();
+  return {
+    x: _vbX + (clientX - rect.left) * (_vbW / rect.width),
+    y: _vbY + (clientY - rect.top) * (_vbH / rect.height),
+  };
+}
+
+function clampMapViewBox(x, y, w) {
+  const ratio = getMapViewportRatio();
+  const minW = getMapMinWidth();
+  w = Math.min(MAP_WIDTH, Math.max(minW, w));
+  let h = Math.min(MAP_HEIGHT, w * ratio);
+  if (h >= MAP_HEIGHT) {
+    h = MAP_HEIGHT;
+    w = Math.min(MAP_WIDTH, h / ratio);
+  }
+  x = Math.min(Math.max(x, 0), MAP_WIDTH - w);
+  y = Math.min(Math.max(y, 0), MAP_HEIGHT - h);
+  return { x, y, w, h };
+}
+
+function applyMapViewBox(x, y, w) {
+  const next = clampMapViewBox(x, y, w);
+  _vbX = next.x;
+  _vbY = next.y;
+  _vbW = next.w;
+  _vbH = next.h;
+  if (_mapSvg) _mapSvg.setAttribute('viewBox', `${next.x} ${next.y} ${next.w} ${next.h}`);
+}
+
+function focusMapOnProvince(provId, preferredWidth = null) {
+  const prov = PROVINCES[provId];
+  if (!prov || !_mapWrap) return;
+  const targetW = preferredWidth || Math.max(getMapMinWidth(), Math.min(920, MAP_WIDTH * 0.38));
+  const ratio = getMapViewportRatio();
+  const targetH = Math.min(MAP_HEIGHT, targetW * ratio);
+  applyMapViewBox(prov.x - (targetW / 2), prov.y - (targetH / 2), targetW);
+}
+
+function startMapDrag(clientX, clientY) {
+  _mapDrag = { clientX, clientY, vbX: _vbX, vbY: _vbY, moved: false };
+  if (_mapWrap) _mapWrap.classList.add('dragging');
+}
+
+function moveMapDrag(clientX, clientY) {
+  if (!_mapDrag || !_mapWrap) return;
+  const rect = _mapWrap.getBoundingClientRect();
+  const dx = (clientX - _mapDrag.clientX) * (_vbW / rect.width);
+  const dy = (clientY - _mapDrag.clientY) * (_vbH / rect.height);
+  if (Math.abs(dx) > 8 || Math.abs(dy) > 8) _mapDrag.moved = true;
+  applyMapViewBox(_mapDrag.vbX - dx, _mapDrag.vbY - dy, _vbW);
+}
+
+function endMapDrag() {
+  if (_mapDrag && _mapDrag.moved) _mapSuppressClickUntil = Date.now() + 180;
+  _mapDrag = null;
+  if (_mapWrap) _mapWrap.classList.remove('dragging');
+}
 
 function initMap() {
   renderProvinces();
   const cur = PROVINCES[playerProvId];
   moveHeroToken(cur.x, cur.y);
   updateHeroTokenSprite();
+
+  _mapWrap = document.getElementById('map-canvas-wrap');
+  _mapSvg = document.getElementById('map-svg');
+
+  focusMapOnProvince(playerProvId, _mapInited ? _vbW : null);
 
   if (_mapInited) return;
   _mapInited = true;
@@ -1328,38 +1432,29 @@ function initMap() {
     e.stopPropagation(); closeFortPanel();
   });
 
-  // -- Pinch-to-zoom on map --
-  const wrap = document.getElementById('map-canvas-wrap');
-  const svg  = document.getElementById('map-svg');
-  let _vbX=0, _vbY=0, _vbW=500, _vbH=580;
-  let _pinchDist0 = null, _pinchVb0 = null, _pinchMid0 = null;
+  _mapWrap.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    startMapDrag(e.clientX, e.clientY);
+  });
 
-  function getSVGPoint(clientX, clientY) {
-    const rect = wrap.getBoundingClientRect();
-    const scaleX = _vbW / rect.width;
-    const scaleY = _vbH / rect.height;
-    return { x: _vbX + (clientX - rect.left) * scaleX,
-             y: _vbY + (clientY - rect.top)  * scaleY };
-  }
+  window.addEventListener('mousemove', e => {
+    if (!_mapDrag || _pinchDist0 !== null) return;
+    moveMapDrag(e.clientX, e.clientY);
+  });
 
-  function clampVB(x, y, w, h) {
-    const minW = 120, maxW = 500;
-    w = Math.min(maxW, Math.max(minW, w));
-    h = w * (580/500);
-    x = Math.min(Math.max(x, 0), 500 - w);
-    y = Math.min(Math.max(y, 0), 580 - h);
-    return {x, y, w, h};
-  }
+  window.addEventListener('mouseup', () => endMapDrag());
 
-  function applyVB(x, y, w, h) {
-    const c = clampVB(x, y, w, h);
-    _vbX=c.x; _vbY=c.y; _vbW=c.w; _vbH=c.h;
-    svg.setAttribute('viewBox', c.x+' '+c.y+' '+c.w+' '+c.h);
-  }
+  _mapWrap.addEventListener('mouseleave', () => endMapDrag());
 
-  wrap.addEventListener('touchstart', e => {
+  _mapWrap.addEventListener('touchstart', e => {
+    if (e.touches.length === 1) {
+      const t0 = e.touches[0];
+      startMapDrag(t0.clientX, t0.clientY);
+      return;
+    }
     if (e.touches.length === 2) {
       e.preventDefault();
+      endMapDrag();
       const t0 = e.touches[0], t1 = e.touches[1];
       _pinchDist0 = Math.hypot(t1.clientX-t0.clientX, t1.clientY-t0.clientY);
       _pinchVb0 = {x:_vbX, y:_vbY, w:_vbW, h:_vbH};
@@ -1367,27 +1462,39 @@ function initMap() {
     }
   }, {passive:false});
 
-  wrap.addEventListener('touchmove', e => {
+  _mapWrap.addEventListener('touchmove', e => {
+    if (e.touches.length === 1 && _mapDrag && _pinchDist0 === null) {
+      e.preventDefault();
+      const t0 = e.touches[0];
+      moveMapDrag(t0.clientX, t0.clientY);
+      return;
+    }
     if (e.touches.length === 2 && _pinchDist0 !== null) {
       e.preventDefault();
       const t0 = e.touches[0], t1 = e.touches[1];
       const dist = Math.hypot(t1.clientX-t0.clientX, t1.clientY-t0.clientY);
       const scale = _pinchDist0 / dist;
       const newW = _pinchVb0.w * scale;
-      const newH = newW * (580/500);
+      const newH = newW * getMapViewportRatio();
       // Keep the pinch midpoint fixed in SVG space
       const newX = _pinchMid0.x - (_pinchMid0.x - _pinchVb0.x) * (newW / _pinchVb0.w);
       const newY = _pinchMid0.y - (_pinchMid0.y - _pinchVb0.y) * (newH / _pinchVb0.h);
-      applyVB(newX, newY, newW, newH);
+      applyMapViewBox(newX, newY, newW);
     }
   }, {passive:false});
 
-  wrap.addEventListener('touchend', e => {
-    if (e.touches.length < 2) { _pinchDist0 = null; }
+  _mapWrap.addEventListener('touchend', e => {
+    if (e.touches.length < 2) _pinchDist0 = null;
+    if (e.touches.length === 0) endMapDrag();
   }, {passive:true});
+
+  window.addEventListener('resize', () => {
+    if (_mapWrap && _mapSvg) focusMapOnProvince(playerProvId, _vbW);
+  });
 }
 
 function selectProvince(provId) {
+  if (Date.now() < _mapSuppressClickUntil) return;
   const prov = PROVINCES[provId];
   if (!prov) return;
   selectedProvId = provId;
@@ -1489,7 +1596,6 @@ function startBattleFromMap() {
       return;
     }
   }
-    updateMusicButtonLabel();
   const _sp = provState[selectedProvId] || 'neutral';
   if (_sp !== 'owned' && selectedProvId !== playerProvId) {
     const _ct = getProvType(selectedProvId);
@@ -1506,9 +1612,16 @@ function startBattleFromMap() {
     name: prov.hz,
     en: prov.en,
     diff: Math.max(1, Math.floor(selectedProvId/10)+1),
+    provId: selectedProvId,
     conquered: provState[selectedProvId] === 'owned' || isPlayer
   };
   closeFortPanel();
+
+  if (RTCOOP.enabled && campaignMode === 'coop') {
+    RTCOOP.isHost = true;
+    rtcoopHostStartBattle(fort); // async — non-blocking
+  }
+
   startBattle(fort, campaignMode);
 }
 /* ===========================================================
@@ -1640,30 +1753,54 @@ function drawFeastSprite(svgEl, course) {
 
 // One stage guardian per pilgrimage stop, in route order
 const PROVINCE_GENERALS = [
-  {id:0,  name:'玄奘法师', nameEn:'Master Xuanzang',         sprite:'sanzang',    hp:7,  soldierName:'经卷学徒', soldierEn:'Scripture Novice'},
-  {id:1,  name:'刘伯钦',   nameEn:'Hunter Liu',             sprite:'general',    hp:8,  soldierName:'山路险障', soldierEn:'Mountain Hazard'},
-  {id:2,  name:'孙悟空',   nameEn:'Sun Wukong',             sprite:'wukong',     hp:12, soldierName:'山神石兵', soldierEn:'Stone Guardian'},
-  {id:3,  name:'白龙马',   nameEn:'White Dragon Horse',     sprite:'whitehorse', hp:8,  soldierName:'涧水龙影', soldierEn:'Ravine Spirit'},
-  {id:4,  name:'猪八戒',   nameEn:'Zhu Bajie',              sprite:'bajie',      hp:10, soldierName:'庄客幻影', soldierEn:'Village Retainer'},
-  {id:5,  name:'黄风大王', nameEn:'Yellow Wind Demon',      sprite:'general',    hp:11, soldierName:'黄风小妖', soldierEn:'Wind Imp'},
-  {id:6,  name:'沙悟净',   nameEn:'Sha Wujing',             sprite:'wujing',     hp:9,  soldierName:'流沙水鬼', soldierEn:'River Wraith'},
-  {id:7,  name:'镇元子',   nameEn:'Zhenyuanzi',             sprite:'general',    hp:10, soldierName:'五庄童子', soldierEn:'Abbey Acolyte'},
-  {id:8,  name:'白骨精',   nameEn:'White Bone Demon',       sprite:'general',    hp:11, soldierName:'骷髅幻影', soldierEn:'Bone Phantom'},
-  {id:9,  name:'黄袍怪',   nameEn:'Yellow Robe Demon',      sprite:'general',    hp:11, soldierName:'宫苑妖兵', soldierEn:'Palace Fiend'},
-  {id:10, name:'金角大王', nameEn:'Gold Horn King',         sprite:'general',    hp:12, soldierName:'银角小妖', soldierEn:'Horned Imp'},
-  {id:11, name:'乌鸡国王', nameEn:'King of Crow-Cock',      sprite:'general',    hp:9,  soldierName:'井底幽魂', soldierEn:'Well Spirit'},
-  {id:12, name:'红孩儿',   nameEn:'Red Boy',                sprite:'general',    hp:12, soldierName:'火云小妖', soldierEn:'Fire Cloud Imp'},
-  {id:13, name:'虎力大仙', nameEn:'Tiger Power Immortal',   sprite:'general',    hp:10, soldierName:'车迟道士', soldierEn:'Court Taoist'},
-  {id:14, name:'灵感大王', nameEn:'Great King Linggan',     sprite:'general',    hp:11, soldierName:'河府水妖', soldierEn:'River Demon'},
-  {id:15, name:'女儿国王', nameEn:'Queen of Woman Kingdom', sprite:'general',    hp:9,  soldierName:'宫中侍从', soldierEn:'Palace Attendant'},
-  {id:16, name:'如意真仙', nameEn:'Ruyi Zhenxian',          sprite:'general',    hp:10, soldierName:'药泉童子', soldierEn:'Spring Acolyte'},
-  {id:17, name:'蜘蛛精',   nameEn:'Spider Demon',           sprite:'general',    hp:11, soldierName:'盘丝小妖', soldierEn:'Web Spinner'},
-  {id:18, name:'大鹏王',   nameEn:'Great Roc King',         sprite:'general',    hp:13, soldierName:'狮驼妖兵', soldierEn:'Ridge Fiend'},
-  {id:19, name:'鹿力大仙', nameEn:'Deer Power Immortal',    sprite:'general',    hp:10, soldierName:'比丘邪徒', soldierEn:'Corrupt Acolyte'},
-  {id:20, name:'牛魔王',   nameEn:'Bull Demon King',        sprite:'general',    hp:14, soldierName:'火山妖卒', soldierEn:'Flame Fiend'},
-  {id:21, name:'九灵元圣', nameEn:'Nine-Headed Lion',       sprite:'general',    hp:12, soldierName:'玉华兽影', soldierEn:'Lion Shade'},
-  {id:22, name:'天竺佛使', nameEn:'Buddhist Envoy',         sprite:'general',    hp:10, soldierName:'天竺护法', soldierEn:'Pilgrim Guardian'},
-  {id:23, name:'如来佛祖', nameEn:'Tathagata Buddha',       sprite:'general',    hp:15, soldierName:'雷音守卫', soldierEn:'Thunderclap Guardian'},
+  {id:0,  name:'唐太宗',     nameEn:'Emperor Taizong',         sprite:'general',    hp:7,  soldierName:'大唐仪卫',   soldierEn:'Imperial Guard'},
+  {id:1,  name:'法明长老',   nameEn:'Master Faming',          sprite:'general',    hp:7,  soldierName:'寺院行者',   soldierEn:'Temple Novice'},
+  {id:2,  name:'刘伯钦',     nameEn:'Hunter Liu',             sprite:'general',    hp:8,  soldierName:'山路向导',   soldierEn:'Mountain Guide'},
+  {id:3,  name:'寅将军',     nameEn:'General Yin',            sprite:'general',    hp:9,  soldierName:'林间虎妖',   soldierEn:'Forest Tiger Spirit'},
+  {id:4,  name:'孙悟空',     nameEn:'Sun Wukong',             sprite:'wukong',     hp:12, soldierName:'石猴残影',   soldierEn:'Stone Monkey Shade'},
+  {id:5,  name:'山神土地',   nameEn:'Mountain Spirits',       sprite:'general',    hp:8,  soldierName:'庙前香火',   soldierEn:'Shrine Warden'},
+  {id:6,  name:'白龙马',     nameEn:'White Dragon Horse',     sprite:'whitehorse', hp:8,  soldierName:'涧水龙影',   soldierEn:'Ravine Spirit'},
+  {id:7,  name:'金池长老',   nameEn:'Elder Jinchi',           sprite:'general',    hp:9,  soldierName:'禅院僧众',   soldierEn:'Cloister Monk'},
+  {id:8,  name:'黑熊精',     nameEn:'Black Bear Demon',       sprite:'general',    hp:11, soldierName:'黑风小妖',   soldierEn:'Black Wind Fiend'},
+  {id:9,  name:'高太公',     nameEn:'Elder Gao',              sprite:'general',    hp:8,  soldierName:'庄院家仆',   soldierEn:'Manor Servant'},
+  {id:10, name:'猪八戒',     nameEn:'Zhu Bajie',              sprite:'bajie',      hp:10, soldierName:'福陵野猪',   soldierEn:'Fuling Boar'},
+  {id:11, name:'黄风大王',   nameEn:'Yellow Wind Demon',      sprite:'general',    hp:11, soldierName:'黄风小妖',   soldierEn:'Wind Imp'},
+  {id:12, name:'沙悟净',     nameEn:'Sha Wujing',             sprite:'wujing',     hp:9,  soldierName:'流沙水鬼',   soldierEn:'River Wraith'},
+  {id:13, name:'尸魔先锋',   nameEn:'Corpse Fiend Scout',     sprite:'general',    hp:9,  soldierName:'荒岭孤魂',   soldierEn:'Grave Wraith'},
+  {id:14, name:'镇元子',     nameEn:'Zhenyuanzi',             sprite:'general',    hp:11, soldierName:'人参守童',   soldierEn:'Ginseng Keeper'},
+  {id:15, name:'清风道童',   nameEn:'Acolyte Qingfeng',       sprite:'general',    hp:9,  soldierName:'观中童子',   soldierEn:'Abbey Acolyte'},
+  {id:16, name:'白骨精',     nameEn:'White Bone Demon',       sprite:'general',    hp:11, soldierName:'骷髅幻影',   soldierEn:'Bone Phantom'},
+  {id:17, name:'宝象国主',   nameEn:'King of Baoxiang',       sprite:'general',    hp:9,  soldierName:'宫城宿卫',   soldierEn:'Palace Retainer'},
+  {id:18, name:'黄袍怪',     nameEn:'Yellow Robe Demon',      sprite:'general',    hp:11, soldierName:'洞府妖兵',   soldierEn:'Cave Fiend'},
+  {id:19, name:'金角大王',   nameEn:'Gold Horn King',         sprite:'general',    hp:12, soldierName:'金角小妖',   soldierEn:'Gold Horn Imp'},
+  {id:20, name:'银角大王',   nameEn:'Silver Horn King',       sprite:'general',    hp:12, soldierName:'银角小妖',   soldierEn:'Silver Horn Imp'},
+  {id:21, name:'乌鸡国王',   nameEn:'King of Crow-Cock',      sprite:'general',    hp:9,  soldierName:'井底幽魂',   soldierEn:'Well Spirit'},
+  {id:22, name:'枯松山神',   nameEn:'Dry Pine Spirit',        sprite:'general',    hp:9,  soldierName:'松烟妖影',   soldierEn:'Pine Shade'},
+  {id:23, name:'红孩儿',     nameEn:'Red Boy',                sprite:'general',    hp:12, soldierName:'火云小妖',   soldierEn:'Fire Cloud Imp'},
+  {id:24, name:'虎力大仙',   nameEn:'Tiger Power Immortal',   sprite:'general',    hp:10, soldierName:'车迟道士',   soldierEn:'Court Taoist'},
+  {id:25, name:'灵感大王',   nameEn:'Great King Linggan',     sprite:'general',    hp:11, soldierName:'河府水妖',   soldierEn:'River Demon'},
+  {id:26, name:'青牛精',     nameEn:'Green Bull Demon',       sprite:'general',    hp:12, soldierName:'金圈妖卒',   soldierEn:'Metal Ring Fiend'},
+  {id:27, name:'女儿国王',   nameEn:'Queen of Woman Kingdom', sprite:'general',    hp:9,  soldierName:'宫中侍从',   soldierEn:'Palace Attendant'},
+  {id:28, name:'子母河神',   nameEn:'Mother River Spirit',    sprite:'general',    hp:10, soldierName:'怪泉水影',   soldierEn:'River Shade'},
+  {id:29, name:'如意真仙',   nameEn:'Ruyi Zhenxian',          sprite:'general',    hp:10, soldierName:'药泉童子',   soldierEn:'Spring Acolyte'},
+  {id:30, name:'蝎子精',     nameEn:'Scorpion Demon',         sprite:'general',    hp:12, soldierName:'毒尾妖姬',   soldierEn:'Poison Fiend'},
+  {id:31, name:'火焰山神',   nameEn:'Flame Mountain Spirit',  sprite:'general',    hp:10, soldierName:'山火精灵',   soldierEn:'Ember Sprite'},
+  {id:32, name:'铁扇公主',   nameEn:'Princess Iron Fan',      sprite:'general',    hp:12, soldierName:'翠云侍女',   soldierEn:'Fan Attendant'},
+  {id:33, name:'牛魔王',     nameEn:'Bull Demon King',        sprite:'general',    hp:14, soldierName:'积雷妖卒',   soldierEn:'Jilei Fiend'},
+  {id:34, name:'祭赛国主',   nameEn:'King of Sacrifice',      sprite:'general',    hp:9,  soldierName:'舍利守卫',   soldierEn:'Relic Guard'},
+  {id:35, name:'金光寺僧',   nameEn:'Golden Light Abbot',     sprite:'general',    hp:9,  soldierName:'寺门护灯',   soldierEn:'Temple Sentinel'},
+  {id:36, name:'黄眉老佛',   nameEn:'Yellowbrow Great King',  sprite:'general',    hp:13, soldierName:'假佛随从',   soldierEn:'False Monk'},
+  {id:37, name:'七绝山怪',   nameEn:'Seven-Extinction Fiend', sprite:'general',    hp:10, soldierName:'泥沼怪影',   soldierEn:'Marsh Spirit'},
+  {id:38, name:'朱紫国王',   nameEn:'King of Scarlet Purple', sprite:'general',    hp:9,  soldierName:'御医侍从',   soldierEn:'Court Physician'},
+  {id:39, name:'赛太岁',     nameEn:'Sai Tai Sui',            sprite:'general',    hp:12, soldierName:'妖宫亲卫',   soldierEn:'Cave Guard'},
+  {id:40, name:'蜘蛛精',     nameEn:'Spider Demon',           sprite:'general',    hp:11, soldierName:'盘丝小妖',   soldierEn:'Web Spinner'},
+  {id:41, name:'百眼魔君',   nameEn:'Hundred-Eyed Demon Lord',sprite:'general',    hp:12, soldierName:'黄花道众',   soldierEn:'Poison Adept'},
+  {id:42, name:'大鹏王',     nameEn:'Great Roc King',         sprite:'general',    hp:13, soldierName:'狮驼妖兵',   soldierEn:'Ridge Fiend'},
+  {id:43, name:'白鹿精',     nameEn:'White Deer Spirit',      sprite:'general',    hp:11, soldierName:'续命邪徒',   soldierEn:'Corrupt Acolyte'},
+  {id:44, name:'地涌夫人',   nameEn:'Lady Earth-Flow',        sprite:'general',    hp:12, soldierName:'地窟魅影',   soldierEn:'Cavern Shadow'},
+  {id:45, name:'九灵元圣',   nameEn:'Nine-Headed Lion',       sprite:'general',    hp:12, soldierName:'玉华兽影',   soldierEn:'Lion Shade'},
+  {id:46, name:'天竺佛使',   nameEn:'Buddhist Envoy',         sprite:'general',    hp:10, soldierName:'佛土护法',   soldierEn:'Pilgrim Guardian'},
+  {id:47, name:'如来佛祖',   nameEn:'Tathagata Buddha',       sprite:'general',    hp:15, soldierName:'雷音守卫',   soldierEn:'Thunderclap Guardian'},
 ]
 
 // Track which generals have been defeated (persisted in campaign save)
@@ -1868,10 +2005,14 @@ const HEROES_DEF = ALL_HEROES.slice(0,3); // fallback, overridden in startBattle
 // Province conquest type (deterministic by id)
 // Fixed conquest type per province (from provinces.xlsx)
 const PROV_CONQUEST_TYPE = {
-  0:'build', 1:'battle', 2:'battle', 3:'build', 4:'feast', 5:'battle',
-  6:'build', 7:'feast', 8:'battle', 9:'battle', 10:'battle', 11:'feast',
-  12:'battle', 13:'build', 14:'battle', 15:'feast', 16:'build', 17:'battle',
-  18:'battle', 19:'feast', 20:'battle', 21:'build', 22:'feast', 23:'battle'
+  0:'build', 1:'build', 2:'battle', 3:'build', 4:'battle', 5:'build',
+  6:'build', 7:'feast', 8:'battle', 9:'feast', 10:'battle', 11:'battle',
+  12:'build', 13:'battle', 14:'feast', 15:'build', 16:'battle', 17:'feast',
+  18:'battle', 19:'battle', 20:'battle', 21:'feast', 22:'build', 23:'battle',
+  24:'battle', 25:'battle', 26:'battle', 27:'feast', 28:'build', 29:'build',
+  30:'battle', 31:'battle', 32:'build', 33:'battle', 34:'feast', 35:'build',
+  36:'battle', 37:'build', 38:'feast', 39:'battle', 40:'battle', 41:'battle',
+  42:'battle', 43:'feast', 44:'battle', 45:'build', 46:'feast', 47:'battle'
 };
 function getProvType(provId){ return PROV_CONQUEST_TYPE[provId] || 'battle'; }
 
