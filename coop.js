@@ -521,7 +521,7 @@ function _rtcoopUpdateMapUI(status, controller) {
     if (mi) {
       const owned = Object.values(provState).filter(v=>v==='owned').length;
       const waitingStr = count < 2 ? '  ⏳ Waiting for players…' : '';
-      mi.textContent = `已占${owned}/${PROVINCES.length}郡  ⭐ Your turn${waitingStr}${playerDots ? '  ' + playerDots : ''}`;
+      mi.textContent = `已行经${owned}/${PROVINCES.length}站  ⭐ Your turn${waitingStr}${playerDots ? '  ' + playerDots : ''}`;
     }
     document.querySelectorAll('[data-prov]').forEach(el => {
       el.style.pointerEvents = '';
@@ -539,7 +539,7 @@ function _rtcoopUpdateMapUI(status, controller) {
     if (fp) fp.style.display = 'none';
     if (mi) {
       const owned = Object.values(provState).filter(v=>v==='owned').length;
-      mi.textContent = `已占${owned}/${PROVINCES.length}郡${playerDots ? '  ' + playerDots : ''}`;
+      mi.textContent = `已行经${owned}/${PROVINCES.length}站${playerDots ? '  ' + playerDots : ''}`;
     }
   }
 }
@@ -573,9 +573,9 @@ function _rtcoopShowJoinPopup(data) {
 
   const provName = data.battle_prov_name || '?';
   const hostName = data.host || '?';
-  const ctIcon = data.battle_ctype==='feast'?'🍽️':data.battle_ctype==='build'?'⚒️':'⚔️';
+    const ctIcon = data.battle_ctype==='feast'?'🪷':data.battle_ctype==='build'?'⛰️':'⚔️';
   document.getElementById('coop-join-title').textContent =
-    `${ctIcon} ${hostName} 正在进攻 ${provName}！`;
+    `${ctIcon} ${hostName} 正在前往 ${provName}！`;
 
   popup.style.display = 'flex';
 

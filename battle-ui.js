@@ -12,8 +12,8 @@ function renderEnemy() {
   const _hpWrap = document.getElementById('enemy-hp-wrap');
   if (_hpBar) { _hpBar.className = 'enemy-hp-bar' + (isCivil ? ' blue' : ''); }
   if (_hpWrap) { _hpWrap.className = 'enemy-hp-wrap' + (isCivil ? ' blue' : ''); }
-  if (ctype === 'build') hpLabel.textContent = e.isCivilBoss ? '🧿 破关 Trial' : '⚒️ 进度 Progress';
-  else if (ctype === 'feast') hpLabel.textContent = e.isCivilBoss ? '🍽️ 诱惑 Temptation' : '🍽️ 进度 Progress';
+    if (ctype === 'build') hpLabel.textContent = e.isCivilBoss ? '🧿 破关 Trial' : '⛰️ 进度 Progress';
+    else if (ctype === 'feast') hpLabel.textContent = e.isCivilBoss ? '🪷 诱惑 Temptation' : '🪷 进度 Progress';
   else hpLabel.textContent = e.name;
   const svg = document.getElementById('enemy-svg');
   if (e.sprite === 'build' || e.sprite === 'feast') {
@@ -127,8 +127,8 @@ function renderEnemy() {
   }, 300);
   const badge = document.getElementById('btl-badge');
   if (badge) {
-    if (ctype==='build') badge.textContent = '⚒️ 障碍关 Obstacle';
-    else if (ctype==='feast') badge.textContent = '🍽️ 诱惑关 Temptation';
+     if (ctype==='build') badge.textContent = '⛰️ 障碍关 Obstacle';
+     else if (ctype==='feast') badge.textContent = '🪷 诱惑关 Temptation';
     else badge.textContent = G.mode==='coop'?'⚔️ 合作 Co-op':getPlayerName(G.mode);
   }
 }
@@ -479,7 +479,7 @@ function dealProgress(amount, ctype){
   el.style.textShadow = ctype==='feast'
     ? '0 0 12px rgba(255,200,40,0.9)'
     : '0 0 12px rgba(60,220,140,0.9)';
-  el.textContent = ctype === 'feast' ? '✓ ' + amount + ' 次识破 🍽️' : '✓ ' + amount + ' 重关卡 ⚒️';
+  el.textContent = ctype === 'feast' ? '✓ ' + amount + ' 次识破 🪷' : '✓ ' + amount + ' 重关卡 ⛰️';
   fig.style.position = 'relative'; fig.appendChild(el);
   setTimeout(() => el.remove(), 1300);
   const svg = document.getElementById('enemy-svg');

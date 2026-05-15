@@ -6,9 +6,9 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="汉字战">
-  <meta name="theme-color" content="#c9a227">
-  <meta name="application-name" content="汉字战">
+  <meta name="apple-mobile-web-app-title" content="西游汉字路">
+  <meta name="theme-color" content="#f3c27c">
+  <meta name="application-name" content="西游汉字路">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1">
 <title>西游汉字路</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
@@ -34,7 +34,7 @@
   <img src="sprites/logo.webp" alt="西游汉字路" style="width:min(420px,88vw);max-width:88vw;position:relative;z-index:2;filter:drop-shadow(0 0 40px rgba(201,162,39,0.5));animation:float 4s ease-in-out infinite">
   <div class="t-div"></div>
   <div style="display:flex;flex-direction:column;gap:11px;align-items:center;position:relative;z-index:2">
-    <button class="btn-s" onclick="goProfile()" style="background:linear-gradient(135deg,#f6a86b,#efc98b,#c48cff);border-color:rgba(255,245,216,.82);color:#fff8ef;box-shadow:0 8px 26px rgba(196,140,255,.26)">⚔️ 出战！ Start</button>
+    <button class="btn-s" onclick="goProfile()" style="background:linear-gradient(135deg,#f6a86b,#efc98b,#c48cff);border-color:rgba(255,245,216,.82);color:#fff8ef;box-shadow:0 8px 26px rgba(196,140,255,.26)">🌤️ 启程！ Begin</button>
     <button class="btn-s" onclick="goStudy()">📖 复习字库 Characters</button>
     <button class="btn-s" onclick="goStories()">📜 西游章节 Chapters</button>
     <button class="btn-s" onclick="openSaveModal()">⚙️ 设置 Settings</button>
@@ -255,8 +255,8 @@
         <div class="map-legend-row"><span class="map-legend-swatch is-open"></span>下一站 Open path</div>
         <div class="map-panel-divider"></div>
         <div class="map-legend-row"><span class="map-legend-icon">⚔️</span>妖魔战 Battle trial</div>
-        <div class="map-legend-row"><span class="map-legend-icon">⚒️</span>障碍关 Obstacle trial</div>
-        <div class="map-legend-row"><span class="map-legend-icon">🍽️</span>诱惑关 Temptation trial</div>
+          <div class="map-legend-row"><span class="map-legend-icon">⛰️</span>障碍关 Obstacle trial</div>
+          <div class="map-legend-row"><span class="map-legend-icon">🪷</span>诱惑关 Temptation trial</div>
       </div>
     </div>
 
@@ -456,7 +456,7 @@
     <!-- Top bar -->
     <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(201,162,39,.3);flex-shrink:0">
       <button onclick="goHome()" style="background:none;border:2px solid rgba(201,162,39,.5);border-radius:50%;width:40px;height:40px;font-size:20px;color:var(--goldb);cursor:pointer;display:flex;align-items:center;justify-content:center">←</button>
-      <div style="font-family:'Ma Shan Zheng',cursive;font-size:clamp(18px,4.5vw,26px);color:var(--goldb);flex:1">📜 三国故事 Three Kingdoms Stories</div>
+      <div style="font-family:'Ma Shan Zheng',cursive;font-size:clamp(18px,4.5vw,26px);color:var(--goldb);flex:1">📜 西游章节 Journey Chapters</div>
     </div>
     <!-- Chapters list -->
     <div id="stories-list" style="flex:1;overflow-y:auto;padding:12px 14px;display:flex;flex-direction:column;gap:12px"></div>
@@ -562,10 +562,10 @@
       <div id="import-msg-active" style="font-size:12px;min-height:16px;margin:4px 0;color:var(--jadeb)"></div>
       <button onclick="doImportActive()" class="btn-s" style="width:100%;font-size:14px;padding:8px 0;margin-bottom:12px">📥 Import</button>
 
-      <div style="font-size:13px;color:rgba(200,80,80,.8);margin-bottom:6px" id="save-reset-label">🗺️ Reset territories (type <strong style="color:var(--goldb)">reset</strong> to confirm):</div>
+      <div style="font-size:13px;color:rgba(200,80,80,.8);margin-bottom:6px" id="save-reset-label">🗺️ Reset route progress (type <strong style="color:var(--goldb)">reset</strong> to confirm):</div>
       <input id="reset-input-active" type="text" placeholder="Type 'reset' to confirm" style="width:100%;background:rgba(0,0,0,.6);border:1px solid rgba(200,50,50,.5);border-radius:6px;color:var(--parch);font-size:13px;padding:8px 10px;margin-bottom:6px;box-sizing:border-box"/>
       <div id="reset-msg-active" style="font-size:12px;min-height:14px;margin-bottom:6px;color:var(--redb)"></div>
-      <button onclick="doResetActive()" style="width:100%;background:linear-gradient(135deg,#5a1a1a,#8a2a2a);border:2px solid var(--redb);color:#ffaaaa;font-family:'Ma Shan Zheng',cursive;font-size:15px;padding:9px 0;border-radius:6px;cursor:pointer;margin-bottom:14px" id="save-reset-btn">🗺️ Reset Territories</button>
+      <button onclick="doResetActive()" style="width:100%;background:linear-gradient(135deg,#5a1a1a,#8a2a2a);border:2px solid var(--redb);color:#ffaaaa;font-family:'Ma Shan Zheng',cursive;font-size:15px;padding:9px 0;border-radius:6px;cursor:pointer;margin-bottom:14px" id="save-reset-btn">🗺️ Reset Route</button>
 
       <div style="font-size:13px;color:rgba(220,60,60,.9);margin-bottom:6px" id="save-reset-all-label">💥 Reset all (type password to confirm):</div>
       <input id="reset-all-input-active" type="password" placeholder="Enter password to reset everything" style="width:100%;background:rgba(0,0,0,.6);border:1px solid rgba(220,40,40,.6);border-radius:6px;color:var(--parch);font-size:13px;padding:8px 10px;margin-bottom:6px;box-sizing:border-box"/>
@@ -678,262 +678,45 @@ document.addEventListener('visibilitychange', () => {
     if (currentAudio && !musicMuted) currentAudio.play().catch(() => {});
   }
 });
+function _setJourneyAvatar(svg, emoji, palette) {
+  svg.setAttribute('viewBox','0 0 64 80');
+  svg.innerHTML = `<g>
+    <defs>
+      <linearGradient id="${palette.id}" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="${palette.outer}"/>
+        <stop offset="100%" stop-color="${palette.inner}"/>
+      </linearGradient>
+    </defs>
+    <ellipse cx="32" cy="70" rx="18" ry="6" fill="rgba(54,40,74,.16)"/>
+    <circle cx="32" cy="22" r="11" fill="${palette.face}" stroke="${palette.trim}" stroke-width="1.5"/>
+    <path d="M18 55 C18 40, 24 31, 32 31 C40 31, 46 40, 46 55 L46 67 L18 67 Z" fill="url(#${palette.id})" stroke="${palette.trim}" stroke-width="2"/>
+    <path d="M18 47 C14 50, 13 57, 15 65" fill="none" stroke="${palette.trim}" stroke-width="2" stroke-linecap="round"/>
+    <path d="M46 47 C50 50, 51 57, 49 65" fill="none" stroke="${palette.trim}" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="28" cy="20" r="1.5" fill="#2f233f"/>
+    <circle cx="36" cy="20" r="1.5" fill="#2f233f"/>
+    <path d="M28 26 Q32 28 36 26" fill="none" stroke="#7e5260" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="32" cy="12" r="8.5" fill="${palette.halo}" opacity=".28"/>
+    <circle cx="32" cy="12" r="3.2" fill="${palette.spark}" opacity=".8"/>
+    <text x="32" y="49" text-anchor="middle" font-size="21">${emoji}</text>
+    <path d="M26 4 Q32 0 38 4" fill="none" stroke="${palette.trim}" stroke-width="2" stroke-linecap="round"/>
+  </g>`;
+}
+
 const HERO_SPRITES = {
-  liubei: (svg, scale=1) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/liubei.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-
-  guanyu: (svg, scale=1) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/guanyu.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-
-  zhangfei: (svg, scale=1) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/zhangfei.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-
-  zhaoyun: (svg, scale=1) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/zhaoyun.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-
-  huangzhong: (svg, scale=1) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/huangzhong.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-
-  machao: (svg, scale=1) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/machao.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-
-  zhugeliang: (svg, scale=1) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/zhugeliang.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-
-  jiangwei: (svg, scale=1) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/jiangwei.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-
-  weiyan: (svg, scale=1) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/weiyan.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
+  sanzang: svg => _setJourneyAvatar(svg, '🪷', {id:'av-sz', outer:'#f7d88f', inner:'#f2a7a0', face:'#fff2da', trim:'#9e6d3a', halo:'#ffd36d', spark:'#fff7d0'}),
+  wukong: svg => _setJourneyAvatar(svg, '🐒', {id:'av-wk', outer:'#f3b16a', inner:'#f07c56', face:'#ffe2bf', trim:'#8c4b28', halo:'#ffd877', spark:'#ffb44d'}),
+  bajie: svg => _setJourneyAvatar(svg, '🐷', {id:'av-bj', outer:'#f4b2b8', inner:'#d88ec8', face:'#ffe7e9', trim:'#9d5f7b', halo:'#ffd7ee', spark:'#ffb7d1'}),
+  wujing: svg => _setJourneyAvatar(svg, '🌊', {id:'av-wj', outer:'#76c2c9', inner:'#567cc4', face:'#eef7ff', trim:'#44648d', halo:'#a4e7ef', spark:'#c9f7ff'}),
+  whitehorse: svg => _setJourneyAvatar(svg, '🐎', {id:'av-wh', outer:'#f4e9d6', inner:'#9fd4ef', face:'#fff6eb', trim:'#9f7e59', halo:'#fdf3d2', spark:'#fffdf6'}),
+  guanyin: svg => _setJourneyAvatar(svg, '🌸', {id:'av-gy', outer:'#f7d7f3', inner:'#b8c1ff', face:'#fff3fb', trim:'#8d72a8', halo:'#ffe5fb', spark:'#fff8ff'}),
+  nezha: svg => _setJourneyAvatar(svg, '🔥', {id:'av-nz', outer:'#ffb16c', inner:'#ff6b7c', face:'#fff0d6', trim:'#a65739', halo:'#ffd59f', spark:'#fff0bb'}),
+  erlang: svg => _setJourneyAvatar(svg, '👁️', {id:'av-el', outer:'#b9c6ff', inner:'#74a7e9', face:'#eef5ff', trim:'#546ca0', halo:'#dfe7ff', spark:'#ffffff'})
 };
-const ENEMY_SPRITES = {
-  soldier: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    const _srcs = [
-      "sprites/soldier1.webp",
-      "sprites/soldier2.webp",
-      "sprites/soldier3.webp",
-      "sprites/soldier4.webp",
-      "sprites/soldier5.webp",
-    ];
-    const _src = _srcs[Math.floor(Math.random() * _srcs.length)];
-    svg.innerHTML = `<image href="${_src}" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
 
-  general: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/general.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  caimao: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/caimao.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  caocao: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/caocao.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  caohong: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/caohong.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  caoren: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/caoren.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  diaochan: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/diaochan.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  dongzhuo: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/dongzhuo.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  ganning: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/ganning.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  gongsundu: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/gongsundu.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  gongsunzan: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/gongsunzan.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  huanggai: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/huanggai.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  huatuo: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/huatuo.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  jiaxu: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/jiaxu.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  kingmulu: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/kingmulu.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  kingofloulan: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/kingofloulan.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  liubiao: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/liubiao.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  liuyan: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/liuyan.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  liuzhang: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/liuzhang.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  lubu: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/lubu.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  lusu: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/lusu.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  luxun: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/luxun.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  madai: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/madai.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  menghuo: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/menghuo.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  ouxing: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/ouxing.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  pangtong: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/pangtong.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  shamoke: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/shamoke.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  simayi: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/simayi.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  sunquan: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/sunquan.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  taishici: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/taishici.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  trungtrac: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/trungtrac.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  wangping: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/wangping.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  wangyun: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/wangyun.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  wenchou: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/wenchou.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  wuhuanchieftain: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/wuhuanchieftain.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  xiahoudun: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/xiahoudun.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  xiahouyuan: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/xiahouyuan.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  xuchu: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/xuchu.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  yanbaihu: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/yanbaihu.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  yanliang: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/yanliang.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  yongkai: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/yongkai.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  yuanshao: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/yuanshao.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  yuantan: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/yuantan.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  zhanghe: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/zhanghe.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  zhangjiao: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/zhangjiao.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  zhangliao: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/zhangliao.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  zhanglu: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/zhanglu.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  zhouyu: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/zhouyu.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  zhugejin: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/zhugejin.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  },
-  zhurong: (svg) => {
-    svg.setAttribute('viewBox','0 0 64 80');
-    svg.innerHTML = `<image href="sprites/zhurong.webp" x="0" y="0" width="64" height="80" preserveAspectRatio="xMidYMid meet"/>`;
-  }
+const ENEMY_SPRITES = {
+  soldier: svg => _setJourneyAvatar(svg, '妖', {id:'av-so', outer:'#c89e6d', inner:'#8c6646', face:'#fae7d5', trim:'#6d4d34', halo:'#f1d2aa', spark:'#ffe6c2'}),
+  guardian: svg => _setJourneyAvatar(svg, '守', {id:'av-gu', outer:'#a986e7', inner:'#5f7dc7', face:'#f6ebff', trim:'#4f508d', halo:'#e5d7ff', spark:'#fff5ff'}),
+  general: svg => _setJourneyAvatar(svg, '守', {id:'av-ge', outer:'#a986e7', inner:'#5f7dc7', face:'#f6ebff', trim:'#4f508d', halo:'#e5d7ff', spark:'#fff5ff'})
 };
 
 function drawHeroInSvg(svgEl, heroKey) {
@@ -1108,6 +891,51 @@ function initProvState() {
   provState[0] = 'owned';
 }
 
+function normalizeCampaignSave(data) {
+  if (!data || typeof data !== 'object') return null;
+
+  let normalizedProvState = data.provState;
+  if (!normalizedProvState && data.prov_state) {
+    normalizedProvState = typeof data.prov_state === 'string'
+      ? JSON.parse(data.prov_state)
+      : data.prov_state;
+  }
+
+  if (!normalizedProvState || typeof normalizedProvState !== 'object') {
+    normalizedProvState = {};
+  }
+
+  const fallbackProvState = {};
+  PROVINCES.forEach(p => { fallbackProvState[p.id] = 'neutral'; });
+  fallbackProvState[0] = 'owned';
+
+  PROVINCES.forEach(p => {
+    if (normalizedProvState[p.id] !== 'owned' && normalizedProvState[p.id] !== 'player' && normalizedProvState[p.id] !== 'neutral') {
+      normalizedProvState[p.id] = fallbackProvState[p.id];
+    }
+  });
+
+  const playerProv = Number.isInteger(data.playerProvId)
+    ? data.playerProvId
+    : Number.isInteger(data.player_prov_id)
+      ? data.player_prov_id
+      : 0;
+
+  return {
+    provState: normalizedProvState,
+    playerProvId: playerProv >= 0 && playerProv < PROVINCES.length ? playerProv : 0,
+    defeatedGenerals: Array.isArray(data.defeatedGenerals)
+      ? data.defeatedGenerals
+      : Array.isArray(data.defeated_generals)
+        ? data.defeated_generals
+        : [],
+    chars: data.chars && typeof data.chars === 'object' ? data.chars : {},
+    totalScore: Number.isFinite(data.totalScore) ? data.totalScore : 0,
+    globalBestStreak: Number.isFinite(data.globalBestStreak) ? data.globalBestStreak : 0,
+    ts: Number.isFinite(data.ts) ? data.ts : Date.now(),
+  };
+}
+
 /* ===========================================================
    CAMPAIGN SAVE / LOAD
 =========================================================== */
@@ -1130,7 +958,13 @@ function loadCampaign(mode) {
     const key = 'skz_campaign_' + mode;
     const raw = localStorage.getItem(key);
     if (!raw) return null;
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    const normalized = normalizeCampaignSave(parsed);
+    if (!normalized) return null;
+    if (JSON.stringify(parsed) !== JSON.stringify(normalized)) {
+      localStorage.setItem(key, JSON.stringify(normalized));
+    }
+    return normalized;
   } catch(e){ return null; }
 }
 
@@ -1264,7 +1098,7 @@ function renderProvinces() {
       ptIcon.setAttribute('x',prov.x); ptIcon.setAttribute('y',prov.y+34);
       ptIcon.setAttribute('text-anchor','middle'); ptIcon.setAttribute('font-size','18');
       ptIcon.setAttribute('pointer-events','none');
-      ptIcon.textContent = pt==='build'?'⚒️':pt==='feast'?'🍽️':'⚔️';
+        ptIcon.textContent = pt==='build'?'⛰️':pt==='feast'?'🪷':'⚔️';
       layer.appendChild(ptIcon);
     }
     // -- Star for current --
@@ -1569,14 +1403,14 @@ function selectProvince(provId) {
     btnText = '📖 Review here';
   } else if (state === 'enemy') {
     const et = getProvType(provId);
-    const etIcon = et==='build'?'⚒️':et==='feast'?'🍽️':'⚔️';
+      const etIcon = et==='build'?'⛰️':et==='feast'?'🪷':'⚔️';
     statusText = etIcon + ' 当前劫难 Active trial';
-    btnText = et==='build'?'⚒️ 破关！Clear obstacle!':et==='feast'?'🍽️ 识破！Resist temptation!':'⚔️ 降妖！Defeat demon!';
+      btnText = et==='build'?'⛰️ 破关！Clear obstacle!':et==='feast'?'🪷 识破！Resist temptation!':'⚔️ 降妖！Defeat demon!';
   } else {
     const nt = getProvType(provId);
-    const ntIcon = nt==='build'?'⚒️':nt==='feast'?'🍽️':'⚔️';
+      const ntIcon = nt==='build'?'⛰️':nt==='feast'?'🪷':'⚔️';
     statusText = ntIcon + ' 下一路站 — ' + (nt==='build'?'Obstacle trial':nt==='feast'?'Temptation trial':'Battle trial');
-    btnText = nt==='build'?'⚒️ 破关！Clear obstacle!':nt==='feast'?'🍽️ 识破！Resist temptation!':'⚔️ 继续西行！Continue west!';
+      btnText = nt==='build'?'⛰️ 破关！Clear obstacle!':nt==='feast'?'🪷 识破！Resist temptation!':'⚔️ 继续西行！Continue west!';
   }
 
   document.getElementById('fp-status').textContent = statusText;
@@ -1690,7 +1524,7 @@ const BUILD_ACTIVITIES = [
 
 // Build-mode SVG sprite (travel obstacle)
 function drawBuildSprite(svgEl, activity) {
-  const emoji = activity ? activity.emoji : '⚒️';
+  const emoji = activity ? activity.emoji : '⛰️';
   const label = activity ? activity.name : '障碍';
   svgEl.setAttribute('viewBox','0 0 120 120');
   svgEl.innerHTML = `<g>
@@ -1707,7 +1541,7 @@ function drawBuildSprite(svgEl, activity) {
    Each wave = one lure, banquet, or deceptive invitation.
 =========================================================== */
 const FEAST_COURSES = [
-  {name:'妖宴',     nameEn:'Demon Banquet',        emoji:'🍽️', announce:'妖宴开席！'},
+  {name:'妖宴',     nameEn:'Demon Banquet',        emoji:'🪷', announce:'妖宴开席！'},
   {name:'假经卷',   nameEn:'False Sutra Scroll',    emoji:'📜', announce:'假的经卷现身！'},
   {name:'幻宝殿',   nameEn:'Hall of Illusory Treasures', emoji:'💎', announce:'宝光迷眼！'},
   {name:'迷魂茶',   nameEn:'Bewitching Tea',        emoji:'🍵', announce:'小心迷魂茶！'},
@@ -1721,7 +1555,7 @@ const FEAST_COURSES = [
 
 // Feast-mode SVG sprite (temptation scene)
 function drawFeastSprite(svgEl, course) {
-  const emoji = course ? course.emoji : '🍽️';
+  const emoji = course ? course.emoji : '🪷';
   const label = course ? course.name : '诱惑';
   svgEl.setAttribute('viewBox','0 0 120 120');
   if (label === '火锅') {
@@ -1955,15 +1789,14 @@ function spawnEnemy(provId) {
 }
 
 
-// Map sprites to existing ones (wizard/general) as fallback
+// Use inline Journey avatars for all companions and guardians
 function getHeroSpriteKey(key) {
-  const fallbacks = {zhugeliang:'wizard'};
-  return HERO_SPRITES[key] ? key : (fallbacks[key] || 'general');
+  return HERO_SPRITES[key] ? key : 'guardian';
 }
 
 
 // Per-player rosters: which heroes each player has unlocked + their starting choice
-// Stored as {p0:{roster:['guanyu'], startHero:'guanyu'}, p1:{...}}
+// Stored as {p0:{roster:['wukong'], startHero:'wukong'}, p1:{...}}
 let playerRosters = {
   coop: {roster:[], startHero:null},
 };
@@ -2731,8 +2564,8 @@ function onSavePlayerChange() {
   const ram = document.getElementById('reset-all-msg-active');
   if(el) el.textContent = `📤 Share ${name} save code:`;
   if(il) il.textContent = `📥 Import ${name} save code:`;
-  if(rl) rl.innerHTML = `🗺️ Reset ${name} territories (type <strong style="color:var(--goldb)">reset</strong> to confirm):`;
-  if(rb) rb.textContent = `🗺️ Reset ${name} Territories`;
+  if(rl) rl.innerHTML = `🗺️ Reset ${name} route progress (type <strong style="color:var(--goldb)">reset</strong> to confirm):`;
+  if(rb) rb.textContent = `🗺️ Reset ${name} Route`;
   if(ral) ral.textContent = `💥 Reset all ${name} data (enter password):`;
   if(rab) rab.textContent = `💥 Reset All ${name} Data`;
   if(ib) { ib.value = ''; ib.placeholder = `Paste ${name} save code here…`; }
@@ -2795,7 +2628,7 @@ function doResetActive() {
       }
       rtcoopDisable();
     }
-    if(msg){msg.style.color='var(--jadeb)';msg.textContent='✅ Territories reset! Choose a new hero to begin.';}
+    if(msg){msg.style.color='var(--jadeb)';msg.textContent='✅ Route reset. Choose a companion to begin again.';}
     if(input) input.value='';
   } catch(e) {
     if(msg) msg.textContent='❌ Reset failed: '+e.message;
@@ -2919,7 +2752,7 @@ function doExportUser(mode, method) {
     const code = _buildUserSave(mode);
     const name = getPlayerName(mode);
     if (navigator.share) {
-      navigator.share({ title: '三国汉字战 ' + name + ' Save', text: code }).catch(() => {
+      navigator.share({ title: '西游汉字路 ' + name + ' Save', text: code }).catch(() => {
         // Share failed — fall back to clipboard
         navigator.clipboard.writeText(code).catch(() => {});
       });
@@ -2946,7 +2779,21 @@ function _applyImportData(data, mode) {
   if (dataKey !== thisPlayerKey && data.mode !== mode) {
     throw new Error('Wrong player! This save is for "' + dataKey + '", not "' + thisPlayerKey + '"');
   }
-  if (data.campaign && data.campaign !== 'null') localStorage.setItem('skz_campaign_' + mode, data.campaign);
+  if (data.campaign && data.campaign !== 'null') {
+    try {
+      const normalizedCampaign = normalizeCampaignSave(JSON.parse(data.campaign));
+      if (normalizedCampaign) {
+        localStorage.setItem('skz_campaign_' + mode, JSON.stringify(normalizedCampaign));
+        if (campaignMode === mode) {
+          provState = normalizedCampaign.provState;
+          playerProvId = normalizedCampaign.playerProvId;
+          defeatedGenerals = new Set(normalizedCampaign.defeatedGenerals || []);
+        }
+      }
+    } catch(e2) {
+      localStorage.setItem('skz_campaign_' + mode, data.campaign);
+    }
+  }
   if (data.roster) {
     const rosters = JSON.parse(localStorage.getItem('skz_rosters') || '{}');
     rosters[mode] = JSON.parse(data.roster);
