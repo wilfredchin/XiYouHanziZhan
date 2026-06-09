@@ -621,18 +621,16 @@ function _showVictoryScreenInner(provId) {
   }
   document.getElementById('v-hero-found').style.display = 'none';
   if (campaignMode !== 'coop') {
-    const foundHero = checkHeroFound(campaignMode);
-    if (foundHero) {
-      playerRosters[campaignMode].roster.push(foundHero.key);
-      if (!playerRosters[campaignMode].startHero) playerRosters[campaignMode].startHero = foundHero.key;
-      saveRosters();
-      saveCampaign(campaignMode);
+    const unlockedHeroes = unlockHeroesForProvince(campaignMode, provId || G.battleProvId);
+    if (unlockedHeroes.length) {
+      const lead = unlockedHeroes[0];
+      const extraCount = unlockedHeroes.length - 1;
       document.getElementById('v-hero-found').style.display = 'block';
-      document.getElementById('v-hero-name').textContent = foundHero.name;
-      document.getElementById('v-hero-en').textContent = foundHero.nameEn + ' — ' + foundHero.desc;
+      document.getElementById('v-hero-name').textContent = lead.name;
+      document.getElementById('v-hero-en').textContent = lead.nameEn + ' — ' + lead.desc + (extraCount ? ` (+${extraCount})` : '');
       const svg = document.getElementById('v-hero-svg');
-      if(svg) drawHeroInSvg(svg, getHeroSpriteKey(foundHero.key));
-      setTimeout(() => speakChinese(foundHero.name + '与西行结缘！'), 600);
+      if (svg) drawHeroInSvg(svg, getHeroSpriteKey(lead.key));
+      setTimeout(() => speakChinese(lead.name + '与西行结缘！'), 600);
     }
   }
   const ac=getAudio();if(ac&&!musicMuted){
@@ -718,7 +716,11 @@ function speakChinese(text, afterCurrent){
   if(!text||!window.speechSynthesis)return;
   try{
     const u=new SpeechSynthesisUtterance(text);
-    u.lang='zh-CN'; u.rate=0.85; u.pitch=1;
+    if(typeof configureChineseUtterance === 'function') {
+      if(!configureChineseUtterance(u, { rate: 0.85, pitch: 1 })) return;
+    } else {
+      u.lang='zh-CN'; u.rate=0.85; u.pitch=1;
+    }
     if(!afterCurrent) window.speechSynthesis.cancel();
     window.speechSynthesis.speak(u);
   }catch(e){}
