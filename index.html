@@ -2,7 +2,6 @@
 <html lang="zh">
 <head>
 <meta charset="UTF-8">
-  <link rel="manifest" href="manifest.json">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,6 +13,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
 <link rel="stylesheet" href="styles.css">
 <script>
+  if (location.protocol !== 'file:') {
+    var mf = document.createElement('link');
+    mf.rel = 'manifest';
+    mf.href = 'manifest.json';
+    document.head.appendChild(mf);
+  }
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function() {
       var host = location.host || '';
@@ -34,12 +39,12 @@
   <img src="sprites/logo.webp" alt="西游汉字路" style="width:min(420px,88vw);max-width:88vw;position:relative;z-index:2;filter:drop-shadow(0 0 40px rgba(201,162,39,0.5));animation:float 4s ease-in-out infinite">
   <div class="t-div"></div>
   <div style="display:flex;flex-direction:column;gap:11px;align-items:center;position:relative;z-index:2">
-    <button class="btn-s" onclick="goProfile()" style="background:linear-gradient(135deg,#f6a86b,#efc98b,#c48cff);border-color:rgba(255,245,216,.82);color:#fff8ef;box-shadow:0 8px 26px rgba(196,140,255,.26)">🌤️ 启程！ Begin</button>
+    <button class="btn-s" onclick="goProfile()" style="background:linear-gradient(135deg,#f6a86b,#efc98b,#c48cff);border-color:rgba(255,245,216,.82);color:#2b1b10;box-shadow:0 8px 26px rgba(196,140,255,.26)">🌤️ 启程！ Begin</button>
     <button class="btn-s" onclick="goStudy()">📖 复习字库 Characters</button>
     <button class="btn-s" onclick="goStories()">📜 西游章节 Chapters</button>
     <button class="btn-s" onclick="openSaveModal()">⚙️ 设置 Settings</button>
   </div>
-  <div style="position:absolute;bottom:14px;font-size:11px;color:rgba(201,162,39,.35);letter-spacing:.1em;z-index:2;text-align:center;padding:0 20px">
+  <div style="position:absolute;bottom:14px;font-size:11px;color:rgba(124,98,115,.72);letter-spacing:.1em;z-index:2;text-align:center;padding:0 20px">
     🔊 Tap characters to hear Mandarin · Learn · Travel West · Face eighty-one trials
   </div>
 </div>
@@ -48,12 +53,12 @@
 <div id="scr-profile" class="screen">
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;padding:18px;padding-top:56px;background:radial-gradient(ellipse at center,#1a1205,#0d0a08 70%);overflow-y:auto">
     <div class="prof-title">选择同伴</div>
-    <div style="font-size:12px;color:var(--parch2);opacity:.7;text-align:center">选择你的护法同伴 · Choose your companion</div>
+    <div style="font-size:12px;color:#6b5648;opacity:.85;text-align:center">选择你的护法同伴 · Choose your companion</div>
     <!-- Player cards rendered dynamically by renderProfileScreen() -->
     <div id="prof-player-grid" class="prof-grid" style="align-items:stretch"></div>
     <!-- Co-op row — shown only when ≥2 players exist -->
     <div id="prof-coop-row" style="display:none;width:min(480px,88vw)">
-      <div style="font-size:12px;color:var(--parch2);opacity:.7;text-align:center;margin-bottom:6px">合作西行 Co-op — choose your role:</div>
+      <div style="font-size:12px;color:#6b5648;opacity:.85;text-align:center;margin-bottom:6px">合作西行 Co-op — choose your role:</div>
       <div id="prof-coop-btns" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center"></div>
     </div>
     <button class="btn-s" onclick="showScr('scr-title')">← 返回 Back</button>
@@ -239,6 +244,7 @@
       </g>
 
       <!-- provinces + adjacency lines rendered dynamically -->
+      <g id="province-layer"></g>
       <g id="forts-layer"></g>
 
       <!-- -- HERO TOKEN -- -->
@@ -286,7 +292,7 @@
   <div class="btl-topbar">
     <div class="btl-wave" id="btl-wave">初难 Journey 1/1</div>
     <div class="btl-badge" id="btl-badge">合作模式</div>
-    <button id="retreat-btn" onclick="returnToMap()" style="background:none;border:none;color:var(--parch2);font-size:clamp(15px,3.8vw,20px);cursor:pointer;padding:4px 8px;margin-right:52px;letter-spacing:.05em">🗺️ 路线图</button>
+    <button id="retreat-btn" onclick="returnToMap()" style="background:none;border:none;color:#6b5648;font-size:clamp(15px,3.8vw,20px);cursor:pointer;padding:4px 8px;margin-right:52px;letter-spacing:.05em">🗺️ 路线图</button>
   </div>
   <div class="hero-bars" id="hero-bars"></div>
   <!-- Co-op: partner activity feed (hidden in single player) -->
@@ -394,11 +400,15 @@
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:0;background:radial-gradient(ellipse at center,#1a1200,#0d0800 70%);position:relative;overflow:hidden">
     <!-- Parchment card -->
     <div style="width:min(420px,94vw);background:linear-gradient(160deg,rgba(60,40,8,0.96),rgba(30,18,4,0.98));border:2px solid rgba(201,162,39,.6);border-radius:14px;padding:22px 20px;box-shadow:0 8px 40px rgba(0,0,0,.7);display:flex;flex-direction:column;gap:14px;max-height:88vh;overflow-y:auto">
-      <!-- Header: character name as main title -->
+      <!-- Header: episode title as main title -->
       <div style="text-align:center;border-bottom:1px solid rgba(201,162,39,.3);padding-bottom:10px">
         <div style="font-size:11px;color:rgba(201,162,39,.6);letter-spacing:.2em;text-transform:uppercase;margin-bottom:4px">西游一难 Journey Episode</div>
-        <div id="story-general-name" style="font-family:'Ma Shan Zheng',cursive;font-size:clamp(22px,6vw,32px);color:var(--goldb);letter-spacing:.12em"></div>
-        <div id="story-general-en" style="font-size:13px;color:var(--parch2);margin-top:2px"></div>
+        <div id="story-episode-title" style="font-family:'Ma Shan Zheng',cursive;font-size:clamp(22px,6vw,32px);color:var(--goldb);letter-spacing:.12em"></div>
+        <div id="story-episode-en" style="font-size:13px;color:var(--parch2);margin-top:2px"></div>
+      </div>
+      <div style="text-align:center">
+        <div id="story-boss-name" style="font-family:'Ma Shan Zheng',cursive;font-size:clamp(18px,4.5vw,24px);color:var(--goldb);letter-spacing:.08em"></div>
+        <div id="story-boss-en" style="font-size:12px;color:var(--parch2);margin-top:2px"></div>
       </div>
       <!-- Character portrait — larger, centred -->
       <div style="display:flex;justify-content:center">
@@ -832,63 +842,64 @@ function routePoly(x, y, w = 36, h = 22) {
 }
 
 const PROVINCES = [
-  {id:0,  hz:'长安',   en:'Chang\'an',               modernHz:'大唐发愿',   x:2280,y:170, terrain:'plains',   allegiance:'Neutral', poly:routePoly(2280,170), adj:[1]},
-  {id:1,  hz:'洪福寺', en:'Hongfu Temple',          modernHz:'奉诏起行',   x:2230,y:155, terrain:'temple',   allegiance:'Neutral', poly:routePoly(2230,155), adj:[0,2]},
-  {id:2,  hz:'两界山', en:'Two Worlds Mountain',    modernHz:'凡圣交界',   x:2180,y:160, terrain:'mountain', allegiance:'Neutral', poly:routePoly(2180,160), adj:[1,3]},
-  {id:3,  hz:'猎户庄', en:'Hunter\'s Lodge',        modernHz:'伯钦引路',   x:2130,y:185, terrain:'plains',   allegiance:'Neutral', poly:routePoly(2130,185), adj:[2,4]},
-  {id:4,  hz:'五行山', en:'Five Elements Mountain', modernHz:'佛帖镇猴',   x:2080,y:190, terrain:'mountain', allegiance:'Neutral', poly:routePoly(2080,190), adj:[3,5]},
-  {id:5,  hz:'蛇盘山', en:'Serpent-Coil Mountain',  modernHz:'山路收心',   x:2030,y:215, terrain:'mountain', allegiance:'Neutral', poly:routePoly(2030,215), adj:[4,6]},
-  {id:6,  hz:'鹰愁涧', en:'Eagle Grief Ravine',     modernHz:'白龙归位',   x:1980,y:250, terrain:'river',    allegiance:'Neutral', poly:routePoly(1980,250), adj:[5,7]},
-  {id:7,  hz:'观音禅院',en:'Guanyin Monastery',      modernHz:'袈裟劫起',   x:1930,y:270, terrain:'temple',   allegiance:'Neutral', poly:routePoly(1930,270), adj:[6,8]},
-  {id:8,  hz:'黑风山', en:'Black Wind Mountain',    modernHz:'黑熊盗宝',   x:1880,y:245, terrain:'forest',   allegiance:'Neutral', poly:routePoly(1880,245), adj:[7,9]},
-  {id:9,  hz:'高老庄', en:'Gao Village',            modernHz:'八戒前缘',   x:1830,y:270, terrain:'plains',   allegiance:'Neutral', poly:routePoly(1830,270), adj:[8,10]},
-  {id:10, hz:'福陵山', en:'Fuling Mountain',        modernHz:'天蓬归队',   x:1780,y:300, terrain:'mountain', allegiance:'Neutral', poly:routePoly(1780,300), adj:[9,11]},
-  {id:11, hz:'黄风岭', en:'Yellow Wind Ridge',      modernHz:'妖风蔽日',   x:1730,y:285, terrain:'steppe',   allegiance:'Neutral', poly:routePoly(1730,285), adj:[10,12]},
-  {id:12, hz:'流沙河', en:'Flowing Sands River',    modernHz:'悟净守河',   x:1680,y:325, terrain:'river',    allegiance:'Neutral', poly:routePoly(1680,325), adj:[11,13]},
-  {id:13, hz:'骷髅山', en:'Skeleton Mountain',      modernHz:'荒冢惊魂',   x:1630,y:300, terrain:'forest',   allegiance:'Neutral', poly:routePoly(1630,300), adj:[12,14]},
-  {id:14, hz:'万寿山', en:'Wanshou Mountain',       modernHz:'人参果祸',   x:1580,y:270, terrain:'mountain', allegiance:'Neutral', poly:routePoly(1580,270), adj:[13,15]},
-  {id:15, hz:'五庄观', en:'Five Manor Abbey',       modernHz:'镇元问罪',   x:1530,y:245, terrain:'temple',   allegiance:'Neutral', poly:routePoly(1530,245), adj:[14,16]},
-  {id:16, hz:'白虎岭', en:'White Tiger Ridge',      modernHz:'白骨三变',   x:1480,y:225, terrain:'forest',   allegiance:'Neutral', poly:routePoly(1480,225), adj:[15,17]},
-  {id:17, hz:'宝象国', en:'Baoxiang Kingdom',       modernHz:'公主失国',   x:1430,y:250, terrain:'plains',   allegiance:'Neutral', poly:routePoly(1430,250), adj:[16,18]},
-  {id:18, hz:'波月洞', en:'Moon-Wave Cave',         modernHz:'黄袍迷城',   x:1380,y:285, terrain:'cave',     allegiance:'Neutral', poly:routePoly(1380,285), adj:[17,19]},
-  {id:19, hz:'平顶山', en:'Flat-Top Mountain',      modernHz:'金角设局',   x:1330,y:270, terrain:'mountain', allegiance:'Neutral', poly:routePoly(1330,270), adj:[18,20]},
-  {id:20, hz:'莲花洞', en:'Lotus Flower Cave',      modernHz:'银角逞宝',   x:1280,y:255, terrain:'cave',     allegiance:'Neutral', poly:routePoly(1280,255), adj:[19,21]},
-  {id:21, hz:'乌鸡国', en:'Crow-Cock Kingdom',      modernHz:'井底冤魂',   x:1230,y:280, terrain:'plains',   allegiance:'Neutral', poly:routePoly(1230,280), adj:[20,22]},
-  {id:22, hz:'枯松涧', en:'Dry Pine Ravine',        modernHz:'火云前兆',   x:1180,y:320, terrain:'forest',   allegiance:'Neutral', poly:routePoly(1180,320), adj:[21,23]},
-  {id:23, hz:'火云洞', en:'Fire Cloud Cave',        modernHz:'三昧真火',   x:1130,y:370, terrain:'mountain', allegiance:'Neutral', poly:routePoly(1130,370), adj:[22,24]},
-  {id:24, hz:'车迟国', en:'Cart Slow Kingdom',      modernHz:'斗法试真',   x:1080,y:420, terrain:'plains',   allegiance:'Neutral', poly:routePoly(1080,420), adj:[23,25]},
-  {id:25, hz:'通天河', en:'River of Heaven',        modernHz:'冰河祭口',   x:1030,y:470, terrain:'river',    allegiance:'Neutral', poly:routePoly(1030,470), adj:[24,26]},
-  {id:26, hz:'金兜山', en:'Golden Pocket Mountain', modernHz:'金圈摄宝',   x:980,y:515, terrain:'mountain', allegiance:'Neutral', poly:routePoly(980,515), adj:[25,27]},
-  {id:27, hz:'女儿国', en:'Woman Kingdom',          modernHz:'柔情试心',   x:930,y:555, terrain:'plains',   allegiance:'Neutral', poly:routePoly(930,555), adj:[26,28]},
-  {id:28, hz:'子母河', en:'Mother-and-Child River', modernHz:'怪泉生厄',   x:880,y:590, terrain:'river',    allegiance:'Neutral', poly:routePoly(880,590), adj:[27,29]},
-  {id:29, hz:'解阳山', en:'Jiyang Mountain',        modernHz:'落胎求泉',   x:830,y:620, terrain:'mountain', allegiance:'Neutral', poly:routePoly(830,620), adj:[28,30]},
-  {id:30, hz:'毒敌山', en:'Poison-Enemy Mountain',  modernHz:'琵琶毒尾',   x:780,y:600, terrain:'mountain', allegiance:'Neutral', poly:routePoly(780,600), adj:[29,31]},
-  {id:31, hz:'火焰山', en:'Flaming Mountain',       modernHz:'烈焰断路',   x:730,y:570, terrain:'mountain', allegiance:'Neutral', poly:routePoly(730,570), adj:[30,32]},
-  {id:32, hz:'翠云山', en:'Green Cloud Mountain',   modernHz:'芭蕉借扇',   x:680,y:540, terrain:'mountain', allegiance:'Neutral', poly:routePoly(680,540), adj:[31,33]},
-  {id:33, hz:'积雷山', en:'Jilei Mountain',         modernHz:'牛王争锋',   x:630,y:560, terrain:'mountain', allegiance:'Neutral', poly:routePoly(630,560), adj:[32,34]},
-  {id:34, hz:'祭赛国', en:'Sacrifice Kingdom',      modernHz:'舍利失窃',   x:580,y:590, terrain:'plains',   allegiance:'Neutral', poly:routePoly(580,590), adj:[33,35]},
-  {id:35, hz:'金光寺', en:'Golden Light Temple',    modernHz:'佛塔重光',   x:530,y:610, terrain:'temple',   allegiance:'Neutral', poly:routePoly(530,610), adj:[34,36]},
-  {id:36, hz:'小雷音', en:'Small Thunderclap',      modernHz:'假佛惑众',   x:480,y:585, terrain:'temple',   allegiance:'Neutral', poly:routePoly(480,585), adj:[35,37]},
-  {id:37, hz:'七绝山', en:'Seven-Extinction Mountain', modernHz:'泥途稀柿', x:430,y:555, terrain:'steppe', allegiance:'Neutral', poly:routePoly(430,555), adj:[36,38]},
-  {id:38, hz:'朱紫国', en:'Scarlet Purple Kingdom', modernHz:'悬丝诊脉',   x:380,y:575, terrain:'plains',   allegiance:'Neutral', poly:routePoly(380,575), adj:[37,39]},
-  {id:39, hz:'麒麟山', en:'Qilin Mountain',         modernHz:'赛岁宫变',   x:330,y:595, terrain:'mountain', allegiance:'Neutral', poly:routePoly(330,595), adj:[38,40]},
-  {id:40, hz:'盘丝洞', en:'Spider Cave',            modernHz:'丝网迷阵',   x:280,y:565, terrain:'forest',   allegiance:'Neutral', poly:routePoly(280,565), adj:[39,41]},
-  {id:41, hz:'黄花观', en:'Yellow Flower Monastery',modernHz:'毒茶昏神',   x:230,y:525, terrain:'temple',   allegiance:'Neutral', poly:routePoly(230,525), adj:[40,42]},
-  {id:42, hz:'狮驼岭', en:'Lion Camel Ridge',       modernHz:'群妖险地',   x:180,y:485, terrain:'mountain', allegiance:'Neutral', poly:routePoly(180,485), adj:[41,43]},
-  {id:43, hz:'比丘国', en:'Bhikshu Kingdom',        modernHz:'续命邪法',   x:140,y:440, terrain:'plains',   allegiance:'Neutral', poly:routePoly(140,440), adj:[42,44]},
-  {id:44, hz:'无底洞', en:'Bottomless Cave',        modernHz:'地窟摄魂',   x:110,y:395, terrain:'cave',     allegiance:'Neutral', poly:routePoly(110,395), adj:[43,45]},
-  {id:45, hz:'玉华州', en:'Jade Flower Prefecture', modernHz:'少年王城',   x:90, y:345, terrain:'plains',   allegiance:'Neutral', poly:routePoly(90,345),  adj:[44,46]},
-  {id:46, hz:'那烂陀', en:'Nalanda',                modernHz:'佛土将近',   x:75, y:300, terrain:'temple',   allegiance:'Neutral', poly:routePoly(75,300),  adj:[45,47]},
-  {id:47, hz:'雷音寺', en:'Thunderclap Monastery',  modernHz:'真经所在',   x:60, y:260, terrain:'temple',   allegiance:'Neutral', poly:routePoly(60,260),  adj:[46]},
+  {id:0,  hz:'长安', en:'Chang\'an', episodeHz:'大唐发愿', episodeEn:'Vow at Chang\'an', x:2280,y:170, terrain:'plains', allegiance:'Neutral', poly:routePoly(2280,170), adj:[1]},
+  {id:1,  hz:'洪福寺', en:'Hongfu Temple', episodeHz:'奉诏起行', episodeEn:'Departure by Imperial Decree', x:2230,y:155, terrain:'temple', allegiance:'Neutral', poly:routePoly(2230,155), adj:[0,2]},
+  {id:2,  hz:'两界山', en:'Two Worlds Mountain', episodeHz:'凡圣交界', episodeEn:'Border of Mortal and Sacred', x:2180,y:160, terrain:'mountain', allegiance:'Neutral', poly:routePoly(2180,160), adj:[1,3]},
+  {id:3,  hz:'猎户庄', en:'Hunter\'s Lodge', episodeHz:'伯钦引路', episodeEn:'Boqin Guides the Way', x:2130,y:185, terrain:'plains', allegiance:'Neutral', poly:routePoly(2130,185), adj:[2,4]},
+  {id:4,  hz:'五行山', en:'Five Elements Mountain', episodeHz:'佛帖镇猴', episodeEn:'Seal of the Buddha Subdues the Monkey', x:2080,y:190, terrain:'mountain', allegiance:'Neutral', poly:routePoly(2080,190), adj:[3,5]},
+  {id:5,  hz:'蛇盘山', en:'Serpent-Coil Mountain', episodeHz:'山路收心', episodeEn:'Mountain Road, Tempered Heart', x:2030,y:215, terrain:'mountain', allegiance:'Neutral', poly:routePoly(2030,215), adj:[4,6]},
+  {id:6,  hz:'鹰愁涧', en:'Eagle Grief Ravine', episodeHz:'白龙归位', episodeEn:'White Dragon Returns', x:1980,y:250, terrain:'river', allegiance:'Neutral', poly:routePoly(1980,250), adj:[5,7]},
+  {id:7,  hz:'观音禅院', en:'Guanyin Monastery', episodeHz:'袈裟劫起', episodeEn:'Robe Theft Begins', x:1930,y:270, terrain:'temple', allegiance:'Neutral', poly:routePoly(1930,270), adj:[6,8]},
+  {id:8,  hz:'黑风山', en:'Black Wind Mountain', episodeHz:'黑熊盗宝', episodeEn:'Black Bear Steals the Treasure', x:1880,y:245, terrain:'forest', allegiance:'Neutral', poly:routePoly(1880,245), adj:[7,9]},
+  {id:9,  hz:'高老庄', en:'Gao Village', episodeHz:'八戒前缘', episodeEn:'Bajie\'s Former Life', x:1830,y:270, terrain:'plains', allegiance:'Neutral', poly:routePoly(1830,270), adj:[8,10]},
+  {id:10,  hz:'福陵山', en:'Fuling Mountain', episodeHz:'天蓬归队', episodeEn:'Tianpeng Returns to the Team', x:1780,y:300, terrain:'mountain', allegiance:'Neutral', poly:routePoly(1780,300), adj:[9,11]},
+  {id:11,  hz:'黄风岭', en:'Yellow Wind Ridge', episodeHz:'妖风蔽日', episodeEn:'Demon Wind Blots the Sun', x:1730,y:285, terrain:'steppe', allegiance:'Neutral', poly:routePoly(1730,285), adj:[10,12]},
+  {id:12,  hz:'流沙河', en:'Flowing Sands River', episodeHz:'悟净守河', episodeEn:'Wujing Guards the River', x:1680,y:325, terrain:'river', allegiance:'Neutral', poly:routePoly(1680,325), adj:[11,13]},
+  {id:13,  hz:'骷髅山', en:'Skeleton Mountain', episodeHz:'荒冢惊魂', episodeEn:'Terror at the Lonely Graves', x:1630,y:300, terrain:'forest', allegiance:'Neutral', poly:routePoly(1630,300), adj:[12,14]},
+  {id:14,  hz:'万寿山', en:'Wanshou Mountain', episodeHz:'人参果祸', episodeEn:'Ginseng Fruit Trouble', x:1580,y:270, terrain:'mountain', allegiance:'Neutral', poly:routePoly(1580,270), adj:[13,15]},
+  {id:15,  hz:'五庄观', en:'Five Manor Abbey', episodeHz:'镇元问罪', episodeEn:'Zhenyuanzi Demands Atonement', x:1530,y:245, terrain:'temple', allegiance:'Neutral', poly:routePoly(1530,245), adj:[14,16]},
+  {id:16,  hz:'白虎岭', en:'White Tiger Ridge', episodeHz:'白骨三变', episodeEn:'White Bone\'s Three Disguises', x:1480,y:225, terrain:'forest', allegiance:'Neutral', poly:routePoly(1480,225), adj:[15,17]},
+  {id:17,  hz:'宝象国', en:'Baoxiang Kingdom', episodeHz:'公主失国', episodeEn:'The Princess Loses Her Kingdom', x:1430,y:250, terrain:'plains', allegiance:'Neutral', poly:routePoly(1430,250), adj:[16,18]},
+  {id:18,  hz:'波月洞', en:'Moon-Wave Cave', episodeHz:'黄袍迷城', episodeEn:'Yellow Robe\'s Enchanted City', x:1380,y:285, terrain:'cave', allegiance:'Neutral', poly:routePoly(1380,285), adj:[17,19]},
+  {id:19,  hz:'平顶山', en:'Flat-Top Mountain', episodeHz:'金角设局', episodeEn:'Gold Horn\'s Trap', x:1330,y:270, terrain:'mountain', allegiance:'Neutral', poly:routePoly(1330,270), adj:[18,20]},
+  {id:20,  hz:'莲花洞', en:'Lotus Flower Cave', episodeHz:'银角逞宝', episodeEn:'Silver Horn Shows His Treasures', x:1280,y:255, terrain:'cave', allegiance:'Neutral', poly:routePoly(1280,255), adj:[19,21]},
+  {id:21,  hz:'乌鸡国', en:'Crow-Cock Kingdom', episodeHz:'井底冤魂', episodeEn:'Wrath Beneath the Well', x:1230,y:280, terrain:'plains', allegiance:'Neutral', poly:routePoly(1230,280), adj:[20,22]},
+  {id:22,  hz:'车迟国', en:'Cart Slow Kingdom', episodeHz:'斗法试真', episodeEn:'Contest of Magic Reveals Truth', x:1180,y:320, terrain:'plains', allegiance:'Neutral', poly:routePoly(1180,320), adj:[21,23]},
+  {id:23,  hz:'通天河', en:'River of Heaven', episodeHz:'冰河祭口', episodeEn:'Ice River Sacrifice', x:1130,y:370, terrain:'river', allegiance:'Neutral', poly:routePoly(1130,370), adj:[22,24]},
+  {id:24,  hz:'金兜山', en:'Golden Pocket Mountain', episodeHz:'金圈摄宝', episodeEn:'Golden Ring Seizes Treasures', x:1080,y:420, terrain:'mountain', allegiance:'Neutral', poly:routePoly(1080,420), adj:[23,25]},
+  {id:25,  hz:'女儿国', en:'Woman Kingdom', episodeHz:'柔情试心', episodeEn:'Tenderness Tests the Heart', x:1030,y:470, terrain:'plains', allegiance:'Neutral', poly:routePoly(1030,470), adj:[24,26]},
+  {id:26,  hz:'子母河', en:'Mother-and-Child River', episodeHz:'怪泉生厄', episodeEn:'Strange Spring Brings Misfortune', x:980,y:515, terrain:'river', allegiance:'Neutral', poly:routePoly(980,515), adj:[25,27]},
+  {id:27,  hz:'解阳山', en:'Jiyang Mountain', episodeHz:'落胎求泉', episodeEn:'Seeking the Spring for Relief', x:930,y:555, terrain:'mountain', allegiance:'Neutral', poly:routePoly(930,555), adj:[26,28]},
+  {id:28,  hz:'毒敌山', en:'Poison-Enemy Mountain', episodeHz:'琵琶毒尾', episodeEn:'Pipa Poisoned Tail', x:880,y:590, terrain:'mountain', allegiance:'Neutral', poly:routePoly(880,590), adj:[27,29]},
+  {id:29,  hz:'枯松涧', en:'Dry Pine Ravine', episodeHz:'火云前兆', episodeEn:'Omen of the Fire Cloud', x:830,y:620, terrain:'forest', allegiance:'Neutral', poly:routePoly(830,620), adj:[28,30]},
+  {id:30,  hz:'火云洞', en:'Fire Cloud Cave', episodeHz:'三昧真火', episodeEn:'Samadhi True Fire', x:780,y:600, terrain:'mountain', allegiance:'Neutral', poly:routePoly(780,600), adj:[29,31]},
+  {id:31,  hz:'祭赛国', en:'Sacrifice Kingdom', episodeHz:'舍利失窃', episodeEn:'Relic Stolen', x:730,y:570, terrain:'plains', allegiance:'Neutral', poly:routePoly(730,570), adj:[30,32]},
+  {id:32,  hz:'金光寺', en:'Golden Light Temple', episodeHz:'佛塔重光', episodeEn:'Pagoda Light Restored', x:680,y:540, terrain:'temple', allegiance:'Neutral', poly:routePoly(680,540), adj:[31,33]},
+  {id:33,  hz:'小雷音', en:'Small Thunderclap', episodeHz:'假佛惑众', episodeEn:'False Buddha Misleads', x:630,y:560, terrain:'temple', allegiance:'Neutral', poly:routePoly(630,560), adj:[32,34]},
+  {id:34,  hz:'七绝山', en:'Seven-Extinction Mountain', episodeHz:'泥途稀柿', episodeEn:'Muddy Road, Scarce Persimmons', x:580,y:590, terrain:'steppe', allegiance:'Neutral', poly:routePoly(580,590), adj:[33,35]},
+  {id:35,  hz:'朱紫国', en:'Scarlet Purple Kingdom', episodeHz:'悬丝诊脉', episodeEn:'Silken Thread Diagnosis', x:530,y:610, terrain:'plains', allegiance:'Neutral', poly:routePoly(530,610), adj:[34,36]},
+  {id:36,  hz:'麒麟山', en:'Qilin Mountain', episodeHz:'赛岁宫变', episodeEn:'Sai Tai Sui\'s Palace Coup', x:480,y:585, terrain:'mountain', allegiance:'Neutral', poly:routePoly(480,585), adj:[35,37]},
+  {id:37,  hz:'盘丝洞', en:'Spider Cave', episodeHz:'丝网迷阵', episodeEn:'Webbed Maze', x:430,y:555, terrain:'forest', allegiance:'Neutral', poly:routePoly(430,555), adj:[36,38]},
+  {id:38,  hz:'黄花观', en:'Yellow Flower Monastery', episodeHz:'毒茶昏神', episodeEn:'Poisoned Tea Dulls the Mind', x:380,y:575, terrain:'temple', allegiance:'Neutral', poly:routePoly(380,575), adj:[37,39]},
+  {id:39,  hz:'狮驼岭', en:'Lion Camel Ridge', episodeHz:'群妖险地', episodeEn:'Perilous Land of Demons', x:330,y:595, terrain:'mountain', allegiance:'Neutral', poly:routePoly(330,595), adj:[38,40]},
+  {id:40,  hz:'火焰山', en:'Flaming Mountain', episodeHz:'烈焰断路', episodeEn:'Flames Block the Road', x:280,y:565, terrain:'mountain', allegiance:'Neutral', poly:routePoly(280,565), adj:[39,41]},
+  {id:41,  hz:'翠云山', en:'Green Cloud Mountain', episodeHz:'芭蕉借扇', episodeEn:'Borrowing the Plantain Fan', x:230,y:525, terrain:'mountain', allegiance:'Neutral', poly:routePoly(230,525), adj:[40,42]},
+  {id:42,  hz:'积雷山', en:'Jilei Mountain', episodeHz:'牛王争锋', episodeEn:'Bull King Showdown', x:180,y:485, terrain:'mountain', allegiance:'Neutral', poly:routePoly(180,485), adj:[41,43]},
+  {id:43,  hz:'比丘国', en:'Bhikshu Kingdom', episodeHz:'续命邪法', episodeEn:'Wicked Longevity Rite', x:140,y:440, terrain:'plains', allegiance:'Neutral', poly:routePoly(140,440), adj:[42,44]},
+  {id:44,  hz:'无底洞', en:'Bottomless Cave', episodeHz:'地窟摄魂', episodeEn:'Cavern Steals the Soul', x:110,y:395, terrain:'cave', allegiance:'Neutral', poly:routePoly(110,395), adj:[43,45]},
+  {id:45,  hz:'玉华州', en:'Jade Flower Prefecture', episodeHz:'少年王城', episodeEn:'City of the Young Princes', x:90,y:345, terrain:'plains', allegiance:'Neutral', poly:routePoly(90,345), adj:[44,46]},
+  {id:46,  hz:'那烂陀', en:'Nalanda', episodeHz:'佛土将近', episodeEn:'Near the Buddha Lands', x:75,y:300, terrain:'temple', allegiance:'Neutral', poly:routePoly(75,300), adj:[45,47]},
+  {id:47,  hz:'雷音寺', en:'Thunderclap Monastery', episodeHz:'真经所在', episodeEn:'Where the True Scriptures Are', x:60,y:260, terrain:'temple', allegiance:'Neutral', poly:routePoly(60,260), adj:[46]},
 ]
-// Province territory state: 'neutral'|'player'|'enemy'
+// Province territory state: 'neutral'|'player'|'owned'
 let provState = {};
 // Which province the player is currently "standing in"
 let playerProvId = 0; // Chang'an start
 
 function initProvState() {
   PROVINCES.forEach(p => { provState[p.id] = 'neutral'; });
-  provState[0] = 'owned';
+  // Intro state: start at Chang'an only, no frontier expansion until first clear.
+  provState[0] = 'player';
 }
 
 function normalizeCampaignSave(data) {
@@ -907,7 +918,7 @@ function normalizeCampaignSave(data) {
 
   const fallbackProvState = {};
   PROVINCES.forEach(p => { fallbackProvState[p.id] = 'neutral'; });
-  fallbackProvState[0] = 'owned';
+  fallbackProvState[0] = 'player';
 
   PROVINCES.forEach(p => {
     if (normalizedProvState[p.id] !== 'owned' && normalizedProvState[p.id] !== 'player' && normalizedProvState[p.id] !== 'neutral') {
@@ -975,55 +986,32 @@ function clearCampaign(mode) {
 /* ===========================================================
    PROVINCES + ADJACENCY MAP
 =========================================================== */
-const FORT_RADIUS = 9;
-
+const SVG_NS = 'http://www.w3.org/2000/svg';
 const TERRAIN_FILLS = {
-  plains:  'rgba(255,222,165,0.86)',
-  mountain:'rgba(198,170,245,0.82)',
-  forest:  'rgba(150,224,185,0.84)',
-  steppe:  'rgba(242,207,144,0.82)',
-  coast:   'rgba(152,223,240,0.82)',
-  river:   'rgba(137,231,224,0.84)',
-  temple:  'rgba(255,206,178,0.84)',
-  cave:    'rgba(208,188,255,0.8)',
+  plains: 'rgba(255,232,187,0.9)',
+  mountain: 'rgba(215,205,191,0.9)',
+  river: 'rgba(180,220,235,0.88)',
+  forest: 'rgba(196,224,184,0.9)',
+  temple: 'rgba(239,214,186,0.9)',
+  cave: 'rgba(211,197,180,0.9)',
+  steppe: 'rgba(228,214,176,0.9)',
 };
 const TERRAIN_STROKES = {
-  plains:  'rgba(226,165,104,0.7)',
-  mountain:'rgba(141,109,214,0.72)',
-  forest:  'rgba(82,179,126,0.68)',
-  steppe:  'rgba(211,154,92,0.68)',
-  coast:   'rgba(78,172,212,0.7)',
-  river:   'rgba(72,186,176,0.72)',
-  temple:  'rgba(225,142,119,0.72)',
-  cave:    'rgba(142,108,210,0.68)',
+  plains: 'rgba(206,158,99,0.72)',
+  mountain: 'rgba(142,132,124,0.72)',
+  river: 'rgba(99,146,176,0.72)',
+  forest: 'rgba(118,154,106,0.72)',
+  temple: 'rgba(176,142,112,0.72)',
+  cave: 'rgba(132,117,103,0.72)',
+  steppe: 'rgba(166,142,102,0.72)',
 };
 
 function renderProvinces() {
-  const layer = document.getElementById('forts-layer');
+  const layer = document.getElementById('province-layer');
+  if (!layer) return;
   layer.innerHTML = '';
-  const SVG_NS = 'http://www.w3.org/2000/svg';
+
   const frontier = getFrontier();
-
-  const routeHalo = document.createElementNS(SVG_NS, 'path');
-  routeHalo.setAttribute('d', PROVINCES.map((prov, idx) => `${idx === 0 ? 'M' : 'L'} ${prov.x} ${prov.y}`).join(' '));
-  routeHalo.setAttribute('fill', 'none');
-  routeHalo.setAttribute('stroke', 'rgba(255,249,223,0.56)');
-  routeHalo.setAttribute('stroke-width', '28');
-  routeHalo.setAttribute('stroke-linecap', 'round');
-  routeHalo.setAttribute('stroke-linejoin', 'round');
-  routeHalo.setAttribute('pointer-events', 'none');
-  layer.appendChild(routeHalo);
-
-  const routeLine = document.createElementNS(SVG_NS, 'path');
-  routeLine.setAttribute('d', PROVINCES.map((prov, idx) => `${idx === 0 ? 'M' : 'L'} ${prov.x} ${prov.y}`).join(' '));
-  routeLine.setAttribute('fill', 'none');
-  routeLine.setAttribute('stroke', 'rgba(224,158,110,0.9)');
-  routeLine.setAttribute('stroke-width', '9');
-  routeLine.setAttribute('stroke-linecap', 'round');
-  routeLine.setAttribute('stroke-linejoin', 'round');
-  routeLine.setAttribute('stroke-dasharray', '6 20');
-  routeLine.setAttribute('pointer-events', 'none');
-  layer.appendChild(routeLine);
 
   PROVINCES.forEach(prov => {
     const state   = provState[prov.id] || 'neutral';
@@ -1032,7 +1020,6 @@ function renderProvinces() {
     const isAdj   = frontier.has(prov.id) && !isCur;
     const isEnemy = state === 'enemy';
 
-    // -- Polygon fill --
     const poly = document.createElementNS(SVG_NS,'polygon');
     poly.setAttribute('points', prov.poly);
     poly.setAttribute('stroke-linejoin','round');
@@ -1078,41 +1065,43 @@ function renderProvinces() {
     poly.addEventListener('click', (e)=>{ e.stopPropagation(); selectProvince(prov.id); });
     layer.appendChild(poly);
 
-    // -- Label --
     const lbl = document.createElementNS(SVG_NS,'text');
-    lbl.setAttribute('x', prov.x); lbl.setAttribute('y', prov.y + 8);
+    lbl.setAttribute('x', prov.x);
+    lbl.setAttribute('y', prov.y + 8);
     lbl.setAttribute('text-anchor','middle');
     lbl.setAttribute('font-family',"'Ma Shan Zheng',cursive");
     lbl.setAttribute('font-size','24');
     lbl.setAttribute('fill', isCur?'#137f72':isOwned?'#297d58':isAdj?'#9f5f2d':isEnemy?'#9d4f67':'#6f4f3a');
-    lbl.setAttribute('stroke','rgba(255,250,243,0.96)'); lbl.setAttribute('stroke-width','5.2');
+    lbl.setAttribute('stroke','rgba(255,250,243,0.96)');
+    lbl.setAttribute('stroke-width','5.2');
     lbl.setAttribute('paint-order','stroke');
     lbl.setAttribute('pointer-events','none');
     lbl.textContent = prov.hz;
     layer.appendChild(lbl);
 
-    // -- Conquest type icon --
-    {
-      const ptIcon = document.createElementNS(SVG_NS,'text');
-      const pt = getProvType(prov.id);
-      ptIcon.setAttribute('x',prov.x); ptIcon.setAttribute('y',prov.y+34);
-      ptIcon.setAttribute('text-anchor','middle'); ptIcon.setAttribute('font-size','18');
-      ptIcon.setAttribute('pointer-events','none');
-        ptIcon.textContent = pt==='build'?'⛰️':pt==='feast'?'🪷':'⚔️';
-      layer.appendChild(ptIcon);
-    }
-    // -- Star for current --
+    const ptIcon = document.createElementNS(SVG_NS,'text');
+    const pt = getProvType(prov.id);
+    ptIcon.setAttribute('x',prov.x);
+    ptIcon.setAttribute('y',prov.y+34);
+    ptIcon.setAttribute('text-anchor','middle');
+    ptIcon.setAttribute('font-size','18');
+    ptIcon.setAttribute('pointer-events','none');
+    ptIcon.textContent = pt==='build'?'⛰️':pt==='feast'?'🪷':'⚔️';
+    layer.appendChild(ptIcon);
+
     if (isCur) {
       const star = document.createElementNS(SVG_NS,'text');
-      star.setAttribute('x',prov.x); star.setAttribute('y',prov.y+30);
-      star.setAttribute('text-anchor','middle'); star.setAttribute('font-size','14');
-      star.setAttribute('fill','#2dbb9a'); star.setAttribute('pointer-events','none');
+      star.setAttribute('x',prov.x);
+      star.setAttribute('y',prov.y+30);
+      star.setAttribute('text-anchor','middle');
+      star.setAttribute('font-size','14');
+      star.setAttribute('fill','#2dbb9a');
+      star.setAttribute('pointer-events','none');
       star.textContent='★';
       layer.appendChild(star);
     }
   });
 
-  // -- Second pass: gold border outlines drawn ON TOP for all frontier provinces --
   frontier.forEach(provId => {
     const prov = PROVINCES[provId];
     if (!prov) return;
@@ -1126,10 +1115,9 @@ function renderProvinces() {
     layer.appendChild(outline);
   });
 
-  // -- Move hero token to top --
   const svg = document.getElementById('map-svg');
   const tok = document.getElementById('hero-token');
-  if(tok) svg.appendChild(tok);
+  if (tok && svg) svg.appendChild(tok);
 }
 
 function getAdjacentTo(provId) {
@@ -1145,19 +1133,30 @@ function getFrontier() {
     if (st === 'owned' || p.id === playerProvId) {
       // All owned provinces are themselves accessible for practice
       if (p.id !== playerProvId) frontier.add(p.id);
-      // Unowned neighbours are attackable
-      p.adj.forEach(nid => {
-        const nst = provState[nid] || 'neutral';
-        if (nst !== 'owned' && nid !== playerProvId) frontier.add(nid);
-      });
+      // Current location is always selectable (practice/first clear).
+      if (p.id === playerProvId) frontier.add(p.id);
+      // Only conquered provinces expand the path to neighbours.
+      if (st === 'owned') {
+        p.adj.forEach(nid => {
+          const nst = provState[nid] || 'neutral';
+          if (nst !== 'owned' && nid !== playerProvId) frontier.add(nid);
+        });
+      }
     }
   });
   return frontier;
 }
 
+function shouldShowHeroToken() {
+  // Hide token during the intro at Chang'an before first province clear.
+  return (provState[playerProvId] || 'neutral') === 'owned';
+}
+
 function moveHeroToken(x, y) {
   const tok = document.getElementById('hero-token');
-  if (tok) tok.setAttribute('transform', `translate(${x},${y})`);
+  if (!tok) return;
+  tok.setAttribute('transform', `translate(${x},${y})`);
+  tok.style.display = shouldShowHeroToken() ? '' : 'none';
 }
 
 function updateHeroTokenSprite() {
@@ -1382,19 +1381,21 @@ function selectProvince(provId) {
   const frontier = getFrontier();
   const isAdj = frontier.has(provId);
 
-  const _mhz = prov.modernHz || '';
   const _men = prov.en.replace(/\(.*?\)/g,'').trim();
-  const _modern = prov.en.match(/\(([^)]+)\)/);
-  const _modernLabel = _modern ? ' (' + _modern[1] + '  ' + _mhz + ')' : '';
-  document.getElementById('fp-name').textContent = prov.hz + '  ' + _men + _modernLabel;
-  // Speak only Chinese: ancient name + modern Chinese name
-  speakChinese(_mhz ? prov.hz + '，今' + _mhz : prov.hz);
+  document.getElementById('fp-name').textContent = prov.hz + '  ' + _men;
+  // Speak only the stage name
+  speakChinese(prov.hz);
 
   let statusText = '';
   let btnText = '';
   if (isPlayer) {
-    statusText = '★ 当前停驻之地 Current stage';
-    btnText = '📖 在此练习 Practice here';
+    if (state === 'player') {
+      statusText = '⚔️ 起点已开 Open starting path';
+      btnText = '⚔️ 继续西行！Continue west!';
+    } else {
+      statusText = '★ 当前停驻之地 Current stage';
+      btnText = '📖 在此练习 Practice here';
+    }
   } else if (!isAdj) {
     statusText = '🚫 前路未通 Route not open yet';
     btnText = '🚫 尚未抵达 Locked for now';
@@ -1629,57 +1630,69 @@ function drawFeastSprite(svgEl, course) {
    - Once a general is defeated they stay defeated (saved in campaign)
 =========================================================== */
 
+function getSoldierSpriteKey(provId) {
+  return 'soldier_' + String(provId).padStart(2, '0');
+}
+
 // One stage guardian per pilgrimage stop, in route order
 const PROVINCE_GENERALS = [
   {id:0,  name:'唐太宗',     nameEn:'Emperor Taizong',         sprite:'general',    hp:7,  soldierName:'大唐仪卫',   soldierEn:'Imperial Guard'},
-  {id:1,  name:'法明长老',   nameEn:'Master Faming',          sprite:'general',    hp:7,  soldierName:'寺院行者',   soldierEn:'Temple Novice'},
-  {id:2,  name:'刘伯钦',     nameEn:'Hunter Liu',             sprite:'general',    hp:8,  soldierName:'山路向导',   soldierEn:'Mountain Guide'},
-  {id:3,  name:'寅将军',     nameEn:'General Yin',            sprite:'general',    hp:9,  soldierName:'林间虎妖',   soldierEn:'Forest Tiger Spirit'},
-  {id:4,  name:'孙悟空',     nameEn:'Sun Wukong',             sprite:'wukong',     hp:12, soldierName:'石猴残影',   soldierEn:'Stone Monkey Shade'},
-  {id:5,  name:'山神土地',   nameEn:'Mountain Spirits',       sprite:'general',    hp:8,  soldierName:'庙前香火',   soldierEn:'Shrine Warden'},
-  {id:6,  name:'白龙马',     nameEn:'White Dragon Horse',     sprite:'whitehorse', hp:8,  soldierName:'涧水龙影',   soldierEn:'Ravine Spirit'},
-  {id:7,  name:'金池长老',   nameEn:'Elder Jinchi',           sprite:'general',    hp:9,  soldierName:'禅院僧众',   soldierEn:'Cloister Monk'},
-  {id:8,  name:'黑熊精',     nameEn:'Black Bear Demon',       sprite:'general',    hp:11, soldierName:'黑风小妖',   soldierEn:'Black Wind Fiend'},
-  {id:9,  name:'高太公',     nameEn:'Elder Gao',              sprite:'general',    hp:8,  soldierName:'庄院家仆',   soldierEn:'Manor Servant'},
-  {id:10, name:'猪八戒',     nameEn:'Zhu Bajie',              sprite:'bajie',      hp:10, soldierName:'福陵野猪',   soldierEn:'Fuling Boar'},
-  {id:11, name:'黄风大王',   nameEn:'Yellow Wind Demon',      sprite:'general',    hp:11, soldierName:'黄风小妖',   soldierEn:'Wind Imp'},
-  {id:12, name:'沙悟净',     nameEn:'Sha Wujing',             sprite:'wujing',     hp:9,  soldierName:'流沙水鬼',   soldierEn:'River Wraith'},
-  {id:13, name:'尸魔先锋',   nameEn:'Corpse Fiend Scout',     sprite:'general',    hp:9,  soldierName:'荒岭孤魂',   soldierEn:'Grave Wraith'},
-  {id:14, name:'镇元子',     nameEn:'Zhenyuanzi',             sprite:'general',    hp:11, soldierName:'人参守童',   soldierEn:'Ginseng Keeper'},
-  {id:15, name:'清风道童',   nameEn:'Acolyte Qingfeng',       sprite:'general',    hp:9,  soldierName:'观中童子',   soldierEn:'Abbey Acolyte'},
-  {id:16, name:'白骨精',     nameEn:'White Bone Demon',       sprite:'general',    hp:11, soldierName:'骷髅幻影',   soldierEn:'Bone Phantom'},
-  {id:17, name:'宝象国主',   nameEn:'King of Baoxiang',       sprite:'general',    hp:9,  soldierName:'宫城宿卫',   soldierEn:'Palace Retainer'},
-  {id:18, name:'黄袍怪',     nameEn:'Yellow Robe Demon',      sprite:'general',    hp:11, soldierName:'洞府妖兵',   soldierEn:'Cave Fiend'},
-  {id:19, name:'金角大王',   nameEn:'Gold Horn King',         sprite:'general',    hp:12, soldierName:'金角小妖',   soldierEn:'Gold Horn Imp'},
-  {id:20, name:'银角大王',   nameEn:'Silver Horn King',       sprite:'general',    hp:12, soldierName:'银角小妖',   soldierEn:'Silver Horn Imp'},
-  {id:21, name:'乌鸡国王',   nameEn:'King of Crow-Cock',      sprite:'general',    hp:9,  soldierName:'井底幽魂',   soldierEn:'Well Spirit'},
-  {id:22, name:'枯松山神',   nameEn:'Dry Pine Spirit',        sprite:'general',    hp:9,  soldierName:'松烟妖影',   soldierEn:'Pine Shade'},
-  {id:23, name:'红孩儿',     nameEn:'Red Boy',                sprite:'general',    hp:12, soldierName:'火云小妖',   soldierEn:'Fire Cloud Imp'},
-  {id:24, name:'虎力大仙',   nameEn:'Tiger Power Immortal',   sprite:'general',    hp:10, soldierName:'车迟道士',   soldierEn:'Court Taoist'},
-  {id:25, name:'灵感大王',   nameEn:'Great King Linggan',     sprite:'general',    hp:11, soldierName:'河府水妖',   soldierEn:'River Demon'},
-  {id:26, name:'青牛精',     nameEn:'Green Bull Demon',       sprite:'general',    hp:12, soldierName:'金圈妖卒',   soldierEn:'Metal Ring Fiend'},
-  {id:27, name:'女儿国王',   nameEn:'Queen of Woman Kingdom', sprite:'general',    hp:9,  soldierName:'宫中侍从',   soldierEn:'Palace Attendant'},
-  {id:28, name:'子母河神',   nameEn:'Mother River Spirit',    sprite:'general',    hp:10, soldierName:'怪泉水影',   soldierEn:'River Shade'},
-  {id:29, name:'如意真仙',   nameEn:'Ruyi Zhenxian',          sprite:'general',    hp:10, soldierName:'药泉童子',   soldierEn:'Spring Acolyte'},
-  {id:30, name:'蝎子精',     nameEn:'Scorpion Demon',         sprite:'general',    hp:12, soldierName:'毒尾妖姬',   soldierEn:'Poison Fiend'},
-  {id:31, name:'火焰山神',   nameEn:'Flame Mountain Spirit',  sprite:'general',    hp:10, soldierName:'山火精灵',   soldierEn:'Ember Sprite'},
-  {id:32, name:'铁扇公主',   nameEn:'Princess Iron Fan',      sprite:'general',    hp:12, soldierName:'翠云侍女',   soldierEn:'Fan Attendant'},
-  {id:33, name:'牛魔王',     nameEn:'Bull Demon King',        sprite:'general',    hp:14, soldierName:'积雷妖卒',   soldierEn:'Jilei Fiend'},
-  {id:34, name:'祭赛国主',   nameEn:'King of Sacrifice',      sprite:'general',    hp:9,  soldierName:'舍利守卫',   soldierEn:'Relic Guard'},
-  {id:35, name:'金光寺僧',   nameEn:'Golden Light Abbot',     sprite:'general',    hp:9,  soldierName:'寺门护灯',   soldierEn:'Temple Sentinel'},
-  {id:36, name:'黄眉老佛',   nameEn:'Yellowbrow Great King',  sprite:'general',    hp:13, soldierName:'假佛随从',   soldierEn:'False Monk'},
-  {id:37, name:'七绝山怪',   nameEn:'Seven-Extinction Fiend', sprite:'general',    hp:10, soldierName:'泥沼怪影',   soldierEn:'Marsh Spirit'},
-  {id:38, name:'朱紫国王',   nameEn:'King of Scarlet Purple', sprite:'general',    hp:9,  soldierName:'御医侍从',   soldierEn:'Court Physician'},
-  {id:39, name:'赛太岁',     nameEn:'Sai Tai Sui',            sprite:'general',    hp:12, soldierName:'妖宫亲卫',   soldierEn:'Cave Guard'},
-  {id:40, name:'蜘蛛精',     nameEn:'Spider Demon',           sprite:'general',    hp:11, soldierName:'盘丝小妖',   soldierEn:'Web Spinner'},
-  {id:41, name:'百眼魔君',   nameEn:'Hundred-Eyed Demon Lord',sprite:'general',    hp:12, soldierName:'黄花道众',   soldierEn:'Poison Adept'},
-  {id:42, name:'大鹏王',     nameEn:'Great Roc King',         sprite:'general',    hp:13, soldierName:'狮驼妖兵',   soldierEn:'Ridge Fiend'},
-  {id:43, name:'白鹿精',     nameEn:'White Deer Spirit',      sprite:'general',    hp:11, soldierName:'续命邪徒',   soldierEn:'Corrupt Acolyte'},
-  {id:44, name:'地涌夫人',   nameEn:'Lady Earth-Flow',        sprite:'general',    hp:12, soldierName:'地窟魅影',   soldierEn:'Cavern Shadow'},
-  {id:45, name:'九灵元圣',   nameEn:'Nine-Headed Lion',       sprite:'general',    hp:12, soldierName:'玉华兽影',   soldierEn:'Lion Shade'},
-  {id:46, name:'天竺佛使',   nameEn:'Buddhist Envoy',         sprite:'general',    hp:10, soldierName:'佛土护法',   soldierEn:'Pilgrim Guardian'},
-  {id:47, name:'如来佛祖',   nameEn:'Tathagata Buddha',       sprite:'general',    hp:15, soldierName:'雷音守卫',   soldierEn:'Thunderclap Guardian'},
+  {id:1,  name:'法明长老',     nameEn:'Master Faming',         sprite:'general',    hp:7,  soldierName:'寺院行者',   soldierEn:'Temple Novice'},
+  {id:2,  name:'刘伯钦',     nameEn:'Hunter Liu',         sprite:'general',    hp:8,  soldierName:'山路向导',   soldierEn:'Mountain Guide'},
+  {id:3,  name:'寅将军',     nameEn:'General Yin',         sprite:'general',    hp:9,  soldierName:'林间虎妖',   soldierEn:'Forest Tiger Spirit'},
+  {id:4,  name:'孙悟空',     nameEn:'Sun Wukong',         sprite:'wukong',    hp:12,  soldierName:'石猴残影',   soldierEn:'Stone Monkey Shade'},
+  {id:5,  name:'山神土地',     nameEn:'Mountain Spirits',         sprite:'general',    hp:8,  soldierName:'庙前香火',   soldierEn:'Shrine Warden'},
+  {id:6,  name:'白龙马',     nameEn:'White Dragon Horse',         sprite:'whitehorse',    hp:8,  soldierName:'涧水龙影',   soldierEn:'Ravine Spirit'},
+  {id:7,  name:'金池长老',     nameEn:'Elder Jinchi',         sprite:'general',    hp:9,  soldierName:'禅院僧众',   soldierEn:'Cloister Monk'},
+  {id:8,  name:'黑熊精',     nameEn:'Black Bear Demon',         sprite:'general',    hp:11,  soldierName:'黑风小妖',   soldierEn:'Black Wind Fiend'},
+  {id:9,  name:'高太公',     nameEn:'Elder Gao',         sprite:'general',    hp:8,  soldierName:'庄院家仆',   soldierEn:'Manor Servant'},
+  {id:10,  name:'猪八戒',     nameEn:'Zhu Bajie',         sprite:'bajie',    hp:10,  soldierName:'福陵野猪',   soldierEn:'Fuling Boar'},
+  {id:11,  name:'黄风大王',     nameEn:'Yellow Wind Demon',         sprite:'general',    hp:11,  soldierName:'黄风小妖',   soldierEn:'Wind Imp'},
+  {id:12,  name:'沙悟净',     nameEn:'Sha Wujing',         sprite:'wujing',    hp:9,  soldierName:'流沙水鬼',   soldierEn:'River Wraith'},
+  {id:13,  name:'尸魔先锋',     nameEn:'Corpse Fiend Scout',         sprite:'general',    hp:9,  soldierName:'荒岭孤魂',   soldierEn:'Grave Wraith'},
+  {id:14,  name:'镇元子',     nameEn:'Zhenyuanzi',         sprite:'general',    hp:11,  soldierName:'人参守童',   soldierEn:'Ginseng Keeper'},
+  {id:15,  name:'清风道童',     nameEn:'Acolyte Qingfeng',         sprite:'general',    hp:9,  soldierName:'观中童子',   soldierEn:'Abbey Acolyte'},
+  {id:16,  name:'白骨精',     nameEn:'White Bone Demon',         sprite:'general',    hp:11,  soldierName:'骷髅幻影',   soldierEn:'Bone Phantom'},
+  {id:17,  name:'宝象国主',     nameEn:'King of Baoxiang',         sprite:'general',    hp:9,  soldierName:'宫城宿卫',   soldierEn:'Palace Retainer'},
+  {id:18,  name:'黄袍怪',     nameEn:'Yellow Robe Demon',         sprite:'general',    hp:11,  soldierName:'洞府妖兵',   soldierEn:'Cave Fiend'},
+  {id:19,  name:'金角大王',     nameEn:'Gold Horn King',         sprite:'general',    hp:12,  soldierName:'金角小妖',   soldierEn:'Gold Horn Imp'},
+  {id:20,  name:'银角大王',     nameEn:'Silver Horn King',         sprite:'general',    hp:12,  soldierName:'银角小妖',   soldierEn:'Silver Horn Imp'},
+  {id:21,  name:'乌鸡国王',     nameEn:'King of Crow-Cock',         sprite:'general',    hp:9,  soldierName:'井底幽魂',   soldierEn:'Well Spirit'},
+  {id:22,  name:'虎力大仙',     nameEn:'Tiger Power Immortal',         sprite:'general',    hp:10,  soldierName:'车迟道士',   soldierEn:'Court Taoist'},
+  {id:23,  name:'灵感大王',     nameEn:'Great King Linggan',         sprite:'general',    hp:11,  soldierName:'河府水妖',   soldierEn:'River Demon'},
+  {id:24,  name:'青牛精',     nameEn:'Green Bull Demon',         sprite:'general',    hp:12,  soldierName:'金圈妖卒',   soldierEn:'Metal Ring Fiend'},
+  {id:25,  name:'女儿国王',     nameEn:'Queen of Woman Kingdom',         sprite:'general',    hp:9,  soldierName:'宫中侍从',   soldierEn:'Palace Attendant'},
+  {id:26,  name:'子母河神',     nameEn:'Mother River Spirit',         sprite:'general',    hp:10,  soldierName:'怪泉水影',   soldierEn:'River Shade'},
+  {id:27,  name:'如意真仙',     nameEn:'Ruyi Zhenxian',         sprite:'general',    hp:10,  soldierName:'药泉童子',   soldierEn:'Spring Acolyte'},
+  {id:28,  name:'蝎子精',     nameEn:'Scorpion Demon',         sprite:'general',    hp:12,  soldierName:'毒尾妖姬',   soldierEn:'Poison Fiend'},
+  {id:29,  name:'枯松山神',     nameEn:'Dry Pine Spirit',         sprite:'general',    hp:9,  soldierName:'松烟妖影',   soldierEn:'Pine Shade'},
+  {id:30,  name:'红孩儿',     nameEn:'Red Boy',         sprite:'general',    hp:12,  soldierName:'火云小妖',   soldierEn:'Fire Cloud Imp'},
+  {id:31,  name:'祭赛国主',     nameEn:'King of Sacrifice',         sprite:'general',    hp:9,  soldierName:'舍利守卫',   soldierEn:'Relic Guard'},
+  {id:32,  name:'金光寺僧',     nameEn:'Golden Light Abbot',         sprite:'general',    hp:9,  soldierName:'寺门护灯',   soldierEn:'Temple Sentinel'},
+  {id:33,  name:'黄眉老佛',     nameEn:'Yellowbrow Great King',         sprite:'general',    hp:13,  soldierName:'假佛随从',   soldierEn:'False Monk'},
+  {id:34,  name:'七绝山怪',     nameEn:'Seven-Extinction Fiend',         sprite:'general',    hp:10,  soldierName:'泥沼怪影',   soldierEn:'Marsh Spirit'},
+  {id:35,  name:'朱紫国王',     nameEn:'King of Scarlet Purple',         sprite:'general',    hp:9,  soldierName:'御医侍从',   soldierEn:'Court Physician'},
+  {id:36,  name:'赛太岁',     nameEn:'Sai Tai Sui',         sprite:'general',    hp:12,  soldierName:'妖宫亲卫',   soldierEn:'Cave Guard'},
+  {id:37,  name:'蜘蛛精',     nameEn:'Spider Demon',         sprite:'general',    hp:11,  soldierName:'盘丝小妖',   soldierEn:'Web Spinner'},
+  {id:38,  name:'百眼魔君',     nameEn:'Hundred-Eyed Demon Lord',         sprite:'general',    hp:12,  soldierName:'黄花道众',   soldierEn:'Poison Adept'},
+  {id:39,  name:'大鹏王',     nameEn:'Great Roc King',         sprite:'general',    hp:13,  soldierName:'狮驼妖兵',   soldierEn:'Ridge Fiend'},
+  {id:40,  name:'火焰山神',     nameEn:'Flame Mountain Spirit',         sprite:'general',    hp:10,  soldierName:'山火精灵',   soldierEn:'Ember Sprite'},
+  {id:41,  name:'铁扇公主',     nameEn:'Princess Iron Fan',         sprite:'general',    hp:12,  soldierName:'翠云侍女',   soldierEn:'Fan Attendant'},
+  {id:42,  name:'牛魔王',     nameEn:'Bull Demon King',         sprite:'general',    hp:14,  soldierName:'积雷妖卒',   soldierEn:'Jilei Fiend'},
+  {id:43,  name:'白鹿精',     nameEn:'White Deer Spirit',         sprite:'general',    hp:11,  soldierName:'续命邪徒',   soldierEn:'Corrupt Acolyte'},
+  {id:44,  name:'地涌夫人',     nameEn:'Lady Earth-Flow',         sprite:'general',    hp:12,  soldierName:'地窟魅影',   soldierEn:'Cavern Shadow'},
+  {id:45,  name:'九灵元圣',     nameEn:'Nine-Headed Lion',         sprite:'general',    hp:12,  soldierName:'玉华兽影',   soldierEn:'Lion Shade'},
+  {id:46,  name:'天竺佛使',     nameEn:'Buddhist Envoy',         sprite:'general',    hp:10,  soldierName:'佛土护法',   soldierEn:'Pilgrim Guardian'},
+  {id:47,  name:'如来佛祖',     nameEn:'Tathagata Buddha',         sprite:'general',    hp:15,  soldierName:'雷音守卫',   soldierEn:'Thunderclap Guardian'},
 ]
+
+PROVINCE_GENERALS.forEach(general => {
+  const soldierKey = getSoldierSpriteKey(general.id);
+  general.soldierSprite = soldierKey;
+  if (!ENEMY_SPRITES[soldierKey]) {
+    ENEMY_SPRITES[soldierKey] = ENEMY_SPRITES.soldier;
+  }
+});
 
 // Track which generals have been defeated (persisted in campaign save)
 // defeatedGenerals: Set of province ids whose general was beaten
@@ -1770,7 +1783,7 @@ function spawnEnemy(provId) {
     } else {
       enemy = {
         name: general.soldierName, nameEn: general.soldierEn,
-        sprite: 'soldier',
+        sprite: general.soldierSprite || getSoldierSpriteKey(general.id),
         hp: 5 + Math.floor(G.wave * 0.7),
         isGeneral: false, announce: general.soldierName + '出现！'
       };
@@ -1857,20 +1870,41 @@ function getHeroesDef(mode) {
   return heroes.length ? heroes.map(h=>({...h})) : [ALL_HEROES[0]];
 }
 
-// Check if a hero should be found after a victory (random chance every 3-5 provinces)
-function checkHeroFound(mode) {
-  if (mode==='coop') return null; // coop uses both rosters, handled separately
+function ensureStarterHero(mode) {
+  if (!playerRosters[mode]) playerRosters[mode] = {roster:[], startHero:null};
   const roster = playerRosters[mode].roster;
-  if (roster.length >= ALL_HEROES.length) return null; // all heroes found
-  const owned = Object.values(provState).filter(v=>v==='owned').length;
-  if (owned < 3) return null; // need at least 3 provinces first
-  // Chance increases: 1/5 base, +1/10 per province beyond 3
-  const chance = 0.2 + Math.min(0.5, (owned - 3) * 0.08);
-  if (Math.random() > chance) return null;
-  // Pick a hero not yet in roster
-  const available = ALL_HEROES.filter(h => !roster.includes(h.key));
-  if (!available.length) return null;
-  return available[Math.floor(Math.random() * available.length)];
+  if (!roster.includes('sanzang')) roster.unshift('sanzang');
+  if (!playerRosters[mode].startHero) playerRosters[mode].startHero = 'sanzang';
+}
+
+const HERO_UNLOCK_BY_PROV = {
+  4: ['wukong'],
+  6: ['whitehorse'],
+  7: ['guanyin'],
+  10: ['bajie'],
+  12: ['wujing'],
+  31: ['nezha'],
+  39: ['erlang'],
+};
+
+function unlockHeroesForProvince(mode, provId) {
+  if (mode === 'coop' || provId === null || provId === undefined) return [];
+  ensureStarterHero(mode);
+  const roster = playerRosters[mode].roster;
+  const unlockKeys = HERO_UNLOCK_BY_PROV[provId] || [];
+  const unlocked = [];
+  unlockKeys.forEach(key => {
+    if (!roster.includes(key)) {
+      const hero = ALL_HEROES.find(h => h.key === key);
+      roster.push(key);
+      if (hero) unlocked.push(hero);
+    }
+  });
+  if (unlocked.length) {
+    saveRosters();
+    saveCampaign(mode);
+  }
+  return unlocked;
 }
 
 // Used by HEROES_DEF reference in startBattle
@@ -1882,14 +1916,54 @@ const HEROES_DEF = ALL_HEROES.slice(0,3); // fallback, overridden in startBattle
 // Province conquest type (deterministic by id)
 // Fixed conquest type per province (from provinces.xlsx)
 const PROV_CONQUEST_TYPE = {
-  0:'build', 1:'build', 2:'battle', 3:'build', 4:'battle', 5:'build',
-  6:'build', 7:'feast', 8:'battle', 9:'feast', 10:'battle', 11:'battle',
-  12:'build', 13:'battle', 14:'feast', 15:'build', 16:'battle', 17:'feast',
-  18:'battle', 19:'battle', 20:'battle', 21:'feast', 22:'build', 23:'battle',
-  24:'battle', 25:'battle', 26:'battle', 27:'feast', 28:'build', 29:'build',
-  30:'battle', 31:'battle', 32:'build', 33:'battle', 34:'feast', 35:'build',
-  36:'battle', 37:'build', 38:'feast', 39:'battle', 40:'battle', 41:'battle',
-  42:'battle', 43:'feast', 44:'battle', 45:'build', 46:'feast', 47:'battle'
+  0:'build',
+  1:'build',
+  2:'battle',
+  3:'build',
+  4:'battle',
+  5:'build',
+  6:'build',
+  7:'feast',
+  8:'battle',
+  9:'feast',
+  10:'battle',
+  11:'battle',
+  12:'build',
+  13:'battle',
+  14:'feast',
+  15:'build',
+  16:'battle',
+  17:'feast',
+  18:'battle',
+  19:'battle',
+  20:'battle',
+  21:'feast',
+  22:'battle',
+  23:'battle',
+  24:'battle',
+  25:'feast',
+  26:'build',
+  27:'build',
+  28:'battle',
+  29:'build',
+  30:'battle',
+  31:'feast',
+  32:'build',
+  33:'battle',
+  34:'build',
+  35:'feast',
+  36:'battle',
+  37:'battle',
+  38:'battle',
+  39:'battle',
+  40:'battle',
+  41:'build',
+  42:'battle',
+  43:'feast',
+  44:'battle',
+  45:'build',
+  46:'feast',
+  47:'battle',
 };
 function getProvType(provId){ return PROV_CONQUEST_TYPE[provId] || 'battle'; }
 
@@ -1959,7 +2033,7 @@ function renderProfileScreen() {
     grid.style.gridTemplateColumns = '1fr';
     grid.innerHTML = `
       <div style="display:flex;flex-direction:column;align-items:center;gap:14px;padding:24px 0">
-        <div style="font-size:14px;color:var(--parch2);opacity:.8;text-align:center;line-height:1.6">No players yet.<br>Add up to 4 players to begin!</div>
+        <div style="font-size:14px;color:#6b5648;opacity:.9;text-align:center;line-height:1.6">No players yet.<br>Add up to 4 players to begin!</div>
         <button class="btn-p" onclick="openAddPlayerModal()" style="font-size:clamp(18px,5vw,26px);padding:16px 40px;letter-spacing:.1em">➕ Add Player</button>
       </div>`;
     if (coopRow) coopRow.style.display = 'none';
@@ -1997,8 +2071,8 @@ function renderProfileScreen() {
         <span class="prof-name">${emoji} ${player.name}</span>
         <span class="prof-lv">${hero.name} · Level ${diff}</span>
         <div class="prof-stars">${stars}</div>
-        <div style="font-size:11px;color:var(--goldb);margin-top:2px">${heroLvTxt}</div>
-        <div style="font-size:11px;color:var(--parch2);margin-top:1px">${crTxt}</div>
+        <div style="font-size:11px;color:#6b5648;margin-top:2px">${heroLvTxt}</div>
+        <div style="font-size:11px;color:#6b5648;margin-top:1px">${crTxt}</div>
       </div>`;
   }).join('');
 
@@ -2017,7 +2091,7 @@ function renderProfileScreen() {
     addDiv.style.cssText = 'display:flex;flex-direction:column;justify-content:center;align-items:center;gap:8px';
     addDiv.innerHTML = `<button class="btn-s" onclick="openAddPlayerModal()"
       style="font-size:clamp(22px,6vw,36px);width:100%;min-height:80px;border-style:dashed;opacity:.7">➕</button>
-      <div style="font-size:11px;color:var(--parch2);opacity:.6;text-align:center">Add Player</div>`;
+      <div style="font-size:11px;color:#6b5648;opacity:.75;text-align:center">Add Player</div>`;
     grid.appendChild(addDiv);
   }
 
@@ -2038,7 +2112,7 @@ function renderProfileScreen() {
 
 function startSolo(playerId) {
   // Ensure roster entry exists
-  if (!playerRosters[playerId]) playerRosters[playerId] = {roster:[], startHero:null};
+  ensureStarterHero(playerId);
   if (!playerRosters[playerId].startHero) {
     // No hero yet — open hero select first, which will call startCampaign
     openHeroSelect(playerId);
@@ -2051,20 +2125,19 @@ function openHeroSelect(mode) {
   const modal = document.getElementById('hero-select-modal');
   const grid  = document.getElementById('hsm-grid');
   // Ensure roster slot exists
-  if (!playerRosters[mode]) playerRosters[mode] = {roster:[], startHero:null};
+  ensureStarterHero(mode);
   const playerLabel = mode === 'coop' ? '🤝 Co-op' : getPlayerName(mode);
   document.getElementById('hsm-title').textContent = playerLabel + ' — 选择同伴';
   const rLen = playerRosters[mode].roster.length;
   document.getElementById('hsm-subtitle').textContent =
     playerRosters[mode].startHero
-      ? rLen + '/9 heroes found · Tap any found hero to lead your army'
+      ? rLen + '/8 heroes found · Tap any found hero to lead your army'
       : '选择你的起始同伴 Choose your starting companion';
   grid.innerHTML = ALL_HEROES.map(h => {
     const owned = playerRosters[mode].roster.includes(h.key);
     const isStart = playerRosters[mode].startHero === h.key;
-    const noRoster = playerRosters[mode].roster.length === 0;
-    const locked = !noRoster && !owned; // if no roster yet, all are pickable; otherwise only owned are
-    const canReadBio = owned || noRoster;
+    const locked = !owned;
+    const canReadBio = owned;
     const scrollBtn = canReadBio
       ? `<button onclick="event.stopPropagation();showHeroBio('${h.key}')"
            title="Read hero biography"
@@ -2166,7 +2239,7 @@ function showHeroBio(heroKey) {
   setTimeout(() => {
     try {
       const utt = new SpeechSynthesisUtterance(hero.name + '\u3002' + (hero.zh || ''));
-      utt.lang = 'zh-CN'; utt.rate = 0.82; utt.pitch = 1;
+      if (!configureChineseUtterance(utt, { rate: 0.82, pitch: 1 })) return;
       window.speechSynthesis.speak(utt);
     } catch(e) {}
   }, 400);
@@ -2179,7 +2252,7 @@ function heroBioSpeak() {
   setTimeout(() => {
     try {
       const utt = new SpeechSynthesisUtterance(hero.name + '\u3002' + (hero.zh || ''));
-      utt.lang = 'zh-CN'; utt.rate = 0.82; utt.pitch = 1;
+      if (!configureChineseUtterance(utt, { rate: 0.82, pitch: 1 })) return;
       window.speechSynthesis.speak(utt);
     } catch(e) {}
   }, 100);
@@ -2240,6 +2313,8 @@ function startCampaign(mode) {
     rtcoopDisable();
   }
 
+  ensureStarterHero(mode);
+
   initMap();
   if (!musicMuted) playMapMusic();
   showScr('scr-map');
@@ -2247,7 +2322,7 @@ function startCampaign(mode) {
 }
 
 function updateMapInfo() {
-  const owned = Object.values(provState).filter(v=>v==='owned'||v==='player').length;
+  const owned = Object.values(provState).filter(v=>v==='owned').length;
   document.getElementById('map-info').textContent = `已行经 ${owned}/${PROVINCES.length} 站 · ${owned}/${PROVINCES.length} stages cleared`;
 }
 
@@ -2296,7 +2371,7 @@ function returnToMap() {
   if (retreatBtn) { retreatBtn.disabled = false; retreatBtn.style.opacity = '1'; retreatBtn.style.pointerEvents = ''; retreatBtn.title = ''; }
 
   const total = PROVINCES.length;
-  const owned = Object.values(provState).filter(v=>v==='owned'||v==='player').length;
+  const owned = Object.values(provState).filter(v=>v==='owned').length;
   if (owned === total) setTimeout(() => showCampaignVictory(), 500);
 }
 
@@ -2612,7 +2687,7 @@ function doResetActive() {
       if (cfg.key) {
         const freshProvState = {};
         PROVINCES.forEach(p => { freshProvState[p.id] = 'neutral'; });
-        freshProvState[0] = 'owned';
+        freshProvState[0] = 'player';
         _rtSet('coop_map', {
           controller: _rtcoopPreferredControllerName(),
           status: 'idle',
@@ -2669,7 +2744,7 @@ function doResetAllActive() {
       if (cfg.key) {
         const freshProvState = {};
         PROVINCES.forEach(p => { freshProvState[p.id] = 'neutral'; });
-        freshProvState[0] = 'owned';
+        freshProvState[0] = 'player';
         _rtSet('coop_map', {
           controller: _rtcoopPreferredControllerName(),
           status: 'idle',
@@ -3235,40 +3310,104 @@ function calcCampaignRating(mode, totalScore, globalBestStreak) {
    Famous lines spoken at the final wave
 =========================================================== */
 const GENERAL_CRIES = {
-  '吕布':   { zh:'吾乃天下第一勇将吕奉先！', en:'I am Lü Bu, the mightiest warrior under heaven!' },
-  '曹操':   { zh:'宁教我负天下人，休教天下人负我！', en:'I would rather betray the world than let the world betray me!' },
-  '张飞':   { zh:'我乃燕人张翼德！谁敢与我决一死战！', en:'I am Zhang Fei of Yan! Who dares fight me to the death!' },
-  '关羽':   { zh:'吾观颜良，插标卖首耳！', en:'Yan Liang fights like a man already selling his own head!' },
-  '赵云':   { zh:'常山赵子龙在此！', en:'Zhao Zilong of Changshan stands before you!' },
-  '袁绍':   { zh:'吾有百万之众，何惧尔等！', en:'With a million soldiers at my back, what have I to fear?' },
-  '董卓':   { zh:'天下者，强者之天下也！', en:'The realm belongs to those with the strength to take it!' },
-  '周瑜':   { zh:'既生瑜，何生亮！', en:'If heaven made Zhou Yu, why did it need to make Zhuge Liang?' },
-  '诸葛亮': { zh:'鞠躬尽瘁，死而后已。', en:'I will give my last breath in devoted service.' },
-  '司马懿': { zh:'谋定而后动，知止而有得。', en:'Plan before you move; know when to stop, and you will prevail.' },
-  '孙权':   { zh:'江东子弟多才俊，卷土重来未可知！', en:'The warriors of Jiangdong are capable of great things — do not count them out!' },
-  '张辽':   { zh:'威震逍遥津！', en:'I made the name Xiaoyao Ford ring with fear across the realm!' },
-  '貂蝉':   { zh:'妾虽女流，誓助王司徒除此奸贼！', en:'Though I am only a woman, I vow to help Minister Wang rid us of this traitor!' },
-  '黄盖':   { zh:'苦肉计，瞒天过海！', en:'The ruse of wounded flesh — we deceive Cao Cao under an open sky!' },
-  '张角':   { zh:'苍天已死，黄天当立！', en:'The Blue Sky is dead — let the Yellow Sky rise in its place!' },
-  '夏侯惇': { zh:'吾乃曹操麾下夏侯元让！', en:'I am Xiahou Yuanrang, sworn blade of Cao Cao!' },
-  '孟获':   { zh:'南蛮之王，岂惧汉人！', en:'The King of the Nanman peoples fears no Han army!' },
-  '祝融':   { zh:'我南蛮勇士，以火攻之！', en:'We Nanman warriors — let fire be our weapon!' },
-  '陆逊':   { zh:'火烧连营，此乃天时地利！', en:'The fire that burned the enemy camps — that was Heaven and Earth on our side.' },
-  '庞统':   { zh:'凤雏之谋，谁人能破？', en:'Who can see through the stratagems of the Young Phoenix?' },
-  '华佗':   { zh:'医者仁心，亦知刮骨疗伤。', en:'A healer\'s heart — yet I have scraped poison from bone without flinching.' },
-  '王允':   { zh:'连环计成，国贼必除！', en:'The Chain Stratagem is complete — the traitor will fall!' },
+  '唐太宗': { zh:'大唐天子在此，护法启程！', en:'Emperor of Tang stands here — let the journey begin!' },
+  '法明长老': { zh:'佛门清规，不容邪扰！', en:'Buddhist precepts stand — no evil shall disturb.' },
+  '刘伯钦': { zh:'山中猎户，护路而行！', en:'Hunter of the hills — I guard this road!' },
+  '寅将军': { zh:'虎啸山林，谁敢近前！', en:'The tiger roars — who dares approach!' },
+  '孙悟空': { zh:'吃俺老孙一棒！', en:'Take my staff!' },
+  '山神土地': { zh:'此山有主，妖邪退散！', en:'This mountain has its keepers — begone!' },
+  '白龙马': { zh:'龙归正途，马蹄如风！', en:'The dragon returns to the path — onward!' },
+  '金池长老': { zh:'袈裟在手，心火难熄！', en:'The robe is in my hands; desire burns.' },
+  '黑熊精': { zh:'袈裟归我，谁敢夺取！', en:'The robe is mine — who dares claim it!' },
+  '高太公': { zh:'高家有难，求诸位相助！', en:'Gao household is in peril — help us!' },
+  '猪八戒': { zh:'俺老猪来也！', en:'Old Pig is here!' },
+  '黄风大王': { zh:'黄风起处，日月无光！', en:'Where the yellow wind rises, sun and moon are dim!' },
+  '沙悟净': { zh:'流沙河畔，降妖伏怪！', en:'By the Flowing Sands, I subdue the fiends!' },
+  '尸魔先锋': { zh:'白骨迷踪，魂来索命！', en:'Bones and spirits come to claim your life!' },
+  '镇元子': { zh:'万寿山主在此！', en:'Lord of Wanshou stands here!' },
+  '清风道童': { zh:'五庄观弟子在此！', en:'Acolyte of Five Manor Abbey, present!' },
+  '白骨精': { zh:'三变迷人心！', en:'Three disguises to snare the heart!' },
+  '宝象国主': { zh:'国难当前，谁可相助！', en:'My kingdom suffers — who will aid us!' },
+  '黄袍怪': { zh:'宝象城已入我手！', en:'Baoxiang is already in my grasp!' },
+  '金角大王': { zh:'紫金葫芦，收你性命！', en:'Purple-gold gourd — take their lives!' },
+  '银角大王': { zh:'法宝在此，谁能逃脱！', en:'My treasure binds all who stand before me!' },
+  '乌鸡国王': { zh:'沉冤必雪，真相当明！', en:'The buried wrongs must be righted!' },
+  '虎力大仙': { zh:'车迟国法，谁敢不服！', en:'Cart Slow Kingdom bows to my law!' },
+  '灵感大王': { zh:'通天河祭，不许违命！', en:'Sacrifices to the River of Heaven — none may refuse!' },
+  '青牛精': { zh:'金刚圈在此，诸兵尽落！', en:'With the golden ring, all weapons fall!' },
+  '女儿国王': { zh:'柔情亦能试道心！', en:'Tenderness, too, can test the heart.' },
+  '子母河神': { zh:'怪泉一饮，命数难逆！', en:'Drink the strange spring, and fate turns.' },
+  '如意真仙': { zh:'解阳泉在此，不许轻取！', en:'Jieyang Spring is mine — none may take it.' },
+  '蝎子精': { zh:'毒尾一出，谁敢近前！', en:'My poisoned tail strikes — who dares approach!' },
+  '枯松山神': { zh:'枯松成阵，火云将起！', en:'Dry pines gather; fire clouds rise!' },
+  '红孩儿': { zh:'三昧真火，焚尽前路！', en:'Samadhi fire — I burn the path!' },
+  '祭赛国主': { zh:'舍利失落，国运将倾！', en:'The relic is lost — the kingdom falters!' },
+  '金光寺僧': { zh:'塔灯不灭，佛心不灭！', en:'The pagoda light stays — so does faith!' },
+  '黄眉老佛': { zh:'假佛亦威，谁能识破！', en:'A false Buddha can still awe — who sees through it!' },
+  '七绝山怪': { zh:'泥途难行，步步皆困！', en:'Muddy paths, every step a snare!' },
+  '朱紫国王': { zh:'先救王后，后除妖邪！', en:'Save the queen first; then purge the evil!' },
+  '赛太岁': { zh:'宫中已乱，谁能奈我！', en:'The palace is mine — who can stop me!' },
+  '蜘蛛精': { zh:'丝网既张，谁能脱身！', en:'The web is spun — none escape!' },
+  '百眼魔君': { zh:'毒茶一盏，心神尽乱！', en:'A cup of poison tea — minds undone!' },
+  '大鹏王': { zh:'狮驼岭上，风雷听命！', en:'At Lion Camel Ridge, wind and thunder obey!' },
+  '火焰山神': { zh:'火焰封路，谁可渡过！', en:'Flames block the road — who can cross!' },
+  '铁扇公主': { zh:'芭蕉扇在此，不许借取！', en:'The Plantain Fan is mine — no borrowing!' },
+  '牛魔王': { zh:'积雷山主，谁敢放肆！', en:'Lord of Jilei Mountain — who dares!' },
+  '白鹿精': { zh:'续命之术，岂容破坏！', en:'The life-extending rite shall not be broken!' },
+  '地涌夫人': { zh:'地底深处，尽为我域！', en:'The depths below are my realm!' },
+  '九灵元圣': { zh:'九头同啸，万兽皆伏！', en:'Nine heads roar; all beasts submit!' },
+  '天竺佛使': { zh:'佛土将近，守护正道！', en:'The Buddha lands are near — guard the path!' },
+  '如来佛祖': { zh:'诸法归一，罪障自消。', en:'All dharma returns to one; delusion fades.' },
 };
 
 // Female generals — get higher-pitched voice
-const FEMALE_GENERALS = new Set(['貂蝉', '祝融', '征侧']);
+const FEMALE_GENERALS = new Set(['白骨精', '女儿国王', '蝎子精', '蜘蛛精', '铁扇公主', '地涌夫人']);
+let _zhSpeechWarningShown = false;
+
+function getChineseSpeechVoice() {
+  if (!window.speechSynthesis || !window.speechSynthesis.getVoices) return null;
+  const voices = window.speechSynthesis.getVoices() || [];
+  if (!voices.length) return null;
+
+  const zhVoices = voices.filter(v => /^zh(?:[-_]|$)/i.test(v.lang || ''));
+  if (!zhVoices.length) return null;
+
+  return zhVoices.find(v => /^zh[-_]cn$/i.test(v.lang || ''))
+    || zhVoices.find(v => /mandarin|putonghua|xiaoxiao|xiaoyi|ting.?ting|mei.?jia|sin.?ji/i.test(v.name || ''))
+    || zhVoices[0];
+}
+
+function warnChineseSpeechUnavailable() {
+  if (_zhSpeechWarningShown) return;
+  _zhSpeechWarningShown = true;
+  setTimeout(() => {
+    alert('Chinese speech is not installed on this device yet.\n\nTo hear spoken Chinese, install a Chinese text-to-speech voice in your phone settings, then reopen the app.\n\nOn Android this is usually under Settings -> System -> Languages & input -> Text-to-speech output.');
+  }, 0);
+}
+
+function configureChineseUtterance(utterance, opts) {
+  if (!utterance || !window.speechSynthesis) return false;
+  const options = opts || {};
+  const voice = getChineseSpeechVoice();
+  if (!voice) {
+    warnChineseSpeechUnavailable();
+    return false;
+  }
+
+  utterance.lang = voice.lang || options.lang || 'zh-CN';
+  utterance.voice = voice;
+  utterance.rate = options.rate !== undefined ? options.rate : 0.85;
+  utterance.pitch = options.pitch !== undefined ? options.pitch : 1;
+  return true;
+}
 
 function _speakBattleCry(text, isFemale) {
   try {
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'zh-CN';
     // Gusto: faster rate, dramatically higher pitch for the cry
-    u.rate  = isFemale ? 1.05 : 0.88;
-    u.pitch = isFemale ? 1.8  : 0.5;  // female = high & spirited; male = as deep as API allows
+    const rate = isFemale ? 1.05 : 0.88;
+    const pitch = isFemale ? 1.8 : 0.5;
+    if (!configureChineseUtterance(u, { rate, pitch })) return null;
 
     // Try to pick a matching-gender voice if the browser has one
     const voices = window.speechSynthesis.getVoices();
@@ -3326,7 +3465,7 @@ function _speakStory(text) {
   setTimeout(() => {
     try {
       const utt = new SpeechSynthesisUtterance(text);
-      utt.lang = 'zh-CN'; utt.rate = 0.82; utt.pitch = 1;
+      if (!configureChineseUtterance(utt, { rate: 0.82, pitch: 1 })) return;
       window.speechSynthesis.speak(utt);
     } catch(e) {}
   }, 300);
@@ -3341,8 +3480,10 @@ function showProvinceStory(provId, onContinue) {
   _storyCallback = onContinue;
   _currentStoryZh = story.zh;
 
-  document.getElementById('story-general-name').textContent = general.name;
-  document.getElementById('story-general-en').textContent = general.nameEn;
+  document.getElementById('story-episode-title').textContent = prov.episodeHz || prov.hz;
+  document.getElementById('story-episode-en').textContent = prov.episodeEn || '';
+  document.getElementById('story-boss-name').textContent = general.name;
+  document.getElementById('story-boss-en').textContent = general.nameEn;
   document.getElementById('story-text-zh').textContent = story.zh;
   document.getElementById('story-text-en').textContent = story.en;
 
@@ -3383,25 +3524,41 @@ function saveUnlockedChapters(ids) {
   try { localStorage.setItem('skz_chapters', JSON.stringify(ids)); } catch(e) {}
 }
 
+const CHAPTER_UNLOCK_PROV = {
+  c1: 0,  // Birth of the Stone Monkey -> Chang'an (prologue)
+  c2: 2,  // Havoc in Heaven -> Two Worlds Mountain
+  c3: 4,  // Beneath Five Elements Mountain
+  c4: 12, // Gathering the Pilgrims -> Flowing Sands River
+  c5: 16, // White Bone Demon -> White Tiger Ridge
+  c6: 22, // Contest of Magic -> Cart Slow Kingdom
+  c7: 25, // Woman Kingdom
+  c8: 30, // Fire Cloud Cave
+  c9: 37, // Spider Cave
+  c10: 39, // Lion Camel Ridge
+  c11: 40, // Flaming Mountain
+  c12: 47, // Thunderclap Monastery
+};
+
 function checkMilestoneStory() {
-  const owned = Object.values(provState).filter(v => v === 'owned').length;
   const unlocked = loadUnlockedChapters();
   let newChapter = null;
   for (const ch of STORY_CHAPTERS) {
-    if (owned >= ch.unlockAt && !unlocked.includes(ch.id)) {
+    const provId = CHAPTER_UNLOCK_PROV[ch.id];
+    if (provId === undefined) continue;
+    const st = provState[provId];
+    const isOwned = st === 'owned' || st === 'player';
+    if (isOwned && !unlocked.includes(ch.id)) {
       unlocked.push(ch.id);
-      saveUnlockedChapters(unlocked);
-      newChapter = ch;
-      break; // one at a time
+      if (!newChapter) newChapter = ch;
     }
   }
+  if (newChapter) saveUnlockedChapters(unlocked);
   return newChapter;
 }
 
 function goStories() {
   const unlocked = loadUnlockedChapters();
-  // Always unlock the first Journey chapter immediately
-  if (!unlocked.includes('c1')) { unlocked.push('c1'); saveUnlockedChapters(unlocked); }
+  checkMilestoneStory();
   const list = document.getElementById('stories-list');
   if (!list) return;
   list.innerHTML = '';
@@ -3444,7 +3601,10 @@ function openChapter(ch) {
   setTimeout(() => {
     try {
       _chapterUtterance = new SpeechSynthesisUtterance(ch.title + '。' + ch.zh);
-      _chapterUtterance.lang = 'zh-CN'; _chapterUtterance.rate = 0.82; _chapterUtterance.pitch = 1;
+      if (!configureChineseUtterance(_chapterUtterance, { rate: 0.82, pitch: 1 })) {
+        _chapterUtterance = null;
+        return;
+      }
       _chapterUtterance.onend = () => { _chapterUtterance = null; };
       window.speechSynthesis.speak(_chapterUtterance);
     } catch(e) {}
@@ -3456,7 +3616,10 @@ function chapterSpeak() {
   setTimeout(() => {
     try {
       _chapterUtterance = new SpeechSynthesisUtterance(_currentChapterZh);
-      _chapterUtterance.lang = 'zh-CN'; _chapterUtterance.rate = 0.82; _chapterUtterance.pitch = 1;
+      if (!configureChineseUtterance(_chapterUtterance, { rate: 0.82, pitch: 1 })) {
+        _chapterUtterance = null;
+        return;
+      }
       _chapterUtterance.onend = () => { _chapterUtterance = null; };
       window.speechSynthesis.speak(_chapterUtterance);
     } catch(e) {}
@@ -3483,6 +3646,13 @@ document.addEventListener('click', () => {
 }, {once:true});
 try { window.speechSynthesis.getVoices(); } catch(e) {}
 setTimeout(() => { try { window.speechSynthesis.getVoices(); } catch(e) {} }, 500);
+try {
+  if (window.speechSynthesis && 'onvoiceschanged' in window.speechSynthesis) {
+    window.speechSynthesis.onvoiceschanged = function() {
+      try { window.speechSynthesis.getVoices(); } catch(e) {}
+    };
+  }
+} catch(e) {}
 
 </script>
 <button id="mute-btn" title="Toggle Music" onclick="toggleMute()">♪</button>
