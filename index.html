@@ -688,51 +688,224 @@ document.addEventListener('visibilitychange', () => {
     if (currentAudio && !musicMuted) currentAudio.play().catch(() => {});
   }
 });
-function _setJourneyAvatar(svg, emoji, palette) {
-  svg.setAttribute('viewBox','0 0 64 80');
-  svg.innerHTML = `<g>
-    <defs>
-      <linearGradient id="${palette.id}" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="${palette.outer}"/>
-        <stop offset="100%" stop-color="${palette.inner}"/>
-      </linearGradient>
-    </defs>
+const HERO_KEY_SET = new Set(ALL_HEROES.map(h => h.key));
+const HERO_EMOJI_FALLBACK = {
+  sanzang: '🪷',
+  wukong: '🐒',
+  bajie: '🐷',
+  wujing: '🌊',
+  whitehorse: '🐎',
+  guanyin: '🌸',
+  nezha: '🔥',
+  erlang: '👁️',
+};
+
+function slugifyAssetName(text) {
+  return String(text || '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function uniqueAssetPaths(paths) {
+  const seen = new Set();
+  const out = [];
+  (paths || []).forEach(path => {
+    if (!path || seen.has(path)) return;
+    seen.add(path);
+    out.push(path);
+  });
+  return out;
+}
+
+function _clearSvg(svgEl) {
+  while (svgEl.firstChild) svgEl.removeChild(svgEl.firstChild);
+}
+
+function _renderSvgImage(svgEl, src, viewBox) {
+  svgEl.setAttribute('viewBox', viewBox || '0 0 64 80');
+  _clearSvg(svgEl);
+  const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+  img.setAttribute('width', '100%');
+  img.setAttribute('height', '100%');
+  img.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+  img.setAttribute('href', src);
+  img.setAttributeNS('http://www.w3.org/1999/xlink', 'href', src);
+  svgEl.appendChild(img);
+}
+
+function _drawAvatarFallback(svgEl, emoji, label) {
+  svgEl.setAttribute('viewBox', '0 0 64 80');
+  svgEl.innerHTML = `<g>
     <ellipse cx="32" cy="70" rx="18" ry="6" fill="rgba(54,40,74,.16)"/>
-    <circle cx="32" cy="22" r="11" fill="${palette.face}" stroke="${palette.trim}" stroke-width="1.5"/>
-    <path d="M18 55 C18 40, 24 31, 32 31 C40 31, 46 40, 46 55 L46 67 L18 67 Z" fill="url(#${palette.id})" stroke="${palette.trim}" stroke-width="2"/>
-    <path d="M18 47 C14 50, 13 57, 15 65" fill="none" stroke="${palette.trim}" stroke-width="2" stroke-linecap="round"/>
-    <path d="M46 47 C50 50, 51 57, 49 65" fill="none" stroke="${palette.trim}" stroke-width="2" stroke-linecap="round"/>
-    <circle cx="28" cy="20" r="1.5" fill="#2f233f"/>
-    <circle cx="36" cy="20" r="1.5" fill="#2f233f"/>
-    <path d="M28 26 Q32 28 36 26" fill="none" stroke="#7e5260" stroke-width="1.5" stroke-linecap="round"/>
-    <circle cx="32" cy="12" r="8.5" fill="${palette.halo}" opacity=".28"/>
-    <circle cx="32" cy="12" r="3.2" fill="${palette.spark}" opacity=".8"/>
-    <text x="32" y="49" text-anchor="middle" font-size="21">${emoji}</text>
-    <path d="M26 4 Q32 0 38 4" fill="none" stroke="${palette.trim}" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="32" cy="24" r="11" fill="#f7ead2" stroke="#9e6d3a" stroke-width="1.5"/>
+    <rect x="18" y="34" width="28" height="34" rx="13" fill="#c9a227" opacity="0.25"/>
+    <text x="32" y="49" text-anchor="middle" font-size="21">${emoji || '守'}</text>
+    <text x="32" y="77" text-anchor="middle" font-size="7" fill="#e8d4a0">${label || ''}</text>
   </g>`;
 }
 
-const HERO_SPRITES = {
-  sanzang: svg => _setJourneyAvatar(svg, '🪷', {id:'av-sz', outer:'#f7d88f', inner:'#f2a7a0', face:'#fff2da', trim:'#9e6d3a', halo:'#ffd36d', spark:'#fff7d0'}),
-  wukong: svg => _setJourneyAvatar(svg, '🐒', {id:'av-wk', outer:'#f3b16a', inner:'#f07c56', face:'#ffe2bf', trim:'#8c4b28', halo:'#ffd877', spark:'#ffb44d'}),
-  bajie: svg => _setJourneyAvatar(svg, '🐷', {id:'av-bj', outer:'#f4b2b8', inner:'#d88ec8', face:'#ffe7e9', trim:'#9d5f7b', halo:'#ffd7ee', spark:'#ffb7d1'}),
-  wujing: svg => _setJourneyAvatar(svg, '🌊', {id:'av-wj', outer:'#76c2c9', inner:'#567cc4', face:'#eef7ff', trim:'#44648d', halo:'#a4e7ef', spark:'#c9f7ff'}),
-  whitehorse: svg => _setJourneyAvatar(svg, '🐎', {id:'av-wh', outer:'#f4e9d6', inner:'#9fd4ef', face:'#fff6eb', trim:'#9f7e59', halo:'#fdf3d2', spark:'#fffdf6'}),
-  guanyin: svg => _setJourneyAvatar(svg, '🌸', {id:'av-gy', outer:'#f7d7f3', inner:'#b8c1ff', face:'#fff3fb', trim:'#8d72a8', halo:'#ffe5fb', spark:'#fff8ff'}),
-  nezha: svg => _setJourneyAvatar(svg, '🔥', {id:'av-nz', outer:'#ffb16c', inner:'#ff6b7c', face:'#fff0d6', trim:'#a65739', halo:'#ffd59f', spark:'#fff0bb'}),
-  erlang: svg => _setJourneyAvatar(svg, '👁️', {id:'av-el', outer:'#b9c6ff', inner:'#74a7e9', face:'#eef5ff', trim:'#546ca0', halo:'#dfe7ff', spark:'#ffffff'})
-};
+function _drawEncounterFallback(svgEl, emoji, label, mode) {
+  const fill = mode === 'feast' ? 'rgba(60,40,10,0.28)' : 'rgba(40,80,40,0.25)';
+  const stroke = mode === 'feast' ? 'rgba(220,160,40,0.35)' : 'rgba(80,200,120,0.3)';
+  const textFill = mode === 'feast' ? '#ffd966' : '#88ffcc';
+  svgEl.setAttribute('viewBox', '0 0 120 120');
+  svgEl.innerHTML = `<g>
+    <circle cx="60" cy="55" r="52" fill="${fill}" stroke="${stroke}" stroke-width="2"/>
+    <text x="60" y="80" text-anchor="middle" font-size="80">${emoji}</text>
+    <text x="60" y="112" text-anchor="middle" font-size="15"
+      font-family="'Ma Shan Zheng',cursive" fill="${textFill}"
+      stroke="rgba(0,0,0,0.95)" stroke-width="3" paint-order="stroke">${label}</text>
+  </g>`;
+}
 
-const ENEMY_SPRITES = {
-  soldier: svg => _setJourneyAvatar(svg, '妖', {id:'av-so', outer:'#c89e6d', inner:'#8c6646', face:'#fae7d5', trim:'#6d4d34', halo:'#f1d2aa', spark:'#ffe6c2'}),
-  guardian: svg => _setJourneyAvatar(svg, '守', {id:'av-gu', outer:'#a986e7', inner:'#5f7dc7', face:'#f6ebff', trim:'#4f508d', halo:'#e5d7ff', spark:'#fff5ff'}),
-  general: svg => _setJourneyAvatar(svg, '守', {id:'av-ge', outer:'#a986e7', inner:'#5f7dc7', face:'#f6ebff', trim:'#4f508d', halo:'#e5d7ff', spark:'#fff5ff'})
-};
+function _drawSvgImageWithFallback(svgEl, candidates, viewBox, fallbackRenderer) {
+  const paths = uniqueAssetPaths(candidates);
+  const req = String(Date.now()) + Math.random().toString(16).slice(2);
+  svgEl.dataset.spriteReq = req;
+  if (!paths.length) {
+    fallbackRenderer();
+    return;
+  }
+  const tryPath = idx => {
+    if (svgEl.dataset.spriteReq !== req) return;
+    if (idx >= paths.length) {
+      fallbackRenderer();
+      return;
+    }
+    const src = paths[idx];
+    const probe = new Image();
+    probe.onload = () => {
+      if (svgEl.dataset.spriteReq !== req) return;
+      _renderSvgImage(svgEl, src, viewBox);
+    };
+    probe.onerror = () => tryPath(idx + 1);
+    probe.src = src;
+  };
+  tryPath(0);
+}
+
+function getHeroImageCandidates(heroKey) {
+  const hero = ALL_HEROES.find(h => h.key === heroKey);
+  if (!hero) return [];
+  const idx = ALL_HEROES.indexOf(hero) + 1;
+  const idx2 = String(idx).padStart(2, '0');
+  const slug = slugifyAssetName(hero.nameEn || hero.key);
+  return uniqueAssetPaths([
+    `sprites/heroes/${hero.key}.webp`,
+    `sprites/heroes/${slug}.webp`,
+    `sprites/heroes/${idx2}-${slug}.webp`,
+    `sprites/characters/heroes/${hero.key}.webp`,
+    `sprites/characters/heroes/${idx2}-${slug}.webp`,
+  ]);
+}
+
+function getSoldierImageCandidates(provId, soldierEn) {
+  const id2 = String(provId).padStart(2, '0');
+  const slug = slugifyAssetName(soldierEn || `soldier-${id2}`);
+  return uniqueAssetPaths([
+    `sprites/enemies/soldiers/${id2}-${slug}.webp`,
+    `sprites/enemies/soldiers/soldier_${id2}.webp`,
+    `sprites/enemies/soldiers/${id2}.webp`,
+    `sprites/enemies/${id2}-${slug}.webp`,
+  ]);
+}
+
+function getGeneralImageCandidates(provId, nameEn) {
+  const id2 = String(provId).padStart(2, '0');
+  const slug = slugifyAssetName(nameEn || `general-${id2}`);
+  return uniqueAssetPaths([
+    `sprites/enemies/generals/${id2}-${slug}.webp`,
+    `sprites/enemies/generals/${slug}.webp`,
+    `sprites/enemies/generals/general_${id2}.webp`,
+    `sprites/enemies/generals/${id2}.webp`,
+    `sprites/enemies/${id2}-${slug}.webp`,
+    'sprites/enemies/generals/general.webp',
+    'sprites/enemies/general.webp',
+    'sprites/enemies/guardian.webp',
+  ]);
+}
+
+function getEnemyImageCandidates(spriteKey, meta) {
+  if (!spriteKey) return [];
+  if (HERO_KEY_SET.has(spriteKey)) return getHeroImageCandidates(spriteKey);
+  if (String(spriteKey).startsWith('soldier_')) {
+    const provId = Number(String(spriteKey).slice(8));
+    return getSoldierImageCandidates(Number.isFinite(provId) ? provId : 0, meta && meta.soldierEn);
+  }
+  if (spriteKey === 'soldier') {
+    const pid = Number(meta && meta.provId);
+    return getSoldierImageCandidates(Number.isFinite(pid) ? pid : 0, meta && meta.soldierEn);
+  }
+  if (spriteKey === 'general' || spriteKey === 'guardian') {
+    const pid = Number(meta && meta.provId);
+    return getGeneralImageCandidates(Number.isFinite(pid) ? pid : 0, meta && meta.nameEn);
+  }
+  return uniqueAssetPaths([
+    `sprites/enemies/${spriteKey}.webp`,
+    `sprites/enemies/generals/${spriteKey}.webp`,
+    'sprites/enemies/generals/general.webp',
+  ]);
+}
 
 function drawHeroInSvg(svgEl, heroKey) {
-  if (HERO_SPRITES[heroKey]) HERO_SPRITES[heroKey](svgEl);
-  else if (ENEMY_SPRITES[heroKey]) ENEMY_SPRITES[heroKey](svgEl);
-  else ENEMY_SPRITES.general(svgEl);
+  const hero = ALL_HEROES.find(h => h.key === heroKey);
+  const candidates = getHeroImageCandidates(heroKey);
+  _drawSvgImageWithFallback(
+    svgEl,
+    candidates,
+    '0 0 64 80',
+    () => _drawAvatarFallback(svgEl, HERO_EMOJI_FALLBACK[heroKey] || '守', hero ? hero.name : 'Guardian')
+  );
+}
+
+function drawEnemyInSvg(svgEl, spriteKey, meta) {
+  const label = (meta && (meta.name || meta.nameEn)) || '守卫';
+  const candidates = getEnemyImageCandidates(spriteKey, meta || {});
+  _drawSvgImageWithFallback(svgEl, candidates, '0 0 64 80', () => _drawAvatarFallback(svgEl, '守', label));
+}
+
+function getChapterArtCandidates(chapter) {
+  const rawNum = String(chapter.id || '').replace(/^[^0-9]+/, '');
+  const num = Number(rawNum) || 0;
+  const id2 = String(num).padStart(2, '0');
+  const slug = slugifyAssetName(chapter.titleEn || chapter.title || chapter.id);
+  return uniqueAssetPaths([
+    `sprites/chapters/${chapter.id}.webp`,
+    `sprites/chapters/${id2}-${slug}.webp`,
+    `sprites/chapter-art/${chapter.id}.webp`,
+    `sprites/chapter-art/${id2}-${slug}.webp`,
+  ]);
+}
+
+function renderChapterArt(container, chapter) {
+  const req = String(Date.now()) + Math.random().toString(16).slice(2);
+  container.dataset.chapterReq = req;
+  const candidates = getChapterArtCandidates(chapter);
+  const fallback = () => {
+    if (container.dataset.chapterReq !== req) return;
+    container.innerHTML = `<div style="font-size:72px;text-align:center;padding:20px">${chapter.illus}</div>`;
+  };
+  if (!candidates.length) {
+    fallback();
+    return;
+  }
+  const tryPath = idx => {
+    if (container.dataset.chapterReq !== req) return;
+    if (idx >= candidates.length) {
+      fallback();
+      return;
+    }
+    const src = candidates[idx];
+    const probe = new Image();
+    probe.onload = () => {
+      if (container.dataset.chapterReq !== req) return;
+      container.innerHTML = `<img src="${src}" alt="${chapter.title}" style="display:block;width:100%;height:auto;max-height:280px;object-fit:cover">`;
+    };
+    probe.onerror = () => tryPath(idx + 1);
+    probe.src = src;
+  };
+  tryPath(0);
 }
 
 
@@ -1165,12 +1338,7 @@ function updateHeroTokenSprite() {
   const rosterKey = (campaignMode === 'coop' && RTCOOP.myRole) ? RTCOOP.myRole : campaignMode;
   const roster = playerRosters[rosterKey];
   const key = (roster && roster.startHero) || ALL_HEROES[0].key;
-  // Write sprite directly — the svg viewBox="0 0 64 80" handles all scaling
-  const tmp = document.createElementNS('http://www.w3.org/2000/svg','svg');
-  if (HERO_SPRITES[key]) HERO_SPRITES[key](tmp);
-  else if (ENEMY_SPRITES[key]) ENEMY_SPRITES[key](tmp);
-  else ENEMY_SPRITES.general(tmp);
-  svg.innerHTML = tmp.innerHTML;
+  drawHeroInSvg(svg, getHeroSpriteKey(key));
 }
 
 /* ===========================================================
@@ -1689,9 +1857,6 @@ const PROVINCE_GENERALS = [
 PROVINCE_GENERALS.forEach(general => {
   const soldierKey = getSoldierSpriteKey(general.id);
   general.soldierSprite = soldierKey;
-  if (!ENEMY_SPRITES[soldierKey]) {
-    ENEMY_SPRITES[soldierKey] = ENEMY_SPRITES.soldier;
-  }
 });
 
 // Track which generals have been defeated (persisted in campaign save)
@@ -1722,7 +1887,7 @@ function spawnEnemy(provId) {
         name: general.name, nameEn: general.nameEn,
         sprite: general.sprite,
         hp: general.hp + 5 + Math.floor(G.totalWaves / 2),
-        isGeneral: false, isCivilBoss: true,
+        isGeneral: false, isCivilBoss: true, provId: general.id,
         announce: general.name + '来辩论吧！'
       };
     } else {
@@ -1732,7 +1897,7 @@ function spawnEnemy(provId) {
       enemy = {
         name: act.name, nameEn: act.nameEn,
         sprite: 'build', buildActivity: act,
-        hp: bites, isGeneral: false,
+        hp: bites, isGeneral: false, provId: general.id,
         announce: act.announce
       };
     }
@@ -1750,7 +1915,7 @@ function spawnEnemy(provId) {
         name: general.name, nameEn: general.nameEn,
         sprite: general.sprite,
         hp: general.hp + 5 + Math.floor(G.totalWaves / 2),
-        isGeneral: false, isCivilBoss: true,
+        isGeneral: false, isCivilBoss: true, provId: general.id,
         announce: general.name + '共饮一杯！'
       };
     } else {
@@ -1759,7 +1924,7 @@ function spawnEnemy(provId) {
       enemy = {
         name: course.name, nameEn: course.nameEn,
         sprite: 'feast', feastCourse: course,
-        hp: 7, isGeneral: false,
+        hp: 7, isGeneral: false, provId: general.id,
         announce: course.announce
       };
     }
@@ -1770,7 +1935,7 @@ function spawnEnemy(provId) {
         name: general.name, nameEn: general.nameEn,
         sprite: general.sprite,
         hp: general.hp + 5 + Math.floor(G.totalWaves / 2),
-        isGeneral: true, announce: general.name + '出现！'
+        isGeneral: true, provId: general.id, announce: general.name + '出现！'
       };
       // Option D: grey out answer grid immediately (before speech starts) then show battle cry
       const _hasCry = !!(GENERAL_CRIES && GENERAL_CRIES[general.name]);
@@ -1785,7 +1950,7 @@ function spawnEnemy(provId) {
         name: general.soldierName, nameEn: general.soldierEn,
         sprite: general.soldierSprite || getSoldierSpriteKey(general.id),
         hp: 5 + Math.floor(G.wave * 0.7),
-        isGeneral: false, announce: general.soldierName + '出现！'
+        isGeneral: false, provId: general.id, soldierEn: general.soldierEn, announce: general.soldierName + '出现！'
       };
     }
   }
@@ -1804,7 +1969,7 @@ function spawnEnemy(provId) {
 
 // Use inline Journey avatars for all companions and guardians
 function getHeroSpriteKey(key) {
-  return HERO_SPRITES[key] ? key : 'guardian';
+  return HERO_KEY_SET.has(key) ? key : 'sanzang';
 }
 
 
@@ -3489,10 +3654,12 @@ function showProvinceStory(provId, onContinue) {
 
   const svg = document.getElementById('story-general-svg');
   if (svg) {
-    const tmp = document.createElementNS('http://www.w3.org/2000/svg','svg');
-    const spriteKey = ENEMY_SPRITES[general.sprite] ? general.sprite : 'general';
-    if (ENEMY_SPRITES[spriteKey]) ENEMY_SPRITES[spriteKey](tmp);
-    svg.innerHTML = tmp.innerHTML;
+    drawEnemyInSvg(svg, general.sprite || 'general', {
+      provId: general.id,
+      name: general.name,
+      nameEn: general.nameEn,
+      soldierEn: general.soldierEn,
+    });
   }
 
   showScr('scr-story');
@@ -3594,7 +3761,7 @@ function openChapter(ch) {
   _currentChapterZh = ch.zh;
   document.getElementById('chapter-title-bar').textContent = ch.title + '　' + ch.titleEn;
   const illusEl = document.getElementById('chapter-illus');
-  if (illusEl) illusEl.innerHTML = CHAPTER_ART[ch.id] || `<div style="font-size:72px;text-align:center;padding:20px">${ch.illus}</div>`;
+  if (illusEl) renderChapterArt(illusEl, ch);
   document.getElementById('chapter-zh').textContent = ch.zh;
   document.getElementById('chapter-en').textContent = ch.en;
   showScr('scr-story-chapter');

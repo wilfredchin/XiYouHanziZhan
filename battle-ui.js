@@ -23,8 +23,12 @@ function renderEnemy() {
   } else {
     svg.setAttribute('width','128'); svg.setAttribute('height','159');
     svg.setAttribute('viewBox','0 0 64 80');
-    if (ENEMY_SPRITES[e.sprite]) ENEMY_SPRITES[e.sprite](svg);
-    else if (ENEMY_SPRITES.general) ENEMY_SPRITES.general(svg);
+    drawEnemyInSvg(svg, e.sprite || 'general', {
+      provId: e.provId,
+      name: e.name,
+      nameEn: e.nameEn,
+      soldierEn: e.soldierEn,
+    });
   }
   const ann = e.announce || (e.name + '出现！');
   G._waitingForAnnounce = true;
@@ -144,27 +148,24 @@ function updateEnemyHp() {
   document.getElementById('enemy-hp-wrap').className = 'enemy-hp-wrap' + (isBlue ? ' blue' : '');
 }
 
-function _heroSpriteHTML(key) {
-  const tmp = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-  drawHeroInSvg(tmp, key);
-  return tmp.innerHTML;
-}
-
 function renderHeroBars() {
   const cont = document.getElementById('hero-bars');
   cont.innerHTML = G.heroes.map((h,i)=>{
     const label = rtcoopHeroBarLabel(h, i);
-    const spriteHTML = _heroSpriteHTML(getHeroSpriteKey(h.key));
     return `
     <div class="hero-bar" id="hb-${i}">
       <div class="hero-bar-top">
-        <svg class="hb-icon" viewBox="0 0 64 80" id="hb-svg-${i}">${spriteHTML}</svg>
+        <svg class="hb-icon" viewBox="0 0 64 80" id="hb-svg-${i}"></svg>
         <span class="hb-name">${label}</span>
         <span class="hb-hp" id="hb-hp-${i}">${h.hp}/${h.maxHp}</span>
       </div>
       <div class="hp-bg"><div class="hp-fill" id="hb-fill-${i}" style="width:${h.hp/h.maxHp*100}%"></div></div>
     </div>`;
   }).join('');
+  G.heroes.forEach((h, i) => {
+    const svg = document.getElementById('hb-svg-' + i);
+    if (svg) drawHeroInSvg(svg, getHeroSpriteKey(h.key));
+  });
 }
 
 function updateHeroBars() {
