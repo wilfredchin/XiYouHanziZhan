@@ -1,0 +1,27 @@
+{
+  "name": "西游汉字路 — Journey to the West",
+  "short_name": "西游汉字路",
+  "description": "Learn Mandarin Chinese through the Journey to the West — complete 81 trials with the pilgrim party",
+  "start_url": "https://wilfredchin.github.io/XiYouHanziZhan/index.html",
+  "id": "https://wilfredchin.github.io/XiYouHanziZhan/index.html",
+  "scope": "https://wilfredchin.github.io/XiYouHanziZhan/",
+  "display": "fullscreen",
+  "orientation": "portrait",
+  "background_color": "#110d1f",
+  "theme_color": "#d4a843",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "https://wilfredchin.github.io/XiYouHanziZhan/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://wilfredchin.github.io/XiYouHanziZhan/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
