@@ -1,0 +1,141 @@
+﻿category,id,name_zh,name_en,source_context,suggested_file,notes
+logo,logo,西游汉字路,Journey Chinese Road,index.html title logo,sprites/logo.webp,App title mark
+hero,sanzang,唐三藏,Tang Sanzang,game-data.js ALL_HEROES,sprites/heroes/sanzang.webp,Hero portrait
+hero,wukong,孙悟空,Sun Wukong,game-data.js ALL_HEROES,sprites/heroes/wukong.webp,Hero portrait
+hero,bajie,猪八戒,Zhu Bajie,game-data.js ALL_HEROES,sprites/heroes/bajie.webp,Hero portrait
+hero,wujing,沙悟净,Sha Wujing,game-data.js ALL_HEROES,sprites/heroes/wujing.webp,Hero portrait
+hero,whitehorse,白龙马,White Dragon Horse,game-data.js ALL_HEROES,sprites/heroes/whitehorse.webp,Hero portrait
+hero,guanyin,观音,Guanyin,game-data.js ALL_HEROES,sprites/heroes/guanyin.webp,Hero portrait
+hero,nezha,哪吒,Nezha,game-data.js ALL_HEROES,sprites/heroes/nezha.webp,Hero portrait
+hero,erlang,二郎神,Erlang Shen,game-data.js ALL_HEROES,sprites/heroes/erlang.webp,Hero portrait
+enemy_generic,general,通用守将,General Guardian,index.html enemy fallback,sprites/enemies/generals/general.webp,Generic fallback enemy
+enemy_generic,guardian,护卫,Guardian,index.html enemy fallback,sprites/enemies/guardian.webp,Generic fallback enemy
+enemy_generic,soldier,通用妖兵,Soldier,index.html enemy fallback,sprites/enemies/soldier.webp,Generic fallback enemy
+province_general,general_00,唐太宗,Emperor Taizong,PROVINCE_GENERALS[0] boss,sprites/enemies/generals/00-emperor-taizong.webp,Province general portrait
+enemy_soldier,soldier_00,大唐仪卫,Imperial Guard,PROVINCE_GENERALS[0] soldier,sprites/enemies/soldiers/00-imperial-guard.webp,Province soldier
+province_general,general_01,法明长老,Master Faming,PROVINCE_GENERALS[1] boss,sprites/enemies/generals/01-master-faming.webp,Province general portrait
+enemy_soldier,soldier_01,寺院行者,Temple Novice,PROVINCE_GENERALS[1] soldier,sprites/enemies/soldiers/01-temple-novice.webp,Province soldier
+province_general,general_02,刘伯钦,Hunter Liu,PROVINCE_GENERALS[2] boss,sprites/enemies/generals/02-hunter-liu.webp,Province general portrait
+enemy_soldier,soldier_02,山路向导,Mountain Guide,PROVINCE_GENERALS[2] soldier,sprites/enemies/soldiers/02-mountain-guide.webp,Province soldier
+province_general,general_03,寅将军,General Yin,PROVINCE_GENERALS[3] boss,sprites/enemies/generals/03-general-yin.webp,Province general portrait
+enemy_soldier,soldier_03,林间虎妖,Forest Tiger Spirit,PROVINCE_GENERALS[3] soldier,sprites/enemies/soldiers/03-forest-tiger-spirit.webp,Province soldier
+province_general,general_04,孙悟空,Sun Wukong,PROVINCE_GENERALS[4] boss,sprites/enemies/generals/04-sun-wukong.webp,Province general portrait
+enemy_soldier,soldier_04,石猴残影,Stone Monkey Shade,PROVINCE_GENERALS[4] soldier,sprites/enemies/soldiers/04-stone-monkey-shade.webp,Province soldier
+province_general,general_05,山神土地,Mountain Spirits,PROVINCE_GENERALS[5] boss,sprites/enemies/generals/05-mountain-spirits.webp,Province general portrait
+enemy_soldier,soldier_05,庙前香火,Shrine Warden,PROVINCE_GENERALS[5] soldier,sprites/enemies/soldiers/05-shrine-warden.webp,Province soldier
+province_general,general_06,白龙马,White Dragon Horse,PROVINCE_GENERALS[6] boss,sprites/enemies/generals/06-white-dragon-horse.webp,Province general portrait
+enemy_soldier,soldier_06,涧水龙影,Ravine Spirit,PROVINCE_GENERALS[6] soldier,sprites/enemies/soldiers/06-ravine-spirit.webp,Province soldier
+province_general,general_07,金池长老,Elder Jinchi,PROVINCE_GENERALS[7] boss,sprites/enemies/generals/07-elder-jinchi.webp,Province general portrait
+enemy_soldier,soldier_07,禅院僧众,Cloister Monk,PROVINCE_GENERALS[7] soldier,sprites/enemies/soldiers/07-cloister-monk.webp,Province soldier
+province_general,general_08,黑熊精,Black Bear Demon,PROVINCE_GENERALS[8] boss,sprites/enemies/generals/08-black-bear-demon.webp,Province general portrait
+enemy_soldier,soldier_08,黑风小妖,Black Wind Fiend,PROVINCE_GENERALS[8] soldier,sprites/enemies/soldiers/08-black-wind-fiend.webp,Province soldier
+province_general,general_09,高太公,Elder Gao,PROVINCE_GENERALS[9] boss,sprites/enemies/generals/09-elder-gao.webp,Province general portrait
+enemy_soldier,soldier_09,庄院家仆,Manor Servant,PROVINCE_GENERALS[9] soldier,sprites/enemies/soldiers/09-manor-servant.webp,Province soldier
+province_general,general_10,猪八戒,Zhu Bajie,PROVINCE_GENERALS[10] boss,sprites/enemies/generals/10-zhu-bajie.webp,Province general portrait
+enemy_soldier,soldier_10,福陵野猪,Fuling Boar,PROVINCE_GENERALS[10] soldier,sprites/enemies/soldiers/10-fuling-boar.webp,Province soldier
+province_general,general_11,黄风大王,Yellow Wind Demon,PROVINCE_GENERALS[11] boss,sprites/enemies/generals/11-yellow-wind-demon.webp,Province general portrait
+enemy_soldier,soldier_11,黄风小妖,Wind Imp,PROVINCE_GENERALS[11] soldier,sprites/enemies/soldiers/11-wind-imp.webp,Province soldier
+province_general,general_12,沙悟净,Sha Wujing,PROVINCE_GENERALS[12] boss,sprites/enemies/generals/12-sha-wujing.webp,Province general portrait
+enemy_soldier,soldier_12,流沙水鬼,River Wraith,PROVINCE_GENERALS[12] soldier,sprites/enemies/soldiers/12-river-wraith.webp,Province soldier
+province_general,general_13,尸魔先锋,Corpse Fiend Scout,PROVINCE_GENERALS[13] boss,sprites/enemies/generals/13-corpse-fiend-scout.webp,Province general portrait
+enemy_soldier,soldier_13,荒岭孤魂,Grave Wraith,PROVINCE_GENERALS[13] soldier,sprites/enemies/soldiers/13-grave-wraith.webp,Province soldier
+province_general,general_14,镇元子,Zhenyuanzi,PROVINCE_GENERALS[14] boss,sprites/enemies/generals/14-zhenyuanzi.webp,Province general portrait
+enemy_soldier,soldier_14,人参守童,Ginseng Keeper,PROVINCE_GENERALS[14] soldier,sprites/enemies/soldiers/14-ginseng-keeper.webp,Province soldier
+province_general,general_15,清风道童,Acolyte Qingfeng,PROVINCE_GENERALS[15] boss,sprites/enemies/generals/15-acolyte-qingfeng.webp,Province general portrait
+enemy_soldier,soldier_15,观中童子,Abbey Acolyte,PROVINCE_GENERALS[15] soldier,sprites/enemies/soldiers/15-abbey-acolyte.webp,Province soldier
+province_general,general_16,白骨精,White Bone Demon,PROVINCE_GENERALS[16] boss,sprites/enemies/generals/16-white-bone-demon.webp,Province general portrait
+enemy_soldier,soldier_16,骷髅幻影,Bone Phantom,PROVINCE_GENERALS[16] soldier,sprites/enemies/soldiers/16-bone-phantom.webp,Province soldier
+province_general,general_17,宝象国主,King of Baoxiang,PROVINCE_GENERALS[17] boss,sprites/enemies/generals/17-king-of-baoxiang.webp,Province general portrait
+enemy_soldier,soldier_17,宫城宿卫,Palace Retainer,PROVINCE_GENERALS[17] soldier,sprites/enemies/soldiers/17-palace-retainer.webp,Province soldier
+province_general,general_18,黄袍怪,Yellow Robe Demon,PROVINCE_GENERALS[18] boss,sprites/enemies/generals/18-yellow-robe-demon.webp,Province general portrait
+enemy_soldier,soldier_18,洞府妖兵,Cave Fiend,PROVINCE_GENERALS[18] soldier,sprites/enemies/soldiers/18-cave-fiend.webp,Province soldier
+province_general,general_19,金角大王,Gold Horn King,PROVINCE_GENERALS[19] boss,sprites/enemies/generals/19-gold-horn-king.webp,Province general portrait
+enemy_soldier,soldier_19,金角小妖,Gold Horn Imp,PROVINCE_GENERALS[19] soldier,sprites/enemies/soldiers/19-gold-horn-imp.webp,Province soldier
+province_general,general_20,银角大王,Silver Horn King,PROVINCE_GENERALS[20] boss,sprites/enemies/generals/20-silver-horn-king.webp,Province general portrait
+enemy_soldier,soldier_20,银角小妖,Silver Horn Imp,PROVINCE_GENERALS[20] soldier,sprites/enemies/soldiers/20-silver-horn-imp.webp,Province soldier
+province_general,general_21,乌鸡国王,King of Crow-Cock,PROVINCE_GENERALS[21] boss,sprites/enemies/generals/21-king-of-crow-cock.webp,Province general portrait
+enemy_soldier,soldier_21,井底幽魂,Well Spirit,PROVINCE_GENERALS[21] soldier,sprites/enemies/soldiers/21-well-spirit.webp,Province soldier
+province_general,general_22,虎力大仙,Tiger Power Immortal,PROVINCE_GENERALS[22] boss,sprites/enemies/generals/22-tiger-power-immortal.webp,Province general portrait
+enemy_soldier,soldier_22,车迟道士,Court Taoist,PROVINCE_GENERALS[22] soldier,sprites/enemies/soldiers/22-court-taoist.webp,Province soldier
+province_general,general_23,灵感大王,Great King Linggan,PROVINCE_GENERALS[23] boss,sprites/enemies/generals/23-great-king-linggan.webp,Province general portrait
+enemy_soldier,soldier_23,河府水妖,River Demon,PROVINCE_GENERALS[23] soldier,sprites/enemies/soldiers/23-river-demon.webp,Province soldier
+province_general,general_24,青牛精,Green Bull Demon,PROVINCE_GENERALS[24] boss,sprites/enemies/generals/24-green-bull-demon.webp,Province general portrait
+enemy_soldier,soldier_24,金圈妖卒,Metal Ring Fiend,PROVINCE_GENERALS[24] soldier,sprites/enemies/soldiers/24-metal-ring-fiend.webp,Province soldier
+province_general,general_25,女儿国王,Queen of Woman Kingdom,PROVINCE_GENERALS[25] boss,sprites/enemies/generals/25-queen-of-woman-kingdom.webp,Province general portrait
+enemy_soldier,soldier_25,宫中侍从,Palace Attendant,PROVINCE_GENERALS[25] soldier,sprites/enemies/soldiers/25-palace-attendant.webp,Province soldier
+province_general,general_26,子母河神,Mother River Spirit,PROVINCE_GENERALS[26] boss,sprites/enemies/generals/26-mother-river-spirit.webp,Province general portrait
+enemy_soldier,soldier_26,怪泉水影,River Shade,PROVINCE_GENERALS[26] soldier,sprites/enemies/soldiers/26-river-shade.webp,Province soldier
+province_general,general_27,如意真仙,Ruyi Zhenxian,PROVINCE_GENERALS[27] boss,sprites/enemies/generals/27-ruyi-zhenxian.webp,Province general portrait
+enemy_soldier,soldier_27,药泉童子,Spring Acolyte,PROVINCE_GENERALS[27] soldier,sprites/enemies/soldiers/27-spring-acolyte.webp,Province soldier
+province_general,general_28,蝎子精,Scorpion Demon,PROVINCE_GENERALS[28] boss,sprites/enemies/generals/28-scorpion-demon.webp,Province general portrait
+enemy_soldier,soldier_28,毒尾妖姬,Poison Fiend,PROVINCE_GENERALS[28] soldier,sprites/enemies/soldiers/28-poison-fiend.webp,Province soldier
+province_general,general_29,枯松山神,Dry Pine Spirit,PROVINCE_GENERALS[29] boss,sprites/enemies/generals/29-dry-pine-spirit.webp,Province general portrait
+enemy_soldier,soldier_29,松烟妖影,Pine Shade,PROVINCE_GENERALS[29] soldier,sprites/enemies/soldiers/29-pine-shade.webp,Province soldier
+province_general,general_30,红孩儿,Red Boy,PROVINCE_GENERALS[30] boss,sprites/enemies/generals/30-red-boy.webp,Province general portrait
+enemy_soldier,soldier_30,火云小妖,Fire Cloud Imp,PROVINCE_GENERALS[30] soldier,sprites/enemies/soldiers/30-fire-cloud-imp.webp,Province soldier
+province_general,general_31,祭赛国主,King of Sacrifice,PROVINCE_GENERALS[31] boss,sprites/enemies/generals/31-king-of-sacrifice.webp,Province general portrait
+enemy_soldier,soldier_31,舍利守卫,Relic Guard,PROVINCE_GENERALS[31] soldier,sprites/enemies/soldiers/31-relic-guard.webp,Province soldier
+province_general,general_32,金光寺僧,Golden Light Abbot,PROVINCE_GENERALS[32] boss,sprites/enemies/generals/32-golden-light-abbot.webp,Province general portrait
+enemy_soldier,soldier_32,寺门护灯,Temple Sentinel,PROVINCE_GENERALS[32] soldier,sprites/enemies/soldiers/32-temple-sentinel.webp,Province soldier
+province_general,general_33,黄眉老佛,Yellowbrow Great King,PROVINCE_GENERALS[33] boss,sprites/enemies/generals/33-yellowbrow-great-king.webp,Province general portrait
+enemy_soldier,soldier_33,假佛随从,False Monk,PROVINCE_GENERALS[33] soldier,sprites/enemies/soldiers/33-false-monk.webp,Province soldier
+province_general,general_34,七绝山怪,Seven-Extinction Fiend,PROVINCE_GENERALS[34] boss,sprites/enemies/generals/34-seven-extinction-fiend.webp,Province general portrait
+enemy_soldier,soldier_34,泥沼怪影,Marsh Spirit,PROVINCE_GENERALS[34] soldier,sprites/enemies/soldiers/34-marsh-spirit.webp,Province soldier
+province_general,general_35,朱紫国王,King of Scarlet Purple,PROVINCE_GENERALS[35] boss,sprites/enemies/generals/35-king-of-scarlet-purple.webp,Province general portrait
+enemy_soldier,soldier_35,御医侍从,Court Physician,PROVINCE_GENERALS[35] soldier,sprites/enemies/soldiers/35-court-physician.webp,Province soldier
+province_general,general_36,赛太岁,Sai Tai Sui,PROVINCE_GENERALS[36] boss,sprites/enemies/generals/36-sai-tai-sui.webp,Province general portrait
+enemy_soldier,soldier_36,妖宫亲卫,Cave Guard,PROVINCE_GENERALS[36] soldier,sprites/enemies/soldiers/36-cave-guard.webp,Province soldier
+province_general,general_37,蜘蛛精,Spider Demon,PROVINCE_GENERALS[37] boss,sprites/enemies/generals/37-spider-demon.webp,Province general portrait
+enemy_soldier,soldier_37,盘丝小妖,Web Spinner,PROVINCE_GENERALS[37] soldier,sprites/enemies/soldiers/37-web-spinner.webp,Province soldier
+province_general,general_38,百眼魔君,Hundred-Eyed Demon Lord,PROVINCE_GENERALS[38] boss,sprites/enemies/generals/38-hundred-eyed-demon-lord.webp,Province general portrait
+enemy_soldier,soldier_38,黄花道众,Poison Adept,PROVINCE_GENERALS[38] soldier,sprites/enemies/soldiers/38-poison-adept.webp,Province soldier
+province_general,general_39,大鹏王,Great Roc King,PROVINCE_GENERALS[39] boss,sprites/enemies/generals/39-great-roc-king.webp,Province general portrait
+enemy_soldier,soldier_39,狮驼妖兵,Ridge Fiend,PROVINCE_GENERALS[39] soldier,sprites/enemies/soldiers/39-ridge-fiend.webp,Province soldier
+province_general,general_40,火焰山神,Flame Mountain Spirit,PROVINCE_GENERALS[40] boss,sprites/enemies/generals/40-flame-mountain-spirit.webp,Province general portrait
+enemy_soldier,soldier_40,山火精灵,Ember Sprite,PROVINCE_GENERALS[40] soldier,sprites/enemies/soldiers/40-ember-sprite.webp,Province soldier
+province_general,general_41,铁扇公主,Princess Iron Fan,PROVINCE_GENERALS[41] boss,sprites/enemies/generals/41-princess-iron-fan.webp,Province general portrait
+enemy_soldier,soldier_41,翠云侍女,Fan Attendant,PROVINCE_GENERALS[41] soldier,sprites/enemies/soldiers/41-fan-attendant.webp,Province soldier
+province_general,general_42,牛魔王,Bull Demon King,PROVINCE_GENERALS[42] boss,sprites/enemies/generals/42-bull-demon-king.webp,Province general portrait
+enemy_soldier,soldier_42,积雷妖卒,Jilei Fiend,PROVINCE_GENERALS[42] soldier,sprites/enemies/soldiers/42-jilei-fiend.webp,Province soldier
+province_general,general_43,白鹿精,White Deer Spirit,PROVINCE_GENERALS[43] boss,sprites/enemies/generals/43-white-deer-spirit.webp,Province general portrait
+enemy_soldier,soldier_43,续命邪徒,Corrupt Acolyte,PROVINCE_GENERALS[43] soldier,sprites/enemies/soldiers/43-corrupt-acolyte.webp,Province soldier
+province_general,general_44,地涌夫人,Lady Earth-Flow,PROVINCE_GENERALS[44] boss,sprites/enemies/generals/44-lady-earth-flow.webp,Province general portrait
+enemy_soldier,soldier_44,地窟魅影,Cavern Shadow,PROVINCE_GENERALS[44] soldier,sprites/enemies/soldiers/44-cavern-shadow.webp,Province soldier
+province_general,general_45,九灵元圣,Nine-Headed Lion,PROVINCE_GENERALS[45] boss,sprites/enemies/generals/45-nine-headed-lion.webp,Province general portrait
+enemy_soldier,soldier_45,玉华兽影,Lion Shade,PROVINCE_GENERALS[45] soldier,sprites/enemies/soldiers/45-lion-shade.webp,Province soldier
+province_general,general_46,天竺佛使,Buddhist Envoy,PROVINCE_GENERALS[46] boss,sprites/enemies/generals/46-buddhist-envoy.webp,Province general portrait
+enemy_soldier,soldier_46,佛土护法,Pilgrim Guardian,PROVINCE_GENERALS[46] soldier,sprites/enemies/soldiers/46-pilgrim-guardian.webp,Province soldier
+province_general,general_47,如来佛祖,Tathagata Buddha,PROVINCE_GENERALS[47] boss,sprites/enemies/generals/47-tathagata-buddha.webp,Province general portrait
+enemy_soldier,soldier_47,雷音守卫,Thunderclap Guardian,PROVINCE_GENERALS[47] soldier,sprites/enemies/soldiers/47-thunderclap-guardian.webp,Province soldier
+chapter_art,c1,石猴出世,Birth of the Stone Monkey,game-data.js STORY_CHAPTERS,sprites/chapters/c1.webp,Chapter story illustration
+chapter_art,c2,大闹天宫,Havoc in Heaven,game-data.js STORY_CHAPTERS,sprites/chapters/c2.webp,Chapter story illustration
+chapter_art,c3,五行山下,Beneath Five Elements Mountain,game-data.js STORY_CHAPTERS,sprites/chapters/c3.webp,Chapter story illustration
+chapter_art,c4,西行收徒,Gathering the Pilgrims,game-data.js STORY_CHAPTERS,sprites/chapters/c4.webp,Chapter story illustration
+chapter_art,c5,三打白骨精,Three Battles with the White Bone Demon,game-data.js STORY_CHAPTERS,sprites/chapters/c5.webp,Chapter story illustration
+chapter_art,c6,车迟斗法,Contest of Magic at Cart Slow Kingdom,game-data.js STORY_CHAPTERS,sprites/chapters/c6.webp,Chapter story illustration
+chapter_art,c7,女儿国,The Woman Kingdom,game-data.js STORY_CHAPTERS,sprites/chapters/c7.webp,Chapter story illustration
+chapter_art,c8,火云洞,The Fire Cloud Cave,game-data.js STORY_CHAPTERS,sprites/chapters/c8.webp,Chapter story illustration
+chapter_art,c9,盘丝洞,Spider Cave,game-data.js STORY_CHAPTERS,sprites/chapters/c9.webp,Chapter story illustration
+chapter_art,c10,狮驼岭,Lion Camel Ridge,game-data.js STORY_CHAPTERS,sprites/chapters/c10.webp,Chapter story illustration
+chapter_art,c11,火焰山,Flaming Mountain,game-data.js STORY_CHAPTERS,sprites/chapters/c11.webp,Chapter story illustration
+chapter_art,c12,雷音真经,The True Scriptures at Thunderclap,game-data.js STORY_CHAPTERS,sprites/chapters/c12.webp,Chapter story illustration
+obstacle_icon,build_01,过山关,Cross the Mountain Pass,BUILD_ACTIVITIES,icons/build-01.webp,Optional replacement for obstacle emoji
+obstacle_icon,build_02,渡急流,Cross the Torrent,BUILD_ACTIVITIES,icons/build-02.webp,Optional replacement for obstacle emoji
+obstacle_icon,build_03,破迷阵,Break the Illusion Maze,BUILD_ACTIVITIES,icons/build-03.webp,Optional replacement for obstacle emoji
+obstacle_icon,build_04,解封印,Release the Seal,BUILD_ACTIVITIES,icons/build-04.webp,Optional replacement for obstacle emoji
+obstacle_icon,build_05,借法宝,Borrow the Sacred Relic,BUILD_ACTIVITIES,icons/build-05.webp,Optional replacement for obstacle emoji
+obstacle_icon,build_06,平妖风,Calm the Demon Wind,BUILD_ACTIVITIES,icons/build-06.webp,Optional replacement for obstacle emoji
+obstacle_icon,build_07,越火海,Pass the Sea of Fire,BUILD_ACTIVITIES,icons/build-07.webp,Optional replacement for obstacle emoji
+obstacle_icon,build_08,开山门,Open the Mountain Gate,BUILD_ACTIVITIES,icons/build-08.webp,Optional replacement for obstacle emoji
+obstacle_icon,build_09,求渡船,Find the Ferryman,BUILD_ACTIVITIES,icons/build-09.webp,Optional replacement for obstacle emoji
+obstacle_icon,build_10,护经卷,Protect the Sutra Scrolls,BUILD_ACTIVITIES,icons/build-10.webp,Optional replacement for obstacle emoji
+temptation_icon,feast_01,妖宴,Demon Banquet,FEAST_COURSES,icons/feast-01.webp,Optional replacement for temptation emoji
+temptation_icon,feast_02,假经卷,False Sutra Scroll,FEAST_COURSES,icons/feast-02.webp,Optional replacement for temptation emoji
+temptation_icon,feast_03,幻宝殿,Hall of Illusory Treasures,FEAST_COURSES,icons/feast-03.webp,Optional replacement for temptation emoji
+temptation_icon,feast_04,迷魂茶,Bewitching Tea,FEAST_COURSES,icons/feast-04.webp,Optional replacement for temptation emoji
+temptation_icon,feast_05,温柔乡,Palace of Comfort,FEAST_COURSES,icons/feast-05.webp,Optional replacement for temptation emoji
+temptation_icon,feast_06,王宫宴,Royal Banquet,FEAST_COURSES,icons/feast-06.webp,Optional replacement for temptation emoji
+temptation_icon,feast_07,假师父,False Master,FEAST_COURSES,icons/feast-07.webp,Optional replacement for temptation emoji
+temptation_icon,feast_08,金银财,Piles of Gold and Silver,FEAST_COURSES,icons/feast-08.webp,Optional replacement for temptation emoji
+temptation_icon,feast_09,仙桃酒,Immortal Peaches and Wine,FEAST_COURSES,icons/feast-09.webp,Optional replacement for temptation emoji
+temptation_icon,feast_10,香火愿,Easy Promise of Merit,FEAST_COURSES,icons/feast-10.webp,Optional replacement for temptation emoji

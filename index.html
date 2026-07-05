@@ -900,7 +900,7 @@ function renderChapterArt(container, chapter) {
     const probe = new Image();
     probe.onload = () => {
       if (container.dataset.chapterReq !== req) return;
-      container.innerHTML = `<img src="${src}" alt="${chapter.title}" style="display:block;width:100%;height:auto;max-height:280px;object-fit:cover">`;
+      container.innerHTML = `<img src="${src}" alt="${chapter.title}" style="display:block;width:auto;height:auto;max-width:min(100%,800px);max-height:min(70vh,800px);object-fit:contain;margin:0 auto">`;
     };
     probe.onerror = () => tryPath(idx + 1);
     probe.src = src;
