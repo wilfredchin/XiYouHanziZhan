@@ -1,6 +1,6 @@
-const APP_CACHE = 'xiyou-hanzi-road-app-v9-r2';
-const RUNTIME_CACHE = 'xiyou-hanzi-road-runtime-v9-r2';
-const EXTERNAL_CACHE = 'xiyou-hanzi-road-external-v9-r2';
+const APP_CACHE = 'xiyou-hanzi-road-app-v10-r2';
+const RUNTIME_CACHE = 'xiyou-hanzi-road-runtime-v10-r2';
+const EXTERNAL_CACHE = 'xiyou-hanzi-road-external-v10-r2';
 const SCOPE_URL = new URL(self.registration.scope);
 const EXTERNAL_ORIGINS = new Set([
   'https://cdnjs.cloudflare.com',
