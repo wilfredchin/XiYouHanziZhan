@@ -1,10 +1,61 @@
-name: Pages - deploy
+name: Pages - deploy (stable with retries)
 on:
   push:
     branches: [ main ]
 
 jobs:
-  deploy:
+  prepare:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    outputs:
+      artifact-path: ./artifact
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare artifact directory (exclude .git and workflows)
+        run: |
+          rm -rf ./artifact
+          mkdir artifact
+          rsync -a --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='dist' --exclude='build' ./ ./artifact/
+
+      - name: Debug - list artifact summary and contents
+        run: |
+          echo "Artifact root size and top-level listing:"
+          du -sh ./artifact || true
+          echo "Top-level files in artifact:"
+          ls -la ./artifact || true
+          echo "Full tree (first 500 lines):"
+          find ./artifact -type f -print0 | xargs -0 ls -lh | sed -n '1,500p' || true
+          echo "Checking for index.html at artifact root..."
+          if [ -f "./artifact/index.html" ]; then
+            echo "index.html found at artifact root"
+          else
+            echo "::error::index.html not found at artifact root. Searching for index.*"
+            find ./artifact -iname 'index.*' -maxdepth 6 -print || true
+            exit 1
+          fi
+
+      - name: Check artifact size limit
+        run: |
+          total_bytes=$(du -sb ./artifact | cut -f1)
+          echo "artifact bytes: $total_bytes"
+          if [ "$total_bytes" -gt $((1024*1024*1024)) ]; then
+            echo "::error::Artifact exceeds 1GB ($total_bytes bytes). Pages may reject large deployments."
+            exit 1
+          fi
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./artifact
+          name: github-pages
+
+  deploy-attempt-1:
+    needs: prepare
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -13,22 +64,39 @@ jobs:
       pages: write
       id-token: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Prepare artifact (exclude .git and workflows)
-        run: |
-          rm -rf ./artifact
-          mkdir artifact
-          rsync -a --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='dist' --exclude='build' ./ ./artifact/
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy to GitHub Pages (attempt 1)
+        uses: actions/deploy-pages@v5
         with:
-          path: ./artifact
-          name: github-pages
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Deploy to GitHub Pages
+  deploy-attempt-2:
+    needs: prepare
+    if: needs.deploy-attempt-1.result != 'success'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy to GitHub Pages (attempt 2)
+        uses: actions/deploy-pages@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-attempt-3:
+    needs: prepare
+    if: needs.deploy-attempt-1.result != 'success' && needs.deploy-attempt-2.result != 'success'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - name: Deploy to GitHub Pages (attempt 3)
         uses: actions/deploy-pages@v5
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
