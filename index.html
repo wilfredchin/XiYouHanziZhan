@@ -912,6 +912,38 @@ function renderChapterArt(container, chapter) {
 function charToNumericLevel(c){return c.lvl||5;}
 function getCharPool(level){return CHARACTER_DB.filter(c=>charToNumericLevel(c)<=level);}
 
+const MK_STORAGE_PREFIX = 'mk_';
+function mkStorageKey(baseKey) {
+  return MK_STORAGE_PREFIX + baseKey;
+}
+function mkStorageGetItem(baseKey, fallback = null) {
+  const prefixedKey = mkStorageKey(baseKey);
+  try {
+    const prefixedValue = localStorage.getItem(prefixedKey);
+    if (prefixedValue !== null) return prefixedValue;
+    const legacyValue = localStorage.getItem(baseKey);
+    if (legacyValue !== null) {
+      localStorage.setItem(prefixedKey, legacyValue);
+      return legacyValue;
+    }
+  } catch (e) {}
+  return fallback;
+}
+function mkStorageSetItem(baseKey, value) {
+  try { localStorage.setItem(mkStorageKey(baseKey), value); } catch (e) {}
+}
+function mkStorageRemoveItem(baseKey) {
+  try { localStorage.removeItem(mkStorageKey(baseKey)); } catch (e) {}
+}
+function mkStorageReadJson(baseKey, fallback) {
+  const raw = mkStorageGetItem(baseKey);
+  if (raw === null || raw === undefined || raw === '') return fallback;
+  try { return JSON.parse(raw); } catch (e) { return fallback; }
+}
+function mkStorageWriteJson(baseKey, value) {
+  mkStorageSetItem(baseKey, JSON.stringify(value));
+}
+
 /* ===========================================================
    PLAYER SYSTEM
 =========================================================== */
@@ -924,13 +956,13 @@ let PLAYERS = []; // [{id:'p0', name:'…'}, …]
 
 function loadPlayers() {
   try {
-    const p = JSON.parse(localStorage.getItem('skz_players') || 'null');
+    const p = JSON.parse(mkStorageGetItem('skz_players', 'null'));
     if (Array.isArray(p) && p.length) { PLAYERS = p; return; }
   } catch(e) {}
   PLAYERS = [];
 }
 function savePlayers() {
-  try { localStorage.setItem('skz_players', JSON.stringify(PLAYERS)); } catch(e) {}
+  try { mkStorageSetItem('skz_players', JSON.stringify(PLAYERS)); } catch(e) {}
 }
 function getPlayerById(id) { return PLAYERS.find(p => p.id === id) || null; }
 function getPlayerEmoji(id) {
@@ -1125,7 +1157,7 @@ function normalizeCampaignSave(data) {
 =========================================================== */
 function saveCampaign(mode) {
   try {
-    const key = 'skz_campaign_' + mode;
+    const key = mkStorageKey('skz_campaign_' + mode);
     const existing = loadCampaign(mode) || {};
     localStorage.setItem(key, JSON.stringify({
       provState, playerProvId, defeatedGenerals:[...defeatedGenerals],
@@ -1139,7 +1171,7 @@ function saveCampaign(mode) {
 
 function loadCampaign(mode) {
   try {
-    const key = 'skz_campaign_' + mode;
+    const key = mkStorageKey('skz_campaign_' + mode);
     const raw = localStorage.getItem(key);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
@@ -1153,7 +1185,7 @@ function loadCampaign(mode) {
 }
 
 function clearCampaign(mode) {
-  try { localStorage.removeItem('skz_campaign_' + mode); } catch(e){}
+  try { localStorage.removeItem(mkStorageKey('skz_campaign_' + mode)); } catch(e){}
 }
 
 /* ===========================================================
@@ -1981,14 +2013,14 @@ let playerRosters = {
 
 function loadRosters() {
   try {
-    const r = JSON.parse(localStorage.getItem('skz_rosters')||'null');
+    const r = JSON.parse(mkStorageGetItem('skz_rosters', 'null'));
     if(r) playerRosters = r;
     // Ensure coop slot always exists
     if (!playerRosters.coop) playerRosters.coop = {roster:[], startHero:null};
   } catch(e){}
 }
 function saveRosters() {
-  try { localStorage.setItem('skz_rosters', JSON.stringify(playerRosters)); } catch(e){}
+  try { mkStorageSetItem('skz_rosters', JSON.stringify(playerRosters)); } catch(e){}
 }
 
 // Get battle party: startHero + 1 random other from roster (no cap on total roster)
@@ -2680,8 +2712,8 @@ function closeModal(){document.getElementById('char-modal').classList.remove('ac
    PERSISTENCE
 =========================================================== */
 function _progKey(mode) {
-  // Generic: skz_prog_<mode> works for any player ID ('p0','p1','coop',…)
-  return 'skz_prog_' + (mode || 'p0');
+  // Generic: mk_skz_prog_<mode> works for any player ID ('p0','p1','coop',…)
+  return mkStorageKey('skz_prog_' + (mode || 'p0'));
 }
 function loadProgress(mode){
   const key = _progKey(mode || campaignMode || PLAYERS[0]?.id || 'p0');
@@ -2841,7 +2873,7 @@ function doResetActive() {
     return;
   }
   try {
-    localStorage.removeItem('skz_campaign_' + mode);
+    mkStorageRemoveItem('skz_campaign_' + mode);
     if (playerRosters[mode]) { playerRosters[mode] = {roster:[], startHero:null}; saveRosters(); }
     if (typeof campaignMode !== 'undefined' && campaignMode === mode) {
       initProvState(); playerProvId = 0; defeatedGenerals = new Set();
@@ -2886,7 +2918,7 @@ function doResetAllActive() {
   }
   try {
     // Campaign state
-    localStorage.removeItem('skz_campaign_' + mode);
+    mkStorageRemoveItem('skz_campaign_' + mode);
     // Hero roster
     if (playerRosters[mode]) { playerRosters[mode] = {roster:[], startHero:null}; saveRosters(); }
     // Character mastery (per-user)
@@ -2895,7 +2927,7 @@ function doResetAllActive() {
     const hl = loadHeroLevels();
     if (hl[mode]) { delete hl[mode]; saveHeroLevels(hl); }
     // Campaign rating
-    localStorage.removeItem('skz_campaign_rating_' + mode);
+    mkStorageRemoveItem('skz_campaign_rating_' + mode);
     // Story chapters (shared — reset fully)
     saveUnlockedChapters([]);
     // Live state if currently active
@@ -2969,19 +3001,19 @@ function _decompress(raw) {
 
 /* == Per-user export / import / reset == */
 function _buildUserSave(mode) {
-  const rosters = JSON.parse(localStorage.getItem('skz_rosters') || '{}');
+  const rosters = JSON.parse(mkStorageGetItem('skz_rosters', '{}'));
   const userRoster = rosters[mode] || {roster:[], startHero:null};
   const heroLevels = loadHeroLevels();
   const campaignRating = loadCampaignRating(mode);
   return _compress({
     mode,
-    campaign: localStorage.getItem('skz_campaign_' + mode) || 'null',
+    campaign: localStorage.getItem(mkStorageKey('skz_campaign_' + mode)) || 'null',
     roster:   JSON.stringify(userRoster),
     chars:    localStorage.getItem(_progKey(mode)) || '{}',
-    diff:     localStorage.getItem('skz_diff') || 'null',
+    diff:     mkStorageGetItem('skz_diff', 'null'),
     heroLevels: JSON.stringify(heroLevels[mode] || {}),
     campaignRating: JSON.stringify(campaignRating),
-    chapters: localStorage.getItem('skz_chapters') || '[]',
+    chapters: mkStorageGetItem('skz_chapters', '[]'),
     exported: new Date().toISOString(),
     v: 3,
   });
@@ -3023,7 +3055,7 @@ function _applyImportData(data, mode) {
     try {
       const normalizedCampaign = normalizeCampaignSave(JSON.parse(data.campaign));
       if (normalizedCampaign) {
-        localStorage.setItem('skz_campaign_' + mode, JSON.stringify(normalizedCampaign));
+        localStorage.setItem(mkStorageKey('skz_campaign_' + mode), JSON.stringify(normalizedCampaign));
         if (campaignMode === mode) {
           provState = normalizedCampaign.provState;
           playerProvId = normalizedCampaign.playerProvId;
@@ -3031,13 +3063,13 @@ function _applyImportData(data, mode) {
         }
       }
     } catch(e2) {
-      localStorage.setItem('skz_campaign_' + mode, data.campaign);
+      localStorage.setItem(mkStorageKey('skz_campaign_' + mode), data.campaign);
     }
   }
   if (data.roster) {
-    const rosters = JSON.parse(localStorage.getItem('skz_rosters') || '{}');
+    const rosters = JSON.parse(mkStorageGetItem('skz_rosters', '{}'));
     rosters[mode] = JSON.parse(data.roster);
-    localStorage.setItem('skz_rosters', JSON.stringify(rosters));
+    mkStorageSetItem('skz_rosters', JSON.stringify(rosters));
     playerRosters[mode] = rosters[mode];
   }
   if (data.chars && data.chars !== '{}') {
@@ -3106,7 +3138,7 @@ const FIREBASE_ROOT = 'xiyou';
 function _getFirebaseConfig() {
   return {
     url: (FIREBASE_DB_URL || '').replace(/\/+$/, ''),
-    key: localStorage.getItem('skz_fb_key') || '',
+    key: mkStorageGetItem('skz_fb_key', '') || '',
   };
 }
 
@@ -3114,7 +3146,7 @@ function saveFirebaseConfig() {
   const key = (document.getElementById('fb-key-input').value || '').trim();
   const msg = document.getElementById('fb-config-msg');
   if (!key) { msg.style.color='var(--redb)'; msg.textContent='Enter a Family Key.'; return; }
-  localStorage.setItem('skz_fb_key', key);
+  mkStorageSetItem('skz_fb_key', key);
   msg.style.color = 'var(--jadeb)';
   msg.textContent = '✅ Config saved!';
 }
@@ -3262,19 +3294,19 @@ async function cloudSave(mode) {
   if (!path) { msg.style.color='var(--redb)'; msg.textContent='⚠️ Config missing — enter URL & Key above.'; return; }
   msg.style.color = 'var(--parch2)'; msg.textContent = '⏳ Uploading…';
   try {
-    const rosters = JSON.parse(localStorage.getItem('skz_rosters') || '{}');
+    const rosters = JSON.parse(mkStorageGetItem('skz_rosters', '{}'));
     const heroLevels = loadHeroLevels();
     const playerName = _cloudPlayerKey(mode); // name-based key
     const payload = {
       mode,
       playerName,                     // store name so restore can match correctly
-      campaign: localStorage.getItem('skz_campaign_' + mode) || 'null',
+      campaign: localStorage.getItem(mkStorageKey('skz_campaign_' + mode)) || 'null',
       roster:   JSON.stringify(rosters[mode] || {roster:[],startHero:null}),
       chars:    localStorage.getItem(_progKey(mode)) || '{}',
-      diff:     localStorage.getItem('skz_diff') || 'null',
+      diff:     mkStorageGetItem('skz_diff', 'null'),
       heroLevels: JSON.stringify(heroLevels[mode] || {}),
       campaignRating: JSON.stringify(loadCampaignRating(mode)),
-      chapters: localStorage.getItem('skz_chapters') || '[]',
+      chapters: mkStorageGetItem('skz_chapters', '[]'),
       savedAt:  new Date().toISOString(),
       v: 4,
     };
@@ -3330,7 +3362,7 @@ function doResetUser(mode) {
     return;
   }
   try {
-    localStorage.removeItem('skz_campaign_' + mode);
+    mkStorageRemoveItem('skz_campaign_' + mode);
     if (playerRosters[mode]) { playerRosters[mode] = {roster:[], startHero:null}; saveRosters(); }
     if (typeof campaignMode !== 'undefined' && campaignMode === mode) {
       initProvState(); playerProvId = 0; defeatedGenerals = new Set();
@@ -3360,10 +3392,10 @@ const HERO_LEVEL_PERKS = {
 };
 
 function loadHeroLevels() {
-  try { return JSON.parse(localStorage.getItem('skz_hero_levels')||'{}'); } catch(e) { return {}; }
+  try { return JSON.parse(mkStorageGetItem('skz_hero_levels', '{}')); } catch(e) { return {}; }
 }
 function saveHeroLevels(data) {
-  try { localStorage.setItem('skz_hero_levels', JSON.stringify(data)); } catch(e) {}
+  try { mkStorageSetItem('skz_hero_levels', JSON.stringify(data)); } catch(e) {}
 }
 
 function getHeroLevel(mode, heroKey) {
@@ -3434,10 +3466,10 @@ function updateAllProfileExtras() {
    Saved as skz_campaign_rating_{mode}
 =========================================================== */
 function loadCampaignRating(mode) {
-  try { return JSON.parse(localStorage.getItem('skz_campaign_rating_'+mode)||'null'); } catch(e) { return null; }
+  try { return JSON.parse(mkStorageGetItem('skz_campaign_rating_'+mode, 'null')); } catch(e) { return null; }
 }
 function saveCampaignRating(mode, rating) {
-  try { localStorage.setItem('skz_campaign_rating_'+mode, JSON.stringify(rating)); } catch(e) {}
+  try { mkStorageSetItem('skz_campaign_rating_'+mode, JSON.stringify(rating)); } catch(e) {}
 }
 
 function calcCampaignRating(mode, totalScore, globalBestStreak) {
@@ -3685,10 +3717,10 @@ function storySpeak() {
 
 /* == Milestone chapter functions (Option C) == */
 function loadUnlockedChapters() {
-  try { return JSON.parse(localStorage.getItem('skz_chapters') || '[]'); } catch(e) { return []; }
+  try { return JSON.parse(mkStorageGetItem('skz_chapters', '[]')); } catch(e) { return []; }
 }
 function saveUnlockedChapters(ids) {
-  try { localStorage.setItem('skz_chapters', JSON.stringify(ids)); } catch(e) {}
+  try { mkStorageSetItem('skz_chapters', JSON.stringify(ids)); } catch(e) {}
 }
 
 const CHAPTER_UNLOCK_PROV = {
@@ -3795,12 +3827,12 @@ function chapterSpeak() {
 
 function loadDifficulty(){
   try {
-    const d = JSON.parse(localStorage.getItem('skz_diff') || 'null');
+    const d = JSON.parse(mkStorageGetItem('skz_diff', 'null'));
     if (d && typeof d === 'object') playerDifficulty = d;
   } catch(e) {}
 }
 function saveDifficulty(){
-  try { localStorage.setItem('skz_diff', JSON.stringify(playerDifficulty)); } catch(e) {}
+  try { mkStorageSetItem('skz_diff', JSON.stringify(playerDifficulty)); } catch(e) {}
 }
 try { loadPlayers(); } catch(e) { console.warn('loadPlayers failed:', e); }
 try { loadDifficulty(); } catch(e) { console.warn('loadDifficulty failed:', e); }
