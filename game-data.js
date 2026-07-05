@@ -1,10 +1,10 @@
 const MP3_TRACKS = {
-  mainscreen: 'sounds/mainscreen.mp3',
-  map:        'sounds/map.mp3',
-  battle:     'sounds/battle.mp3',
-  feast:      'sounds/feast.mp3',
-  activity:   'sounds/activity.mp3',
-  victory:    'sounds/victory.mp3',
+  mainscreen: 'sounds/MainScreen.mp3',
+  map:        'sounds/Map.mp3',
+  battle:     'sounds/Battle.mp3',
+  feast:      'sounds/Feast.mp3',
+  activity:   'sounds/Activity.mp3',
+  victory:    'sounds/Victory.mp3',
 };
 const MP3_TRACK_LABELS = {
   mainscreen: { zh:'长安发愿', en:'Vow at Chang\'an' },
