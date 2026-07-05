@@ -70,11 +70,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f3edf8;font-family:
 .map-legend-row{display:flex;align-items:center;gap:8px}
 .map-legend-swatch{display:inline-block;width:13px;height:13px;border-radius:3px;flex-shrink:0}
 .map-legend-swatch.is-cleared{background:rgba(10,100,45,.9);border:2px solid rgba(45,210,108,.85)}
-.map-legend-swatch.is-unvisited{background:rgba(52,36,8,.9);border:2px solid rgba(155,120,38,.6)}
-.map-legend-swatch.is-open{background:rgba(95,72,15,.9);border:2px solid rgba(235,188,42,.95)}
+.map-legend-swatch.is-open{background:rgba(255,221,155,.92);border:2px solid rgba(208,127,33,.95)}
 .map-panel-divider{height:1px;background:rgba(201,162,39,.24);margin:2px 0}
 .map-legend-icon{width:14px;text-align:center;display:inline-block;flex-shrink:0}
-.map-compass-panel{min-width:132px;display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 14px}
+.map-compass-panel{min-width:132px;display:flex;flex-direction:column;align-items:center;gap:8px;padding:10px 14px;box-sizing:border-box}
 .map-compass-rose{position:relative;width:92px;height:92px;border-radius:50%;background:radial-gradient(circle at 50% 40%,rgba(255,255,255,.82),rgba(235,223,255,.86));border:1px solid rgba(241,181,111,.52);box-shadow:inset 0 0 0 1px rgba(255,255,255,.45)}
 .map-compass-rose span{position:absolute;font-family:'Ma Shan Zheng',cursive;color:#b57a45}
 .map-compass-n{top:8px;left:50%;transform:translateX(-50%);font-size:18px}
@@ -82,9 +81,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#f3edf8;font-family:
 .map-compass-w{left:10px;top:50%;transform:translateY(-50%);font-size:16px;color:#c08c86!important}
 .map-compass-e{right:10px;top:50%;transform:translateY(-50%);font-size:16px;color:#7ba0db!important}
 .map-compass-arrow{left:50%;top:18px;transform:translateX(-50%);font-size:20px;color:#e9ae63!important;text-shadow:0 0 10px rgba(233,174,99,.35)}
-.map-zoom-wrap{display:flex;align-items:center;gap:8px;width:100%;max-width:150px}
-.map-zoom-btn{width:28px;height:28px;border:none;border-radius:50%;background:linear-gradient(135deg,#f6b06c,#c8b0ff);color:#2b1b10;font-size:18px;line-height:1;cursor:pointer;box-shadow:0 4px 10px rgba(191,144,233,.25)}
-.map-zoom-slider{flex:1;accent-color:#df9c62;cursor:pointer}
+.map-zoom-wrap{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:6px;width:100%;max-width:100%;box-sizing:border-box}
+.map-zoom-btn{width:28px;height:28px;border:none;border-radius:50%;background:linear-gradient(135deg,#f6b06c,#c8b0ff);color:#2b1b10;font-size:18px;line-height:1;cursor:pointer;box-shadow:0 4px 10px rgba(191,144,233,.25);flex-shrink:0}
+.map-zoom-slider{width:100%;min-width:0;accent-color:#df9c62;cursor:pointer}
 .map-compass-caption{font-size:12px;letter-spacing:.04em;color:#6b5648}
 @media (max-width: 760px){
    .map-overlay-left{top:auto;bottom:10px;left:10px;max-width:min(250px,58vw)}

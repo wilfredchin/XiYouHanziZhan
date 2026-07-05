@@ -257,7 +257,6 @@
       <div class="map-panel map-legend-panel">
         <div class="map-panel-title">路引 Route Key</div>
         <div class="map-legend-row"><span class="map-legend-swatch is-cleared"></span>已行经 Cleared</div>
-        <div class="map-legend-row"><span class="map-legend-swatch is-unvisited"></span>未至 Unvisited</div>
         <div class="map-legend-row"><span class="map-legend-swatch is-open"></span>下一站 Open path</div>
         <div class="map-panel-divider"></div>
         <div class="map-legend-row"><span class="map-legend-icon">⚔️</span>妖魔战 Battle trial</div>
@@ -548,7 +547,7 @@
         <input id="fb-key-input" type="text" placeholder="e.g. chan2025"
           style="width:100%;background:rgba(0,0,0,.6);border:1px solid rgba(100,160,255,.4);border-radius:6px;color:var(--parch);font-size:12px;padding:7px 9px;box-sizing:border-box;font-family:monospace"/>
       </div>
-      <button onclick="saveFirebaseConfig()" class="btn-s" style="width:100%;font-size:13px;padding:8px 0;margin-bottom:12px;border-color:rgba(100,160,255,.6);color:#aaccff">💾 Save Config</button>
+      <button onclick="saveFirebaseConfig()" class="btn-s" style="width:100%;font-size:13px;padding:8px 0;margin-bottom:12px;border-color:rgba(100,160,255,.6);color:#2b1b10">💾 Save Config</button>
       <div id="fb-config-msg" style="font-size:12px;min-height:14px;margin-bottom:10px;color:var(--jadeb)"></div>
       <!-- Per-player cloud buttons rendered dynamically -->
       <div id="settings-cloud-rows"></div>
@@ -1047,26 +1046,26 @@ function routePoly(x, y, w = 36, h = 22) {
 }
 
 const PROVINCES = [
-  {id:0,  hz:'长安', en:'Chang\'an', episodeHz:'大唐发愿', episodeEn:'Vow at Chang\'an', x:2280,y:170, terrain:'plains', allegiance:'Neutral', poly:routePoly(2280,170), adj:[1]},
-  {id:1,  hz:'洪福寺', en:'Hongfu Temple', episodeHz:'奉诏起行', episodeEn:'Departure by Imperial Decree', x:2230,y:155, terrain:'temple', allegiance:'Neutral', poly:routePoly(2230,155), adj:[0,2]},
-  {id:2,  hz:'两界山', en:'Two Worlds Mountain', episodeHz:'凡圣交界', episodeEn:'Border of Mortal and Sacred', x:2180,y:160, terrain:'mountain', allegiance:'Neutral', poly:routePoly(2180,160), adj:[1,3]},
-  {id:3,  hz:'猎户庄', en:'Hunter\'s Lodge', episodeHz:'伯钦引路', episodeEn:'Boqin Guides the Way', x:2130,y:185, terrain:'plains', allegiance:'Neutral', poly:routePoly(2130,185), adj:[2,4]},
-  {id:4,  hz:'五行山', en:'Five Elements Mountain', episodeHz:'佛帖镇猴', episodeEn:'Seal of the Buddha Subdues the Monkey', x:2080,y:190, terrain:'mountain', allegiance:'Neutral', poly:routePoly(2080,190), adj:[3,5]},
-  {id:5,  hz:'蛇盘山', en:'Serpent-Coil Mountain', episodeHz:'山路收心', episodeEn:'Mountain Road, Tempered Heart', x:2030,y:215, terrain:'mountain', allegiance:'Neutral', poly:routePoly(2030,215), adj:[4,6]},
-  {id:6,  hz:'鹰愁涧', en:'Eagle Grief Ravine', episodeHz:'白龙归位', episodeEn:'White Dragon Returns', x:1980,y:250, terrain:'river', allegiance:'Neutral', poly:routePoly(1980,250), adj:[5,7]},
-  {id:7,  hz:'观音禅院', en:'Guanyin Monastery', episodeHz:'袈裟劫起', episodeEn:'Robe Theft Begins', x:1930,y:270, terrain:'temple', allegiance:'Neutral', poly:routePoly(1930,270), adj:[6,8]},
-  {id:8,  hz:'黑风山', en:'Black Wind Mountain', episodeHz:'黑熊盗宝', episodeEn:'Black Bear Steals the Treasure', x:1880,y:245, terrain:'forest', allegiance:'Neutral', poly:routePoly(1880,245), adj:[7,9]},
-  {id:9,  hz:'高老庄', en:'Gao Village', episodeHz:'八戒前缘', episodeEn:'Bajie\'s Former Life', x:1830,y:270, terrain:'plains', allegiance:'Neutral', poly:routePoly(1830,270), adj:[8,10]},
-  {id:10,  hz:'福陵山', en:'Fuling Mountain', episodeHz:'天蓬归队', episodeEn:'Tianpeng Returns to the Team', x:1780,y:300, terrain:'mountain', allegiance:'Neutral', poly:routePoly(1780,300), adj:[9,11]},
-  {id:11,  hz:'黄风岭', en:'Yellow Wind Ridge', episodeHz:'妖风蔽日', episodeEn:'Demon Wind Blots the Sun', x:1730,y:285, terrain:'steppe', allegiance:'Neutral', poly:routePoly(1730,285), adj:[10,12]},
+  {id:0,  hz:'长安', en:'Chang\'an', episodeHz:'大唐发愿', episodeEn:'Vow at Chang\'an', x:2350,y:170, terrain:'plains', allegiance:'Neutral', poly:routePoly(2350,170), adj:[1]},
+  {id:1,  hz:'洪福寺', en:'Hongfu Temple', episodeHz:'奉诏起行', episodeEn:'Departure by Imperial Decree', x:2290,y:147, terrain:'temple', allegiance:'Neutral', poly:routePoly(2290,147), adj:[0,2]},
+  {id:2,  hz:'两界山', en:'Two Worlds Mountain', episodeHz:'凡圣交界', episodeEn:'Border of Mortal and Sacred', x:2230,y:160, terrain:'mountain', allegiance:'Neutral', poly:routePoly(2230,160), adj:[1,3]},
+  {id:3,  hz:'猎户庄', en:'Hunter\'s Lodge', episodeHz:'伯钦引路', episodeEn:'Boqin Guides the Way', x:2175,y:185, terrain:'plains', allegiance:'Neutral', poly:routePoly(2175,185), adj:[2,4]},
+  {id:4,  hz:'五行山', en:'Five Elements Mountain', episodeHz:'佛帖镇猴', episodeEn:'Seal of the Buddha Subdues the Monkey', x:2110,y:190, terrain:'mountain', allegiance:'Neutral', poly:routePoly(2110,190), adj:[3,5]},
+  {id:5,  hz:'蛇盘山', en:'Serpent-Coil Mountain', episodeHz:'山路收心', episodeEn:'Mountain Road, Tempered Heart', x:2050,y:215, terrain:'mountain', allegiance:'Neutral', poly:routePoly(2050,215), adj:[4,6]},
+  {id:6,  hz:'鹰愁涧', en:'Eagle Grief Ravine', episodeHz:'白龙归位', episodeEn:'White Dragon Returns', x:1990,y:250, terrain:'river', allegiance:'Neutral', poly:routePoly(1990,250), adj:[5,7]},
+  {id:7,  hz:'观音禅院', en:'Guanyin Monastery', episodeHz:'袈裟劫起', episodeEn:'Robe Theft Begins', x:1930,y:278, terrain:'temple', allegiance:'Neutral', poly:routePoly(1930,278), adj:[6,8]},
+  {id:8,  hz:'黑风山', en:'Black Wind Mountain', episodeHz:'黑熊盗宝', episodeEn:'Black Bear Steals the Treasure', x:1870,y:245, terrain:'forest', allegiance:'Neutral', poly:routePoly(1870,245), adj:[7,9]},
+  {id:9,  hz:'高老庄', en:'Gao Village', episodeHz:'八戒前缘', episodeEn:'Bajie\'s Former Life', x:1810,y:270, terrain:'plains', allegiance:'Neutral', poly:routePoly(1810,270), adj:[8,10]},
+  {id:10,  hz:'福陵山', en:'Fuling Mountain', episodeHz:'天蓬归队', episodeEn:'Tianpeng Returns to the Team', x:1780,y:318, terrain:'mountain', allegiance:'Neutral', poly:routePoly(1780,318), adj:[9,11]},
+  {id:11,  hz:'黄风岭', en:'Yellow Wind Ridge', episodeHz:'妖风蔽日', episodeEn:'Demon Wind Blots the Sun', x:1729,y:365, terrain:'steppe', allegiance:'Neutral', poly:routePoly(1729,365), adj:[10,12]},
   {id:12,  hz:'流沙河', en:'Flowing Sands River', episodeHz:'悟净守河', episodeEn:'Wujing Guards the River', x:1680,y:325, terrain:'river', allegiance:'Neutral', poly:routePoly(1680,325), adj:[11,13]},
   {id:13,  hz:'骷髅山', en:'Skeleton Mountain', episodeHz:'荒冢惊魂', episodeEn:'Terror at the Lonely Graves', x:1630,y:300, terrain:'forest', allegiance:'Neutral', poly:routePoly(1630,300), adj:[12,14]},
   {id:14,  hz:'万寿山', en:'Wanshou Mountain', episodeHz:'人参果祸', episodeEn:'Ginseng Fruit Trouble', x:1580,y:270, terrain:'mountain', allegiance:'Neutral', poly:routePoly(1580,270), adj:[13,15]},
-  {id:15,  hz:'五庄观', en:'Five Manor Abbey', episodeHz:'镇元问罪', episodeEn:'Zhenyuanzi Demands Atonement', x:1530,y:245, terrain:'temple', allegiance:'Neutral', poly:routePoly(1530,245), adj:[14,16]},
-  {id:16,  hz:'白虎岭', en:'White Tiger Ridge', episodeHz:'白骨三变', episodeEn:'White Bone\'s Three Disguises', x:1480,y:225, terrain:'forest', allegiance:'Neutral', poly:routePoly(1480,225), adj:[15,17]},
+  {id:15,  hz:'五庄观', en:'Five Manor Abbey', episodeHz:'镇元问罪', episodeEn:'Zhenyuanzi Demands Atonement', x:1530,y:240, terrain:'temple', allegiance:'Neutral', poly:routePoly(1530,240), adj:[14,16]},
+  {id:16,  hz:'白虎岭', en:'White Tiger Ridge', episodeHz:'白骨三变', episodeEn:'White Bone\'s Three Disguises', x:1480,y:210, terrain:'forest', allegiance:'Neutral', poly:routePoly(1480,210), adj:[15,17]},
   {id:17,  hz:'宝象国', en:'Baoxiang Kingdom', episodeHz:'公主失国', episodeEn:'The Princess Loses Her Kingdom', x:1430,y:250, terrain:'plains', allegiance:'Neutral', poly:routePoly(1430,250), adj:[16,18]},
-  {id:18,  hz:'波月洞', en:'Moon-Wave Cave', episodeHz:'黄袍迷城', episodeEn:'Yellow Robe\'s Enchanted City', x:1380,y:285, terrain:'cave', allegiance:'Neutral', poly:routePoly(1380,285), adj:[17,19]},
-  {id:19,  hz:'平顶山', en:'Flat-Top Mountain', episodeHz:'金角设局', episodeEn:'Gold Horn\'s Trap', x:1330,y:270, terrain:'mountain', allegiance:'Neutral', poly:routePoly(1330,270), adj:[18,20]},
+  {id:18,  hz:'波月洞', en:'Moon-Wave Cave', episodeHz:'黄袍迷城', episodeEn:'Yellow Robe\'s Enchanted City', x:1398,y:285, terrain:'cave', allegiance:'Neutral', poly:routePoly(1398,285), adj:[17,19]},
+  {id:19,  hz:'平顶山', en:'Flat-Top Mountain', episodeHz:'金角设局', episodeEn:'Gold Horn\'s Trap', x:1330,y:292, terrain:'mountain', allegiance:'Neutral', poly:routePoly(1330,292), adj:[18,20]},
   {id:20,  hz:'莲花洞', en:'Lotus Flower Cave', episodeHz:'银角逞宝', episodeEn:'Silver Horn Shows His Treasures', x:1280,y:255, terrain:'cave', allegiance:'Neutral', poly:routePoly(1280,255), adj:[19,21]},
   {id:21,  hz:'乌鸡国', en:'Crow-Cock Kingdom', episodeHz:'井底冤魂', episodeEn:'Wrath Beneath the Well', x:1230,y:280, terrain:'plains', allegiance:'Neutral', poly:routePoly(1230,280), adj:[20,22]},
   {id:22,  hz:'车迟国', en:'Cart Slow Kingdom', episodeHz:'斗法试真', episodeEn:'Contest of Magic Reveals Truth', x:1180,y:320, terrain:'plains', allegiance:'Neutral', poly:routePoly(1180,320), adj:[21,23]},
@@ -1076,17 +1075,17 @@ const PROVINCES = [
   {id:26,  hz:'子母河', en:'Mother-and-Child River', episodeHz:'怪泉生厄', episodeEn:'Strange Spring Brings Misfortune', x:980,y:515, terrain:'river', allegiance:'Neutral', poly:routePoly(980,515), adj:[25,27]},
   {id:27,  hz:'解阳山', en:'Jiyang Mountain', episodeHz:'落胎求泉', episodeEn:'Seeking the Spring for Relief', x:930,y:555, terrain:'mountain', allegiance:'Neutral', poly:routePoly(930,555), adj:[26,28]},
   {id:28,  hz:'毒敌山', en:'Poison-Enemy Mountain', episodeHz:'琵琶毒尾', episodeEn:'Pipa Poisoned Tail', x:880,y:590, terrain:'mountain', allegiance:'Neutral', poly:routePoly(880,590), adj:[27,29]},
-  {id:29,  hz:'枯松涧', en:'Dry Pine Ravine', episodeHz:'火云前兆', episodeEn:'Omen of the Fire Cloud', x:830,y:620, terrain:'forest', allegiance:'Neutral', poly:routePoly(830,620), adj:[28,30]},
+  {id:29,  hz:'枯松涧', en:'Dry Pine Ravine', episodeHz:'火云前兆', episodeEn:'Omen of the Fire Cloud', x:830,y:640, terrain:'forest', allegiance:'Neutral', poly:routePoly(830,640), adj:[28,30]},
   {id:30,  hz:'火云洞', en:'Fire Cloud Cave', episodeHz:'三昧真火', episodeEn:'Samadhi True Fire', x:780,y:600, terrain:'mountain', allegiance:'Neutral', poly:routePoly(780,600), adj:[29,31]},
   {id:31,  hz:'祭赛国', en:'Sacrifice Kingdom', episodeHz:'舍利失窃', episodeEn:'Relic Stolen', x:730,y:570, terrain:'plains', allegiance:'Neutral', poly:routePoly(730,570), adj:[30,32]},
-  {id:32,  hz:'金光寺', en:'Golden Light Temple', episodeHz:'佛塔重光', episodeEn:'Pagoda Light Restored', x:680,y:540, terrain:'temple', allegiance:'Neutral', poly:routePoly(680,540), adj:[31,33]},
+  {id:32,  hz:'金光寺', en:'Golden Light Temple', episodeHz:'佛塔重光', episodeEn:'Pagoda Light Restored', x:692,y:525, terrain:'temple', allegiance:'Neutral', poly:routePoly(692,525), adj:[31,33]},
   {id:33,  hz:'小雷音', en:'Small Thunderclap', episodeHz:'假佛惑众', episodeEn:'False Buddha Misleads', x:630,y:560, terrain:'temple', allegiance:'Neutral', poly:routePoly(630,560), adj:[32,34]},
   {id:34,  hz:'七绝山', en:'Seven-Extinction Mountain', episodeHz:'泥途稀柿', episodeEn:'Muddy Road, Scarce Persimmons', x:580,y:590, terrain:'steppe', allegiance:'Neutral', poly:routePoly(580,590), adj:[33,35]},
   {id:35,  hz:'朱紫国', en:'Scarlet Purple Kingdom', episodeHz:'悬丝诊脉', episodeEn:'Silken Thread Diagnosis', x:530,y:610, terrain:'plains', allegiance:'Neutral', poly:routePoly(530,610), adj:[34,36]},
-  {id:36,  hz:'麒麟山', en:'Qilin Mountain', episodeHz:'赛岁宫变', episodeEn:'Sai Tai Sui\'s Palace Coup', x:480,y:585, terrain:'mountain', allegiance:'Neutral', poly:routePoly(480,585), adj:[35,37]},
-  {id:37,  hz:'盘丝洞', en:'Spider Cave', episodeHz:'丝网迷阵', episodeEn:'Webbed Maze', x:430,y:555, terrain:'forest', allegiance:'Neutral', poly:routePoly(430,555), adj:[36,38]},
+  {id:36,  hz:'麒麟山', en:'Qilin Mountain', episodeHz:'赛岁宫变', episodeEn:'Sai Tai Sui\'s Palace Coup', x:480,y:580, terrain:'mountain', allegiance:'Neutral', poly:routePoly(480,580), adj:[35,37]},
+  {id:37,  hz:'盘丝洞', en:'Spider Cave', episodeHz:'丝网迷阵', episodeEn:'Webbed Maze', x:430,y:540, terrain:'forest', allegiance:'Neutral', poly:routePoly(430,540), adj:[36,38]},
   {id:38,  hz:'黄花观', en:'Yellow Flower Monastery', episodeHz:'毒茶昏神', episodeEn:'Poisoned Tea Dulls the Mind', x:380,y:575, terrain:'temple', allegiance:'Neutral', poly:routePoly(380,575), adj:[37,39]},
-  {id:39,  hz:'狮驼岭', en:'Lion Camel Ridge', episodeHz:'群妖险地', episodeEn:'Perilous Land of Demons', x:330,y:595, terrain:'mountain', allegiance:'Neutral', poly:routePoly(330,595), adj:[38,40]},
+  {id:39,  hz:'狮驼岭', en:'Lion Camel Ridge', episodeHz:'群妖险地', episodeEn:'Perilous Land of Demons', x:330,y:605, terrain:'mountain', allegiance:'Neutral', poly:routePoly(330,605), adj:[38,40]},
   {id:40,  hz:'火焰山', en:'Flaming Mountain', episodeHz:'烈焰断路', episodeEn:'Flames Block the Road', x:280,y:565, terrain:'mountain', allegiance:'Neutral', poly:routePoly(280,565), adj:[39,41]},
   {id:41,  hz:'翠云山', en:'Green Cloud Mountain', episodeHz:'芭蕉借扇', episodeEn:'Borrowing the Plantain Fan', x:230,y:525, terrain:'mountain', allegiance:'Neutral', poly:routePoly(230,525), adj:[40,42]},
   {id:42,  hz:'积雷山', en:'Jilei Mountain', episodeHz:'牛王争锋', episodeEn:'Bull King Showdown', x:180,y:485, terrain:'mountain', allegiance:'Neutral', poly:routePoly(180,485), adj:[41,43]},
@@ -1310,6 +1309,8 @@ function renderProvinces() {
   frontier.forEach(provId => {
     const prov = PROVINCES[provId];
     if (!prov) return;
+    const state = provState[prov.id] || 'neutral';
+    if (state === 'owned' || prov.id === playerProvId) return;
     const outline = document.createElementNS(SVG_NS,'polygon');
     outline.setAttribute('points', prov.poly);
     outline.setAttribute('fill', 'none');
@@ -1468,6 +1469,19 @@ function focusMapOnProvince(provId, preferredWidth = null) {
   applyMapViewBox(prov.x - (targetW / 2), prov.y - (targetH / 2), targetW);
 }
 
+function focusMapOnActiveProvince(preferredWidth = null) {
+  if (shouldShowHeroToken()) {
+    focusMapOnProvince(playerProvId, preferredWidth);
+    return;
+  }
+  const targetW = preferredWidth || Math.max(getMapMinWidth(), Math.min(760, MAP_WIDTH * 0.31));
+  const ratio = getMapViewportRatio();
+  const targetH = Math.min(MAP_HEIGHT, targetW * ratio);
+  const x = Math.max(0, MAP_WIDTH - targetW);
+  const y = Math.max(0, Math.min(_vbY, MAP_HEIGHT - targetH));
+  applyMapViewBox(x, y, targetW);
+}
+
 function startMapDrag(clientX, clientY) {
   _mapDrag = { clientX, clientY, vbX: _vbX, vbY: _vbY, moved: false };
   if (_mapWrap) _mapWrap.classList.add('dragging');
@@ -1497,7 +1511,7 @@ function initMap() {
   _mapWrap = document.getElementById('map-canvas-wrap');
   _mapSvg = document.getElementById('map-svg');
 
-  focusMapOnProvince(playerProvId, _mapInited ? _vbW : null);
+  focusMapOnActiveProvince(_mapInited ? _vbW : null);
 
   if (_mapInited) return;
   _mapInited = true;
@@ -1566,7 +1580,7 @@ function initMap() {
   }, {passive:true});
 
   window.addEventListener('resize', () => {
-    if (_mapWrap && _mapSvg) focusMapOnProvince(playerProvId, _vbW);
+    if (_mapWrap && _mapSvg) focusMapOnActiveProvince(_vbW);
   });
 }
 
@@ -1838,17 +1852,17 @@ function getSoldierSpriteKey(provId) {
 const PROVINCE_GENERALS = [
   {id:0,  name:'唐太宗',     nameEn:'Emperor Taizong',         sprite:'general',    hp:7,  soldierName:'大唐仪卫',   soldierEn:'Imperial Guard'},
   {id:1,  name:'法明长老',     nameEn:'Master Faming',         sprite:'general',    hp:7,  soldierName:'寺院行者',   soldierEn:'Temple Novice'},
-  {id:2,  name:'刘伯钦',     nameEn:'Hunter Liu',         sprite:'general',    hp:8,  soldierName:'山路向导',   soldierEn:'Mountain Guide'},
-  {id:3,  name:'寅将军',     nameEn:'General Yin',         sprite:'general',    hp:9,  soldierName:'林间虎妖',   soldierEn:'Forest Tiger Spirit'},
-  {id:4,  name:'孙悟空',     nameEn:'Sun Wukong',         sprite:'wukong',    hp:12,  soldierName:'石猴残影',   soldierEn:'Stone Monkey Shade'},
+  {id:2,  name:'寅将军',     nameEn:'General Yin',         sprite:'general',    hp:9,  soldierName:'林间虎妖',   soldierEn:'Forest Tiger Spirit'},
+  {id:3,  name:'刘伯钦',     nameEn:'Hunter Liu',         sprite:'general',    hp:8,  soldierName:'山路向导',   soldierEn:'Mountain Guide'},
+  {id:4,  name:'孙悟空',     nameEn:'Sun Wukong',         sprite:'04-sun-wukong',    hp:12,  soldierName:'石猴残影',   soldierEn:'Stone Monkey Shade'},
   {id:5,  name:'山神土地',     nameEn:'Mountain Spirits',         sprite:'general',    hp:8,  soldierName:'庙前香火',   soldierEn:'Shrine Warden'},
-  {id:6,  name:'白龙马',     nameEn:'White Dragon Horse',         sprite:'whitehorse',    hp:8,  soldierName:'涧水龙影',   soldierEn:'Ravine Spirit'},
+  {id:6,  name:'白龙马',     nameEn:'White Dragon Horse',         sprite:'06-white-dragon-horse',    hp:8,  soldierName:'涧水龙影',   soldierEn:'Ravine Spirit'},
   {id:7,  name:'金池长老',     nameEn:'Elder Jinchi',         sprite:'general',    hp:9,  soldierName:'禅院僧众',   soldierEn:'Cloister Monk'},
   {id:8,  name:'黑熊精',     nameEn:'Black Bear Demon',         sprite:'general',    hp:11,  soldierName:'黑风小妖',   soldierEn:'Black Wind Fiend'},
   {id:9,  name:'高太公',     nameEn:'Elder Gao',         sprite:'general',    hp:8,  soldierName:'庄院家仆',   soldierEn:'Manor Servant'},
-  {id:10,  name:'猪八戒',     nameEn:'Zhu Bajie',         sprite:'bajie',    hp:10,  soldierName:'福陵野猪',   soldierEn:'Fuling Boar'},
+  {id:10,  name:'猪八戒',     nameEn:'Zhu Bajie',         sprite:'10-zhu-bajie',    hp:10,  soldierName:'福陵野猪',   soldierEn:'Fuling Boar'},
   {id:11,  name:'黄风大王',     nameEn:'Yellow Wind Demon',         sprite:'general',    hp:11,  soldierName:'黄风小妖',   soldierEn:'Wind Imp'},
-  {id:12,  name:'沙悟净',     nameEn:'Sha Wujing',         sprite:'wujing',    hp:9,  soldierName:'流沙水鬼',   soldierEn:'River Wraith'},
+  {id:12,  name:'沙悟净',     nameEn:'Sha Wujing',         sprite:'12-sha-wujing',    hp:9,  soldierName:'流沙水鬼',   soldierEn:'River Wraith'},
   {id:13,  name:'尸魔先锋',     nameEn:'Corpse Fiend Scout',         sprite:'general',    hp:9,  soldierName:'荒岭孤魂',   soldierEn:'Grave Wraith'},
   {id:14,  name:'镇元子',     nameEn:'Zhenyuanzi',         sprite:'general',    hp:11,  soldierName:'人参守童',   soldierEn:'Ginseng Keeper'},
   {id:15,  name:'清风道童',     nameEn:'Acolyte Qingfeng',         sprite:'general',    hp:9,  soldierName:'观中童子',   soldierEn:'Abbey Acolyte'},
@@ -1904,6 +1918,7 @@ function spawnEnemy(provId) {
   let enemy;
   const general = getGeneralForProv(provId !== undefined ? provId : (G.fort?.provId || 0));
   const isLastWave = G.wave >= G.totalWaves;
+  const isPenultimateWave = !isLastWave && G.wave === G.totalWaves - 1;
 
   if (ctype === 'build') {
     if (isLastWave) {
@@ -1921,6 +1936,16 @@ function spawnEnemy(provId) {
         hp: general.hp + 5 + Math.floor(G.totalWaves / 2),
         isGeneral: false, isCivilBoss: true, provId: general.id,
         announce: general.name + '来辩论吧！'
+      };
+    } else if (isPenultimateWave) {
+      // Penultimate wave: use the province soldier as a boss-style debate encounter without a battle cry
+      enemy = {
+        name: general.soldierName, nameEn: general.soldierEn,
+        sprite: general.soldierSprite || getSoldierSpriteKey(general.id),
+        hp: 5 + Math.floor(G.wave * 0.7),
+        isGeneral: false, isCivilBoss: true, provId: general.id,
+        soldierEn: general.soldierEn,
+        announce: general.soldierName + '来辩论吧！'
       };
     } else {
       // Non-final waves: each wave is a build activity
@@ -1949,6 +1974,16 @@ function spawnEnemy(provId) {
         hp: general.hp + 5 + Math.floor(G.totalWaves / 2),
         isGeneral: false, isCivilBoss: true, provId: general.id,
         announce: general.name + '共饮一杯！'
+      };
+    } else if (isPenultimateWave) {
+      // Penultimate wave: use the province soldier as a boss-style feast encounter without a battle cry
+      enemy = {
+        name: general.soldierName, nameEn: general.soldierEn,
+        sprite: general.soldierSprite || getSoldierSpriteKey(general.id),
+        hp: 5 + Math.floor(G.wave * 0.7),
+        isGeneral: false, isCivilBoss: true, provId: general.id,
+        soldierEn: general.soldierEn,
+        announce: general.soldierName + '共饮一杯！'
       };
     } else {
       // Non-final waves: each wave is a feast course
@@ -2536,6 +2571,7 @@ function returnToMap() {
   moveHeroToken(cur.x, cur.y);
   updateMapInfo();
   saveCampaign(campaignMode);
+  focusMapOnActiveProvince(_vbW);
   showScr('scr-map');
 
   if (RTCOOP.enabled && campaignMode === 'coop') {
