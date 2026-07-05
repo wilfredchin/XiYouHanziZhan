@@ -1,0 +1,61 @@
+name: Pages - deploy (debug & fix)
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  prepare-and-deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Prepare artifact directory (exclude .git and workflows)
+        run: |
+          rm -rf ./artifact
+          mkdir artifact
+          # copy repo root into artifact, excluding .git and workflow files
+          rsync -a --exclude='.git' --exclude='.github' --exclude='node_modules' --exclude='dist' --exclude='build' ./ ./artifact/
+
+      - name: Debug - list artifact summary and contents
+        run: |
+          echo "Artifact root size and top-level listing:"
+          du -sh ./artifact || true
+          echo "Top-level files in artifact:"
+          ls -la ./artifact || true
+          echo "Full tree (first 500 lines):"
+          find ./artifact -type f -print0 | xargs -0 ls -lh | sed -n '1,500p' || true
+          echo "Checking for index.html at artifact root..."
+          if [ -f "./artifact/index.html" ]; then
+            echo "index.html found at artifact root"
+          else
+            echo "::error::index.html not found at artifact root. Searching for index.*"
+            find ./artifact -iname 'index.*' -maxdepth 6 -print || true
+            echo "If index.html is not at the artifact root, update the upload path or the build step."
+            exit 1
+          fi
+
+      - name: Check artifact size limit
+        run: |
+          total_bytes=$(du -sb ./artifact | cut -f1)
+          echo "artifact bytes: $total_bytes"
+          # 1 GB guard
+          if [ "$total_bytes" -gt $((1024*1024*1024)) ]; then
+            echo "::error::Artifact exceeds 1GB ($total_bytes bytes). Pages may reject large deployments."
+            exit 1
+          fi
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v1
+        with:
+          path: ./artifact
+          name: github-pages
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v5
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
