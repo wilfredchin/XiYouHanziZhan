@@ -165,8 +165,8 @@
         </filter>
       </defs>
 
-      <rect width="2400" height="760" fill="url(#seaGrad)"/>
-      <rect x="34" y="34" width="2332" height="692" rx="30" fill="url(#mapbg)" filter="url(#parch-tex)" stroke="#c8945f" stroke-width="3"/>
+      <rect id="map-bg-sea" width="2400" height="760" fill="url(#seaGrad)"/>
+      <rect id="map-bg-paper" x="34" y="34" width="2332" height="692" rx="30" fill="url(#mapbg)" filter="url(#parch-tex)" stroke="#c8945f" stroke-width="3"/>
 
       <path d="M2260 156 C2050 100 1830 116 1600 220 C1390 314 1190 472 960 560 C710 654 442 646 160 544"
             fill="none" stroke="url(#routeGlow)" stroke-width="170" stroke-linecap="round" opacity=".9"/>
@@ -237,11 +237,6 @@
         </g>
       </g>
 
-      <g opacity=".45">
-        <path d="M2288 650 L110 650" fill="none" stroke="#8b6832" stroke-width="3" stroke-dasharray="14 16"/>
-        <text x="2254" y="638" text-anchor="end" font-size="15" fill="#8b6832" style="letter-spacing:2px">向西而行</text>
-        <text x="150" y="638" font-size="15" fill="#8b6832" style="letter-spacing:2px">求取真经</text>
-      </g>
 
       <!-- provinces + adjacency lines rendered dynamically -->
       <g id="province-layer"></g>
@@ -1039,6 +1034,8 @@ function confirmRemovePlayer() {
 =========================================================== */
 const MAP_WIDTH = 2400;
 const MAP_HEIGHT = 760;
+const MAP_VIEW_PADDING = 0.5;
+const EFFECTIVE_MAP_HEIGHT = MAP_HEIGHT + Math.round(MAP_HEIGHT * MAP_VIEW_PADDING);
 
 function routePoly(x, y, w = 36, h = 22) {
   const halfW = Math.round(w / 2);
@@ -1384,7 +1381,7 @@ let _mapSvg = null;
 let _vbX = 0;
 let _vbY = 0;
 let _vbW = MAP_WIDTH;
-let _vbH = MAP_HEIGHT;
+let _vbH = EFFECTIVE_MAP_HEIGHT;
 let _pinchDist0 = null;
 let _pinchVb0 = null;
 let _pinchMid0 = null;
@@ -1397,7 +1394,7 @@ function getMapViewportRatio() {
 }
 
 function getMapMinWidth() {
-  return Math.min(MAP_WIDTH, Math.max(340, (MAP_HEIGHT / getMapViewportRatio()) * 0.6));
+  return Math.min(MAP_WIDTH, Math.max(340, (EFFECTIVE_MAP_HEIGHT / getMapViewportRatio()) * 0.6));
 }
 
 function getMapZoomPercent() {
@@ -1424,13 +1421,13 @@ function clampMapViewBox(x, y, w) {
   const ratio = getMapViewportRatio();
   const minW = getMapMinWidth();
   w = Math.min(MAP_WIDTH, Math.max(minW, w));
-  let h = Math.min(MAP_HEIGHT, w * ratio);
-  if (h >= MAP_HEIGHT) {
-    h = MAP_HEIGHT;
+  let h = Math.min(EFFECTIVE_MAP_HEIGHT, w * ratio);
+  if (h >= EFFECTIVE_MAP_HEIGHT) {
+    h = EFFECTIVE_MAP_HEIGHT;
     w = Math.min(MAP_WIDTH, h / ratio);
   }
   x = Math.min(Math.max(x, 0), MAP_WIDTH - w);
-  y = Math.min(Math.max(y, 0), MAP_HEIGHT - h);
+  y = Math.min(Math.max(y, 0), EFFECTIVE_MAP_HEIGHT - h);
   return { x, y, w, h };
 }
 
@@ -1440,7 +1437,23 @@ function applyMapViewBox(x, y, w) {
   _vbY = next.y;
   _vbW = next.w;
   _vbH = next.h;
-  if (_mapSvg) _mapSvg.setAttribute('viewBox', `${next.x} ${next.y} ${next.w} ${next.h}`);
+  if (_mapSvg) {
+    _mapSvg.setAttribute('viewBox', `${next.x} ${next.y} ${next.w} ${next.h}`);
+    const seaBg = document.getElementById('map-bg-sea');
+    const paperBg = document.getElementById('map-bg-paper');
+    if (seaBg) {
+      seaBg.setAttribute('width', String(MAP_WIDTH));
+      seaBg.setAttribute('height', String(EFFECTIVE_MAP_HEIGHT));
+      seaBg.setAttribute('x', '0');
+      seaBg.setAttribute('y', '0');
+    }
+    if (paperBg) {
+      paperBg.setAttribute('width', '2332');
+      paperBg.setAttribute('height', '692');
+      paperBg.setAttribute('x', '34');
+      paperBg.setAttribute('y', '34');
+    }
+  }
   syncMapZoomUi();
 }
 
@@ -1451,7 +1464,7 @@ function setMapZoomPercent(percent) {
   const centerX = _vbX + (_vbW / 2);
   const centerY = _vbY + (_vbH / 2);
   const ratio = getMapViewportRatio();
-  const nextH = Math.min(MAP_HEIGHT, nextW * ratio);
+  const nextH = Math.min(EFFECTIVE_MAP_HEIGHT, nextW * ratio);
   applyMapViewBox(centerX - (nextW / 2), centerY - (nextH / 2), nextW);
 }
 
@@ -1460,13 +1473,27 @@ function zoomMapByStep(direction) {
   setMapZoomPercent(getMapZoomPercent() + ((direction > 0) ? step : -step));
 }
 
+function getMapOverlaySafeMargin() {
+  const wrapRect = (_mapWrap && _mapWrap.getBoundingClientRect()) || { height: 1 };
+  const rightOverlay = document.querySelector('.map-overlay-right');
+  if (!rightOverlay) return 0;
+  const overlayRect = rightOverlay.getBoundingClientRect();
+  const bottomSafePx = Math.max(0, wrapRect.height - overlayRect.top);
+  const minSafePx = Math.min(140, Math.max(70, Math.round(wrapRect.height * 0.16)));
+  return Math.max(minSafePx, bottomSafePx);
+}
+
 function focusMapOnProvince(provId, preferredWidth = null) {
   const prov = PROVINCES[provId];
   if (!prov || !_mapWrap) return;
   const targetW = preferredWidth || Math.max(getMapMinWidth(), Math.min(760, MAP_WIDTH * 0.31));
   const ratio = getMapViewportRatio();
-  const targetH = Math.min(MAP_HEIGHT, targetW * ratio);
-  applyMapViewBox(prov.x - (targetW / 2), prov.y - (targetH / 2), targetW);
+  const targetH = Math.min(EFFECTIVE_MAP_HEIGHT, targetW * ratio);
+  const safeMargin = getMapOverlaySafeMargin();
+  const centeredY = prov.y - (targetH / 2);
+  const maxY = Math.max(0, EFFECTIVE_MAP_HEIGHT - targetH - safeMargin);
+  const targetY = Math.min(centeredY, maxY);
+  applyMapViewBox(prov.x - (targetW / 2), targetY, targetW);
 }
 
 function focusMapOnActiveProvince(preferredWidth = null) {
@@ -1476,9 +1503,11 @@ function focusMapOnActiveProvince(preferredWidth = null) {
   }
   const targetW = preferredWidth || Math.max(getMapMinWidth(), Math.min(760, MAP_WIDTH * 0.31));
   const ratio = getMapViewportRatio();
-  const targetH = Math.min(MAP_HEIGHT, targetW * ratio);
+  const targetH = Math.min(EFFECTIVE_MAP_HEIGHT, targetW * ratio);
+  const safeMargin = getMapOverlaySafeMargin();
   const x = Math.max(0, MAP_WIDTH - targetW);
-  const y = Math.max(0, Math.min(_vbY, MAP_HEIGHT - targetH));
+  const maxY = Math.max(0, EFFECTIVE_MAP_HEIGHT - targetH - safeMargin);
+  const y = Math.max(0, Math.min(_vbY, maxY));
   applyMapViewBox(x, y, targetW);
 }
 
